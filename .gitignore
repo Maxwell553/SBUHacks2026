@@ -1,0 +1,36 @@
+# Dependencies
+/node_modules
+
+# Next.js build output
+/.next/
+/.next-verify/
+/out/
+next-env.d.ts
+*.tsbuildinfo
+
+# Environment and secrets (keep .env.example)
+.env
+.env.*
+!.env.example
+*.pem
+*.crt
+
+# Local scratch
+/tmp/
+
+# Vercel
+.vercel
+
+# OS, editors and logs
+.DS_Store
+npm-debug.log*
+
+# Local reports, coverage, backups and private keys
+/coverage/
+/work/
+/outputs/
+*.log
+*.key
+*.p12
+*.pfx
+*.sql.gz

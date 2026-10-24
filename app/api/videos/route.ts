@@ -1,0 +1,93 @@
+import { z } from "zod";
+import { randomUUID } from "node:crypto";
+import { requireUser } from "@/lib/server/auth";
+import { query, transaction } from "@/lib/server/db";
+import { body, sameOrigin, limit, json, failure, ApiError } from "@/lib/server/http";
+import { videoResponse } from "@/lib/server/videos";
+import { moderate, researchEvent, writeScript } from "@/lib/server/gemini";
+export const runtime = "nodejs";
+export const maxDuration = 300;
+const input = z.object({
+  prompt: z.string().trim().min(8).max(2000),
+  duration: z.number().int().min(20).max(60).default(40),
+  aspect: z.enum(["landscape", "portrait"]).default("landscape"),
+});
+export async function GET() {
+  try {
+    const user = await requireUser();
+    await query(
+      "UPDATE ph_videos SET status='failed',error='Generation was interrupted. Please try again.',updated_at=now() WHERE user_id=$1 AND status IN ('researching','scripting') AND updated_at<now()-interval '10 minutes'",
+      [user.id],
+    );
+    const { rows } = await query(
+      "SELECT id,prompt,title,duration,aspect,status,sources,error,created_at,updated_at,gif_asset_id,poster_asset_id,gif_bytes FROM ph_videos WHERE user_id=$1 ORDER BY created_at DESC LIMIT 100",
+      [user.id],
+    );
+    return json({ videos: rows.map(videoResponse) });
+  } catch (error) {
+    return failure(error);
+  }
+}
+export async function POST(request: Request) {
+  let id: string | undefined;
+  try {
+    sameOrigin(request);
+    const user = await requireUser();
+    const parsed = input.safeParse(await body(request));
+    if (!parsed.success)
+      throw new ApiError(400, "Describe a historical event in 8–2000 characters and choose 20–60 seconds.");
+    await limit("generate:" + user.id, 10, 86400);
+    const { prompt, duration, aspect } = parsed.data;
+    id = await transaction(async (db) => {
+      await db.query("SELECT pg_advisory_xact_lock(hashtext($1))", [user.id]);
+      const {
+        rows: [usage],
+      } = await db.query(
+        "SELECT count(*)::int AS count, count(*) FILTER(WHERE status IN ('researching','scripting') AND updated_at>now()-interval '10 minutes')::int AS active FROM ph_videos WHERE user_id=$1",
+        [user.id],
+      );
+      if (usage.active > 0) throw new ApiError(409, "A video is already being researched. Wait for it to finish.");
+      if (usage.count >= 100) throw new ApiError(409, "Your library is full. Delete an older video to create another.");
+      const videoId = randomUUID();
+      await db.query("INSERT INTO ph_videos(id,user_id,prompt,duration,aspect) VALUES($1,$2,$3,$4,$5)", [
+        videoId,
+        user.id,
+        prompt,
+        duration,
+        aspect,
+      ]);
+      return videoId;
+    });
+    const signal = AbortSignal.timeout(260000);
+    const audit = { userId: user.id, videoId: id };
+    await moderate(prompt, false, signal, audit);
+    // Reuse only this user's recent sourced briefing for the exact same request.
+    // Moderation still runs above; no other user's prompt/research is exposed.
+    const { rows: priorResearch } = await query(
+      "SELECT research,sources FROM ph_videos WHERE user_id=$1 AND prompt=$2 AND duration=$3 AND id<>$4 AND research IS NOT NULL AND jsonb_array_length(sources)>0 AND created_at>now()-interval '1 day' ORDER BY created_at DESC LIMIT 1",
+      [user.id, prompt, duration, id],
+    );
+    const research = priorResearch[0] ?? (await researchEvent(prompt, duration, signal));
+    await query("UPDATE ph_videos SET status='scripting',research=$2,sources=$3,updated_at=now() WHERE id=$1", [
+      id,
+      research.research,
+      JSON.stringify(research.sources),
+    ]);
+    const script = await writeScript(prompt, duration, research.research, user.id, signal, audit);
+    const { rows } = await query(
+      "UPDATE ph_videos SET status='ready',title=$2,plan=$3,updated_at=now() WHERE id=$1 RETURNING *",
+      [id, script.title, JSON.stringify(script)],
+    );
+    return json({ video: videoResponse(rows[0]) }, 201);
+  } catch (error) {
+    if (id) {
+      const rejected = error instanceof ApiError && error.status === 422;
+      await query("UPDATE ph_videos SET status=$2,error=$3,updated_at=now() WHERE id=$1", [
+        id,
+        rejected ? "rejected" : "failed",
+        error instanceof ApiError ? error.message : "Generation failed. Please try again.",
+      ]).catch(() => {});
+    }
+    return failure(error);
+  }
+}
