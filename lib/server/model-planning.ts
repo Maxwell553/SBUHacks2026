@@ -38,7 +38,7 @@ export const modelRequestSchema = z.object({
     .max(4)
     .describe(
       Object.entries(MODELING_SKILLS)
-        .map(([k, v]) => `${k}: ${v}`)
+        .map(([k, v]) => `${k}: ${v.purpose}`)
         .join(" "),
     ),
 });
