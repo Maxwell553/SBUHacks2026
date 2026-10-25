@@ -1,6 +1,6 @@
 # Design system
 
-Polyhistor should feel like a welcoming, curious place to learn history for a general audience. It's friendly without being childish. The visual identity is low-poly: faceted shapes, original typefaces and animated 3D scenes.
+PolyChronicle should feel like a welcoming, curious place to learn history for a general audience. It's friendly without being childish. The visual identity is low-poly: faceted shapes, original typefaces and animated 3D scenes.
 
 ## Principles
 
@@ -30,7 +30,7 @@ Light decorative colours must never be used for body text. Keep WCAG AA contrast
 
 ## Typography
 
-All three typefaces are original. They're generated from hand-designed glyph skeletons by `scripts/build-fonts.mjs` and served from `public/fonts/`. No third-party web fonts are used.
+All three typefaces are original. They're generated from hand-designed glyph skeletons by `scripts/assets/build-fonts.mjs` and served from `public/fonts/`. No third-party web fonts are used.
 
 | Face             | Weight    | Use                                                                                                |
 | ---------------- | --------- | -------------------------------------------------------------------------------------------------- |
@@ -38,7 +38,7 @@ All three typefaces are original. They're generated from hand-designed glyph ske
 | **Tessera**      | 400 / 700 | All reading text, headings longer than a few words, buttons and labels.                            |
 | **Tessera Mono** | 400       | Eyebrows, dates and small data labels.                                                             |
 
-Never set paragraphs in all caps. To change a glyph, edit its skeleton in `scripts/build-fonts.mjs`, run `npm run assets:fonts`, and commit the regenerated `public/fonts/*.otf` and `lib/typography/*.json`. The video overlay, the canvas renderer and the 3D lettering all read the same files.
+Never set paragraphs in all caps. To change a glyph, edit its skeleton in `scripts/assets/build-fonts.mjs`, run `npm run assets:fonts`, and commit the regenerated `public/fonts/*.otf` and `lib/typography/*.json`. The video overlay, the canvas renderer and the 3D lettering all read the same files.
 
 ## Components
 
@@ -57,8 +57,8 @@ Forms always have visible labels, hint text where it helps, and a visible focus 
 ## Motion
 
 - Use motion.dev (`motion/react`) for gentle, purposeful reveals: `FacetText` for display headings and `Reveal` for blocks.
-- 3D scenes (`components/three/`) pause when off-screen.
-- **Reduced motion is honoured everywhere.** CSS shortens animations. `FacetText` and `Reveal` render statically. The React Three Fiber scenes switch to a single static pose (`frameloop="demand"`). The video player doesn't autoplay.
+- 3D scenes (`components/three/`) and the studio's landmark reel (`components/LandmarkReel.tsx`, drawn from `lib/content/landmarks.ts`) pause when off-screen.
+- **Reduced motion is honoured everywhere.** CSS shortens animations. `FacetText` and `Reveal` render statically. The React Three Fiber scenes switch to a single static pose (`frameloop="demand"`), and the landmark reel holds on one landmark. The video player doesn't autoplay.
 
 ## Video overlay
 

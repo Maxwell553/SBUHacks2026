@@ -8,8 +8,8 @@ export function safeNextPath(value: unknown): string | undefined {
   )
     return undefined;
   try {
-    const url = new URL(value, "https://polyhistor.invalid");
-    return url.origin === "https://polyhistor.invalid" ? url.pathname + url.search + url.hash : undefined;
+    const url = new URL(value, "https://polychronicle.invalid");
+    return url.origin === "https://polychronicle.invalid" ? url.pathname + url.search + url.hash : undefined;
   } catch {
     return undefined;
   }

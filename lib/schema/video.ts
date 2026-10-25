@@ -1,5 +1,5 @@
 /**
- * Polyhistor video script — the contract between the Gemini scriptwriter
+ * PolyChronicle video script — the contract between the Gemini scriptwriter
  * (server) and the low-poly renderer (browser).
  *
  * The renderer is deterministic: the same script + seed always produces the
@@ -11,7 +11,6 @@ import { z } from "zod";
 import charsetJson from "@/lib/typography/charset.json";
 import {
   MODEL_LIMITS,
-  MODELING_SKILL_GUIDE,
   geminiModelDefinitionJsonSchema,
   modelDefinitionSchema,
   modelText,
@@ -30,7 +29,7 @@ export const MIN_SCENES = 3;
 export const MAX_SCENES = 12;
 export const MIN_SCENE_SECONDS = 2.5;
 export const MAX_SCENE_SECONDS = 10;
-export const MAX_ELEMENTS_PER_SCENE = 8;
+export const MAX_ELEMENTS_PER_SCENE = 16;
 export const MAX_COUNT_PER_ELEMENT = 60;
 
 // ---------------------------------------------------------------- vocab
@@ -238,7 +237,7 @@ export type VideoScript = z.infer<typeof videoScriptSchema>;
 const CHARSET = new Set<string>(Array.from(charsetJson as string));
 
 /**
- * Restricts text to glyphs present in the Polyhistor typefaces. Accented
+ * Restricts text to glyphs present in the PolyChronicle typefaces. Accented
  * Latin is kept when we have the composite; otherwise diacritics are
  * stripped; anything else (CJK, emoji, control chars) is dropped.
  */
@@ -704,42 +703,28 @@ export function geminiVideoScriptJsonSchema(
   };
 }
 
-/** Authoring guide to include in the scriptwriting prompt. */
+/** What the renderer does with each storyboard field, for the scriptwriting prompt. */
 export const SCRIPT_AUTHORING_GUIDE = `
-You are writing a storyboard for a ${MIN_TOTAL_SECONDS}-${MAX_TOTAL_SECONDS} second low-poly animated history short.
-A deterministic 3D renderer places per-event low-poly models (script.models, referenced by id) into procedural
-environments (terrain, water, sky, weather) chosen by the enums below. Only use ids of models that exist.
+A storyboard is data for a deterministic low-poly 3D renderer that plays on phones (vertical first, also landscape). Each
+diorama scene is a shot: the film's generated models (referenced by id) placed in a procedural place (terrain, water, sky,
+weather, light) and filmed with a camera move. presentation=immersive renders one continuous world at human scale.
 
-Rules:
-- ${MIN_SCENES}-${MAX_SCENES} scenes. Scene durations (${MIN_SCENE_SECONDS}-${MAX_SCENE_SECONDS}s each) MUST sum exactly to totalDuration.
-- Open on a meaningful visual hook; use map.lat/lon or a route only when geography helps explain the event.
-- Set presentation=immersive. The internal diorama kind means a continuous 3D WORLD, never a tabletop or isolated object display.
-- Use 1–2 subject elements with role=subject plus 1–3 contextual elements with role=background or foreground. Background does not change camera framing. Use generated period architecture/vegetation to create a connected setting. Repeat reusable background definitions with 8–20 instances when a street, town, forest or fleet needs depth. Keep detail shots readable; use a few nearby context objects plus distant layers.
-- Prefer eye_level and tracking cameras to place the viewer inside the location. Use an occasional wider establishing shot. Keep consistent locations/offsets and lighting across consecutive shots. Offset x/z is absolute meters; leave the camera corridor at positive z clear.
-- Pick setting, timeOfDay and weather appropriate to the moment.
-  Use element.color (faction colours) so sides are distinguishable; it recolours the model's tint:true materials.
-  Keep total instances per scene <= ${MAX_INSTANCES_PER_SCENE} (sum of counts); use few instances for mechanisms and detail shots; larger formations only when historically necessary.
-- Models with placement "air" fly at altitude and "water" models float, so pair watercraft with ocean/coast/river
-  settings. Reuse one model across scenes rather than near-duplicates.
-- Captions: one or two factual sentences each (<=160 chars), present tense, specific names, dates and numbers from research.
-  Kickers: short labels like "Oct 14, 1066 · 9:00 AM" or "Senlac Hill".
-- Depict conflict and tragedy respectfully: no gore, no glorification, no slurs, no graphic injury. Use smoke, fire,
-  explosions and formations to convey scale instead of violence against individuals.
-- Use Latin script only (transliterate other scripts). No emoji.
-- End with a scene about the outcome or legacy.
-`.trim();
+How the renderer reads a shot:
+- elements place models. role=subject elements are what the camera frames; background and foreground elements stand around
+  them without changing framing, foreground ones between the lens and the action.
+- A repeatable building or plant used as a background element with count >= 2 becomes set dressing: in a street layout it
+  lines both sides in rows with a skyline beyond; on open land it gathers into clusters, groves and distant landforms; along
+  water it lines the banks. Other elements are placed as individual instances.
+- offset {x,z} is absolute metres (+z toward the camera); position is a coarse alternative. formation and count lay out a
+  group, spaced by the models' real footprints. Footprints are kept apart, and movers stop short of anything in their way.
+- motion: march, charge and retreat travel along the facing on land, sail on water, fly in the air; launch takes off; burn and
+  explode attach fire or blasts to the object; collapse topples it; idle, wave and sway stay put while the model's own
+  animation plays. color recolours a model's tint:true materials.
+- layout: street (a built corridor), open (land, water or flight), interior (inside a room-shell model that is an element of
+  the shot). settlement, waterWidth, banks and structureState describe the place; shotSize and camera choose the coverage.
+- kind=map flies a faceted globe to map.lat/lon, with an optional route.
 
-/**
- * Prompt guidance for the model-building step: plan the 3-10 models the
- * story needs (people/factions, vehicles, architecture, landscape props),
- * then author each as a ModelDefinition using these reusable skills.
- */
-export const MODEL_BUILDING_GUIDE = `
-Plan the distinct low-poly models this event needs (typically 4-10, max ${MODEL_LIMITS.maxModelsPerScript}): the people
-(per faction/role, with era-accurate clothing, armour, headwear and held items), animals, vehicles/vessels/aircraft,
-signature architecture and landscape props (trees, rocks, flags, fires). Every model must be designed fresh from the
-research for this specific event — period-correct silhouettes, materials and colours. Prefer one tintable model used
-by several factions via element.color over duplicates.
-
-${MODELING_SKILL_GUIDE}
+Contract: ${MIN_SCENES}-${MAX_SCENES} scenes of ${MIN_SCENE_SECONDS}-${MAX_SCENE_SECONDS}s whose durations sum exactly to totalDuration; only model ids from the
+provided set; at most ${MAX_ELEMENTS_PER_SCENE} elements and ${MAX_INSTANCES_PER_SCENE} instances (sum of counts) per scene; captions of at most 160
+characters; Latin script only (the fonts have no other glyphs), no emoji.
 `.trim();

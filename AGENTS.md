@@ -10,7 +10,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # Agent guide
 
-Polyhistor is a Next.js 16 / React 19 app that turns a history question into a 20–60 s low-poly film. Gemini (with Google Search grounding) researches the event and writes a declarative script plus bespoke 3D model definitions. The browser renders the film with Three.js and saves a GIF. Data lives in TigerData (PostgreSQL). Read `README.md` first, then `docs/ARCHITECTURE.md`.
+PolyChronicle is a Next.js 16 / React 19 app that turns a history question into a 20–60 s low-poly film. Gemini (with Google Search grounding) researches the event and writes a declarative script plus bespoke 3D model definitions. The browser renders the film with Three.js and saves it as an HD video. Data lives in TigerData (PostgreSQL). Read `README.md` first, then `docs/ARCHITECTURE.md`.
 
 ## Commands
 
@@ -29,24 +29,28 @@ Run `npm run check` before handing work back. Run the DB and live suites when yo
 
 ## Layout
 
-| Path                                                          | What lives there                                                                                               |
-| ------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `app/`                                                        | Routes. `app/api/**` are route handlers (Node runtime).                                                        |
-| `components/`, `components/three/`                            | Client UI and React Three Fiber scenes                                                                         |
-| `lib/schema/`                                                 | **Isomorphic** zod contracts: `video.ts` (VideoScript), `model.ts` (ModelDefinition, limits, modelling skills) |
-| `lib/server/`                                                 | **Server-only**: auth, db, Gemini pipeline, moderation audit, media, viewer                                    |
-| `lib/client/`                                                 | Browser-only API client, chunked upload, render-and-save                                                       |
-| `lib/lowpoly/`, `lib/render/`                                 | Deterministic renderer and GIF exporter                                                                        |
-| `lib/content/`                                                | Site config, topic ideas, example models, sample reel                                                          |
-| `lib/typography/`, `lib/lowpoly/landmask.ts`, `public/fonts/` | Generated assets. Regenerate via `npm run assets:*`; never hand-edit                                           |
-| `db/schema.sql`                                               | Idempotent schema (`npm run db:migrate`)                                                                       |
-| `docs/`                                                       | Architecture, API, renderer, safety, design, deployment                                                        |
-| `tools/visual-harness/`                                       | Browser harness and curated fixtures for renderer visual QA (contact sheets, collision audit, timings)         |
-| `tmp/`                                                        | Git-ignored scratch: QA probes, benchmark runs, contact sheets (see `tmp/README.md`)                           |
+| Path                                                          | What lives there                                                                                                                                                                    |
+| ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `app/`                                                        | Routes. `app/api/**` are route handlers (Node runtime).                                                                                                                             |
+| `components/`, `components/three/`                            | Client UI and React Three Fiber scenes                                                                                                                                              |
+| `lib/schema/`                                                 | **Isomorphic** zod contracts: `video.ts` (VideoScript, `SCRIPT_AUTHORING_GUIDE`), `model.ts` (ModelDefinition, limits, `MODEL_FORMAT_GUIDE`)                                        |
+| `lib/server/`                                                 | **Server-only**: auth, db, Gemini pipeline (`gemini.ts`), per-stage model routing (`models.ts`), reference films (`references.ts`), model planning, moderation audit, media, viewer |
+| `lib/client/`                                                 | Browser-only API client, chunked upload, render-and-save                                                                                                                            |
+| `lib/lowpoly/`, `lib/render/`                                 | Deterministic renderer, HD movie exporter and legacy GIF exporter                                                                                                                   |
+| `lib/audio/`                                                  | Synthesized ambience (live player) and soundtrack (saved films)                                                                                                                     |
+| `lib/content/`                                                | Site config, topic ideas, example models, sample reel, studio landmark reel                                                                                                         |
+| `lib/typography/`, `lib/lowpoly/landmask.ts`, `public/fonts/` | Generated assets. Regenerate via `npm run assets:*`; never hand-edit                                                                                                                |
+| `references/`                                                 | Example films attached to every creative Gemini request. They set the target look; change the look by changing these files                                                          |
+| `db/schema.sql`                                               | Idempotent schema (`npm run db:migrate`)                                                                                                                                            |
+| `docs/`                                                       | Architecture, API, renderer, safety, design, deployment                                                                                                                             |
+| `scripts/`                                                    | Node CLI scripts grouped by purpose: `assets/`, `bench/`, `checks/`, `db/`, `tests/`, plus shared helpers in `lib/`                                                                 |
+| `tools/visual-harness/`                                       | Browser harness and curated fixtures for renderer visual QA (contact sheets, collision audit, timings)                                                                              |
+| `types/`                                                      | Ambient declarations for untyped packages (`gifenc`)                                                                                                                                |
+| `tmp/`                                                        | Git-ignored scratch: QA probes, benchmark runs, contact sheets (see `tmp/README.md`)                                                                                                |
 
 ## Rules
 
-- **No fixed model catalogue.** Generated films use per-request `ModelDefinition`s. Extend primitives or modelling skills; never add named presets for generated videos. (`lib/content/model-examples.ts` is decorative and few-shot only.)
+- **No fixed model catalogue.** Generated films use per-request `ModelDefinition`s. Extend the primitives and `MODEL_FORMAT_GUIDE` in `lib/schema/model.ts`; never add named presets for generated videos. (`lib/content/model-examples.ts` is decorative: the home page, sign-in screen and sample reel. It is never sent to Gemini.)
 - **Never execute generated content.** No `eval` or `new Function`. Models and scripts are data validated against `MODEL_LIMITS` and the video schema.
 - **Safety is mandatory.** Every prompt and every storyboard goes through `moderate()`, which writes to `ph_audit`. Keep user-facing rejection messages generic. Don't store moderated text in audit rows.
 - **Privacy.** Account deletion must remove everything tied to the user (`lib/server/account.ts`). Keep `/privacy` accurate when data handling changes.

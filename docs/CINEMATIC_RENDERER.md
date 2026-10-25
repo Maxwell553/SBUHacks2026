@@ -1,6 +1,6 @@
 # Cinematic renderer
 
-How `PolyEngine` turns an immersive script into connected, street-level shots instead of isolated models on empty terrain. This document covers the diorama path (`kind: "diorama"`); map scenes and the 2D overlay are unchanged. See `docs/RENDERER.md` for the engine basics and `docs/MODELING.md` for model definitions.
+How `PolyEngine` turns an immersive script into connected, street-level shots instead of isolated models on empty terrain. This document covers the diorama path (`kind: "diorama"`); map scenes and the 2D overlay are unchanged. See [RENDERER.md](RENDERER.md) for the engine basics and the model definition format.
 
 The public API is unchanged: `new PolyEngine(script, opts)`, `loadFonts`, `canvas`, `duration`, `boundaries`, `sceneAt`, `setSize`, `prepare`, `renderAt` and `dispose`. Everything below is a deterministic function of the script and time. There is still no named-model catalogue: every building, street, tree and prop the viewer sees is a model the script itself defined, or generic ground detail (grass, stones, shrubs, generic trees).
 
@@ -9,6 +9,7 @@ The public API is unchanged: `new PolyEngine(script, opts)`, `loadFonts`, `canva
 | File                         | Role                                                                                                                                                           |
 | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `lib/lowpoly/engine.ts`      | Lays out the shot, builds the corridor, places units, wires dressing, scatter, contact shadows, lights and the camera rig.                                     |
+| `lib/lowpoly/layout.ts`      | Pure ground-plane layout: separates overlapping rest footprints, then keeps straight-line movers clear with a lane shift first and clipped travel second.      |
 | `lib/lowpoly/environment.ts` | Graded terrain with an exact height lookup, world-scale ground texture, street or path ribbon, sky glow, ridges, haze, weather.                                |
 | `lib/lowpoly/world.ts`       | Set dressing: street frontage, second row, closing facade and skyline built from the script's own architecture (instanced).                                    |
 | `lib/lowpoly/camera.ts`      | Shot rig: eye-height moves, lens and size variation, side alternation, hand-held drift and collision.                                                          |
@@ -91,6 +92,7 @@ The renderer-side contract and its inference rules are recorded in `tmp/cinemati
      - Exponential haze per weather.
 5. **Units.**
    - Units are placed as before, except that architecture formations are spaced by real footprint rather than diagonal radius.
+   - **Separation.** `layout.ts` pushes overlapping footprints apart, then checks each straight-line mover's swept path. A mover that would run into a standing unit or another mover shifts sideways into a clear lane, or stops short if no lane is free.
    - **Ground contact.** Units sit on the highest of five footprint samples so wide models do not sink into sloped terrain. The model's lowest point is dropped to the ground, with a small sink.
    - **Aircraft.**
      - An air-placed model rests on the ground unless its motion is `fly` (animals excepted).
@@ -179,7 +181,7 @@ Fixtures:
   - Old Pompeii: 64.
   - Jamestown and Columbus: 80 each.
 - **Performance.** Scene build plus first frame takes 30–130 ms after the first shader compile (about 0.4–1.4 s once per engine). A full 60 s London film renders at 1280 × 720, 30 fps (1800 frames, scene builds and overlay included, no encoding) in 3.3 s, about 1.8 ms per frame.
-- **Tests.** `npx tsc --noEmit`, `npx eslint lib/lowpoly`, `npx prettier --check lib/lowpoly` and `npm run test:unit` pass. `scripts/test-generated-film.ts` passes on the London, Pompeii, flight, street printing-house and interior fixtures.
+- **Tests.** `npx tsc --noEmit`, `npx eslint lib/lowpoly`, `npx prettier --check lib/lowpoly` and `npm run test:unit` pass. `scripts/tests/test-generated-film.ts` passes on the London, Pompeii, flight, street printing-house and interior fixtures.
 
 ## Limitations
 

@@ -15,8 +15,8 @@ export interface ScatterSpec {
   center: { x: number; z: number };
   heightAt(x: number, z: number): number;
   isWater(x: number, z: number): boolean;
-  /** True where nothing may be placed (path, subjects, set dressing). */
-  blocked(x: number, z: number, r: number): boolean;
+  /** True where nothing of radius r and height h may be placed (path, subjects, set dressing, sight lines). */
+  blocked(x: number, z: number, r: number, h: number): boolean;
   /** Add generic trees (off when the script supplies its own vegetation). */
   trees: boolean;
   /** Built-up places keep only sparse weeds and stones on their paving. */
@@ -312,7 +312,7 @@ export function buildScatter(spec: ScatterSpec): Scatter {
     sizeLo: number,
     sizeHi: number,
     colors: string[],
-    o: { shadow?: boolean; tilt?: number; squash?: [number, number] } = {},
+    o: { shadow?: boolean; tilt?: number; squash?: [number, number]; height?: number } = {},
   ) => {
     if (!count) return;
     const mesh = new THREE.InstancedMesh(geometry, material, count);
@@ -323,7 +323,7 @@ export function buildScatter(spec: ScatterSpec): Scatter {
       const x = spec.center.x + Math.cos(a) * r,
         z = spec.center.z + Math.sin(a) * r;
       const size = range(rng, sizeLo, sizeHi);
-      if (spec.isWater(x, z) || spec.blocked(x, z, footprint * size)) continue;
+      if (spec.isWater(x, z) || spec.blocked(x, z, footprint * size, (o.height ?? footprint) * size)) continue;
       const tilt = o.tilt ?? 0;
       e.set(range(rng, -tilt, tilt), rng() * Math.PI * 2, range(rng, -tilt, tilt));
       const sq = o.squash ? range(rng, o.squash[0], o.squash[1]) : 1;
@@ -384,6 +384,7 @@ export function buildScatter(spec: ScatterSpec): Scatter {
     disposables.push(mat);
     place(shrubGeometry(rng), mat, Math.round(biome.shrubs * k), 6, 140, 0.9, 0.6, 1.6, biome.shrubColors, {
       shadow: true,
+      height: 1,
     });
   }
   if (spec.trees && !built && biome.trees && biome.treeStyles.length) {
@@ -393,7 +394,10 @@ export function buildScatter(spec: ScatterSpec): Scatter {
     const per = Math.ceil(biome.trees / styles.length);
     styles.forEach((style, i) => {
       const canopy = biome.canopy[i % Math.max(1, biome.canopy.length)] ?? "#4f8a3c";
-      place(treeGeometry(style, canopy, rng), mat, per, 14, 260, 1.6, 0.75, 1.45, ["#ffffff"], { shadow: true });
+      place(treeGeometry(style, canopy, rng), mat, per, 14, 260, 1.6, 0.75, 1.45, ["#ffffff"], {
+        shadow: true,
+        height: 6,
+      });
     });
   }
 

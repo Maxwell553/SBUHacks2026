@@ -1,5 +1,5 @@
 /**
- * Polyhistor ModelDefinition — a bounded, declarative description of a
+ * PolyChronicle ModelDefinition — a bounded, declarative description of a
  * low-poly 3D model (primitives + materials + transforms + parent/child rig
  * + simple animation channels). Gemini authors these per request; the
  * browser compiles them with lib/lowpoly/compiler.ts. Nothing here is code:
@@ -840,73 +840,22 @@ export function geminiModelSetJsonSchema(maxModels: number = MODEL_LIMITS.maxMod
   };
 }
 
-// ---------------------------------------------------------------- skills
-/**
- * Reusable modelling skills for the Gemini model-builder prompt. These teach
- * construction strategies, not specific objects; the model must invent each
- * definition from research about the actual event.
- */
-export const MODELING_SKILLS = {
-  core: `
-You build low-poly 3D models as JSON for a deterministic Three.js compiler. Flat shading, chunky readable silhouettes,
-5-30 parts, 2-8 materials. Units are metres. +y up, +x is the model's FRONT, +z its right side. Origin = ground
-(or waterline) at the centre of the footprint, so most root parts use anchor "bottom" at y=0.
+// ---------------------------------------------------------------- format
+/** The definition format for the model builder: conventions and semantics only. */
+export const MODEL_FORMAT_GUIDE = `
+Models are JSON compiled by a deterministic Three.js renderer into flat-shaded geometric primitives. Units are metres.
++y up, +x is the model's front, +z its right side. The origin is the ground (or waterline) at the centre of the footprint.
 Shapes and size semantics:
 ${Object.entries(SHAPE_GUIDE)
   .map(([k, v]) => `  - ${k}: ${v}`)
   .join("\n")}
-Rules:
-  - Silhouette first: block the biggest masses, then 2-4 identifying details (era cues). Skip tiny details < 5 cm.
-  - Distinguish geometryRotation (only orients this primitive) from rotation (rotates this part AND every child). Orient a horizontal cylinder/capsule torso with geometryRotation, keeping its frame upright for neck and legs. Use rotation for intentional rig poses.
-  - Use parent/child parts for anything that moves together; children inherit parent transforms. Explicitly set parent on EVERY part: empty string means world-space root. A head positioned near [0, 0.3, 0] must name its torso as parent; without that parent it sits at ground level. Never mix local coordinates with an empty parent. Emit parents before children.
-  - Every primitive, including lathe, is CENTERED unless anchor is explicit. Profile heights do not change this. For connected body parts use explicit attachTo: neck attaches to torso top with anchor bottom; head attaches to neck top with anchor bottom; a hanging limb attaches at its parent's bottom with anchor top. position then slides along that face; its perpendicular component is ignored so the surfaces meet. Do not add the full parent height. attachTo uses the parent primitive only, never descendants. For group parents use attachTo none and explicit local coordinates instead. Shoulder pivots must be at shoulder height: for a bottom-anchored torso, near size.y, not size.y/2. A top-anchored hanging limb hinges at local y=0; a centered limb hinges at size.y/2.
-  - Use mirror:"z" for left/right pairs and repeat (linear/radial) for rows of columns, windows, oars, spokes, crenellations. A mirrored pair must have nonzero position on its mirrored axis, otherwise both copies overlap.
-  - A linear repeat starts at position, not at its center. To center N copies around a point, compute the first position as center minus step*(N-1)/2 on each axis, and emit the resulting numeric coordinates. Check BOTH end copies against their supporting surface; never leave struts, windows or wheels floating beyond it.
-  - Keep total expanded parts <= ${MODEL_LIMITS.maxExpandedNodes} and triangles <= ${MODEL_LIMITS.maxTriangles}; low segments (5-8) look best.
-  - Materials: muted, historically plausible colours; mark faction-coloured materials tint:true so scenes can recolour them.
-    finish "emissive" for flames/lamps, nightGlow for windows, "glass" for canopies/windows, "metal" for armour/guns.
-  - Animation channels are optional, deterministic motion on a part's LOCAL axis. Use bounded keyframes [{at:0,value:0},{at:1,value:1}] for one-shot changes over normalized scene progress; values multiply amplitude and hold at endpoints. Choose linear, smooth or hold interpolation. Use waves for repeating actions. Keyframes override wave, frequency and phase; alternate reverses their sign in mirrored/repeated copies. Prefer animationAnchor to specify a hinge at a primitive face (top for a hanging limb, center for a wheel), computed after anchoring; this avoids coordinate arithmetic. animationPivot can alternatively specify a numeric local hinge point without moving the rest geometry; for a centered vertical limb use [0,size.y/2,0] to rotate at its top. Articulated movement needs at least two independently rotating limb joints (or a mirrored pair with alternate phase), never only a bobbing torso.
-    Supported waves:
-    walk cycles (rotation z on hip/shoulder pivots, when:"moving", alternate:true), spinning propellers/wheels
-    (wave "spin", amplitude in deg/sec), waving flags (shape "flag"), bobbing (position y sine), flicker (scale pulse).
-  - Never depict gore, injuries, weapons in use against people, hate symbols or real-person likeness caricatures.
-`.trim(),
-  articulatedFigures: `
-Articulated figures (people, soldiers, workers): ~1.75 m tall. Build a rig:
-  pelvis group at y≈0.95 → torso box/cylinder above it, head ico (d≈0.26) on a neck at y≈1.6, headwear on the head;
-  hip pivots (group, mirror:"z", z≈0.1) with legs as boxes/capsules anchor "top" hanging to the ground;
-  shoulder pivots (mirror:"z", z≈0.24, y≈1.45) with arms anchor "top". Walk cycle: forward is +x, so limbs swing
-  with rotation about z on the hip/shoulder pivots (amplitude 25-35°, 1.6-2 Hz, alternate:true, when:"moving").
-  Clothing/armour silhouettes carry the era: helmets, hats, capes (thin box behind torso), robes (tapered cylinder).
-  Held items (spear, rifle, banner pole, tool) are children of the arm so they swing with it.
-Quadrupeds (horses ~1.6 m at shoulder, oxen, camels, elephants ~3 m): body box/capsule, neck tilted forward, head,
-  4 leg pivots (mirror:"z" + repeat linear 2 along x) with legs anchor "top", tail; gallop = leg rotation z, 2-3 Hz.
-  Riders: a seated figure as a child of the body.
-`.trim(),
-  architecture: `
-Architecture: massing → roof → openings → ornament. One storey ≈ 3 m, door ≈ 2 m × 1 m, wall thickness 0.3-1 m.
-  Roof types: wedge (gable), cone with 4 segments (hip/pyramid), dome / lathe (onion, cupola), flat slab with parapet.
-  Repeat windows/columns/crenellations with linear repeat; towers with cylinders (6-10 segments) and radial crenels.
-  Materials reflect region and period (mud brick, limestone, marble, timber frame, red brick, concrete, steel+glass).
-  Large monuments may be 20-80 m; scale relative to 1.75 m people. Fortifications: curtain walls + corner towers + gate.
-`.trim(),
-  vehicles: `
-Vehicles & machines: chassis box → body/cabin → wheels (torus or cylinder rotated 90° about x, mirror:"z",
-  repeat linear along x, rotation z spin when:"moving") → identifying details (funnel, turret, gun barrel, lamps).
-  Carts/chariots get draught animals as separate models or child parts. Tanks: hull, track boxes, turret group.
-  Trains: locomotive boiler (cylinder rotated 90° about z), cab, chimney (+ smoke part), cars via repeat linear.
-Watercraft (placement "water"): hull shape (bow +x), deck structures, masts (thin cylinders), sails as thin boxes
-  or extrusions (tint:true for faction sails), oars via repeat, funnels with smoke parts for steamships.
-Aircraft (placement "air"): fuselage capsule/cylinder rotated 90° about z (nose +x), wings thin boxes or swept
-  extrusions, tail fin + tailplane, propeller group spinning on x (wave "spin", ~1080 deg/s), canopy glass.
-Spacecraft: lathe bodies with nose cones, fins via radial repeat, foil = metal gold; exhaust = fire part below.
-`.trim(),
-  nature: `
-Nature & props: trees = trunk cylinder + stacked cones (conifers) or 2-4 ico clusters (broadleaf), palms = leaning
-  segmented trunk + radial leaf boxes. Rocks/icebergs = ico with detail 0 scaled unevenly. Use material variants for
-  natural colour spread. Effects: fire/smoke/explosion parts attached where they belong (chimney, campfire, crater).
-  Flags/banners: pole cylinder + flag part (tint:true material) at the pole top.
-`.trim(),
-};
-
-export const MODELING_SKILL_GUIDE = Object.values(MODELING_SKILLS).join("\n\n");
+Format:
+  - geometryRotation orients only this primitive; rotation rotates this part and every child.
+  - parent names the part this one is attached to; empty string means the model root. Children inherit parent transforms; parents come before children.
+  - Primitives are centred unless anchor is set. attachTo places a child against a face of its parent primitive, and position then slides along that face. A top-anchored part hinges at local y=0; a centred part at size.y/2.
+  - mirror duplicates a part across an axis. A linear repeat starts at position and adds step per copy; a radial repeat arranges copies around the parent origin.
+  - Limits: ${MODEL_LIMITS.maxParts} declared parts, ${MODEL_LIMITS.maxExpandedNodes} expanded copies, ${MODEL_LIMITS.maxTriangles} triangles, ${MODEL_LIMITS.maxMaterials} materials, rig depth ${MODEL_LIMITS.maxDepth}.
+  - Materials: tint:true marks colours a scene may recolour; variants give instances colour spread; finishes matte, satin, metal, glass, emissive, cloth; nightGlow lights a material at night.
+  - Animation channels move a part on its local axis as a pure function of time. Keyframes [{at,value}] run over normalized scene progress 0-1, multiply amplitude, hold at their endpoints and override the wave. Waves: sine, spin (deg/sec), pulse, bounce. alternate reverses the phase in mirrored or repeated copies. when: always, moving (while the element travels) or idle. animationAnchor hinges on a face of the primitive; animationPivot gives a numeric local hinge.
+  - A room shell (a floor with thin walls, open on at least one side) is filmed from inside, with the other elements of the shot placed within it.
+`.trim();

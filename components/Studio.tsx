@@ -7,6 +7,7 @@ import { ApiError, videos, type Video } from "@/lib/client/api";
 import { saveRender, type SaveProgress } from "@/lib/client/save";
 import type { Aspect } from "@/lib/schema/video";
 import { TOPIC_IDEAS } from "@/lib/content/topics";
+import { SITE } from "@/lib/content/site";
 import dynamic from "next/dynamic";
 import { StudioPreview } from "@/components/StudioPreview";
 const Player = dynamic(() => import("@/components/Player").then((m) => m.Player));
@@ -380,8 +381,8 @@ export function Studio({ initialPrompt = "" }: { initialPrompt?: string }) {
               {saveProgress ? "Bringing history to life…" : busy ? "Working on it…" : "Bring it to life →"}
             </button>
             <p className="hint">
-              Requests are checked to keep things respectful and historical. See our{" "}
-              <Link href="/content-policy">content policy</Link>.
+              Each account can make {SITE.dailyVideos} videos per day. Requests are checked to keep things respectful
+              and historical. See our <Link href="/content-policy">content policy</Link>.
             </p>
           </form>
 

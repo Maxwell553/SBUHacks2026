@@ -1,5 +1,5 @@
 /**
- * 2D layer drawn over every frame with the Polyhistor typefaces, in the
+ * 2D layer drawn over every frame with the PolyChronicle typefaces, in the
  * site's warm educational style: ivory cards with dark readable text, teal
  * and terracotta accents, soft faceted transitions and an end card.
  */

@@ -14,7 +14,7 @@ We aim to acknowledge reports within a few days and will keep you informed while
 
 ## Scope
 
-In scope: the Polyhistor web application, its API routes, authentication and session handling, media storage, the AI pipeline (including prompt injection that bypasses moderation), and the renderer's handling of generated data.
+In scope: the PolyChronicle web application, its API routes, authentication and session handling, media storage, the AI pipeline (including prompt injection that bypasses moderation), and the renderer's handling of generated data.
 
 Out of scope: denial-of-service volume testing, social engineering, and vulnerabilities in third-party services (Google Cloud, TigerData, Vercel). Report those to the vendor.
 

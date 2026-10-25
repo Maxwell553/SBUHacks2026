@@ -10,12 +10,13 @@ import * as THREE from "three";
 import type { Formation, Position, Scene, SceneElement, Settlement, VideoScript } from "@/lib/schema/video";
 import type { Placement } from "@/lib/schema/model";
 import { attachEnvironmentalFire } from "@/lib/lowpoly/scene-effects";
-import { makeShot } from "@/lib/lowpoly/camera";
+import { makeShot, type ShotSpec } from "@/lib/lowpoly/camera";
 import { framingBounds, groundPlacement, ModelLibrary, type ModelInstance } from "@/lib/lowpoly/compiler";
 import { clamp, easeInOut, lerp, makeRng, range, smooth, type Rng } from "@/lib/lowpoly/core";
 import { type Effect, makeExplosion, makeFire, makeSmoke } from "@/lib/lowpoly/effects";
 import { buildEnvironment, type Environment } from "@/lib/lowpoly/environment";
 import { buildGlobe, latLonToVec3 } from "@/lib/lowpoly/globe";
+import { resolveLayout, sweptCircles, type Body } from "@/lib/lowpoly/layout";
 import { drawOverlay, loadFonts, type OverlayLabel } from "@/lib/lowpoly/overlay";
 import { buildScatter } from "@/lib/lowpoly/scatter";
 import { contactShadowTexture, glowTexture } from "@/lib/lowpoly/textures";
@@ -165,9 +166,17 @@ interface Unit {
   shell: boolean;
   /** Stands in the water (a span or pier) instead of floating on it. */
   fixed: boolean;
+  /** Travel along fwd is held inside this range (m) so movers stop short of obstacles. */
+  travel: [number, number];
+  /** Footprint centre relative to the model origin, scaled and turned with the unit. */
+  centre: [number, number];
+  /** Effect-only stand-in: invisible, takes no space. */
+  ghost: boolean;
   extras: Effect[];
 }
 
+/** Objects this low (m) are ground cover others may stand on: rails, rugs, platforms. */
+const LOW_COVER = 0.6;
 /** Figures outside this height range (m) are treated as mis-scaled. */
 const FIGURE_HEIGHT: [number, number] = [1.0, 2.4];
 const FIGURE_NORMAL = 1.72;
@@ -823,6 +832,12 @@ export class PolyEngine {
           },
           shell,
           fixed: spans,
+          travel: [-Infinity, Infinity],
+          centre: [
+            (b.center.x * Math.cos(group.rotation.y) + b.center.z * Math.sin(group.rotation.y)) * s,
+            (-b.center.x * Math.sin(group.rotation.y) + b.center.z * Math.cos(group.rotation.y)) * s,
+          ],
+          ghost: effectOnly,
           extras: [],
         };
         if (e.motion === "burn" && fires < 10) {
@@ -865,11 +880,55 @@ export class PolyEngine {
       }
     });
 
+    // Footprints never overlap at rest, and nothing travels through anything
+    // else: movers shift lane or stop short. Room shells (actors stand inside
+    // them), spans (boats pass beneath, people cross), aircraft and ground
+    // cover low enough to stand on (rails, rugs, platforms) are exempt.
+    const solid = units.filter(
+      (u) => !u.shell && !u.fixed && !u.ghost && !u.takeoff && u.placement !== "air" && u.height > LOW_COVER,
+    );
+    const bodies: Body[] = solid.map((u) => {
+      const e = sc.elements[u.element];
+      const b = lib.bounds(e.model);
+      const s = u.group.scale.x;
+      const travel = u.speed * sc.duration * 0.5;
+      return {
+        x: u.base.x + u.centre[0],
+        z: u.base.z + u.centre[1],
+        heading: u.group.rotation.y,
+        hx: (b.size.x * s) / 2,
+        hz: (b.size.z * s) / 2,
+        priority: (!e.role || e.role === "subject" ? 30 : e.role === "foreground" ? 20 : 10) + Math.min(9, u.radius),
+        movable: true,
+        group: u.element,
+        ...(travel ? { motion: { dirX: u.fwd.x, dirZ: u.fwd.z, dStart: -travel, dEnd: travel } } : {}),
+      };
+    });
+    const owner = new Map(bodies.map((body, i) => [body, solid[i]]));
+    resolveLayout(bodies, {
+      margin: 0.12,
+      clamp: (body, x, z) => {
+        const u = owner.get(body)!;
+        if (room) return insideRoom(x, z, u.radius);
+        const wet = env.isWater(x - u.centre[0], z - u.centre[1]);
+        return (u.placement === "water") === wet || !env.hasWater ? [x, z] : [body.x, body.z];
+      },
+    });
+    bodies.forEach((body, i) => {
+      const u = solid[i];
+      u.base.x = body.x - u.centre[0];
+      u.base.z = body.z - u.centre[1];
+      if (body.motion)
+        u.travel = [Math.min(body.motion.dStart, body.motion.dEnd), Math.max(body.motion.dStart, body.motion.dEnd)];
+    });
+
     // Subject framing (rest positions at mid-scene).
     const subjects = units.filter(
       (u) => !u.shell && (!sc.elements[u.element].role || sc.elements[u.element].role === "subject"),
     );
     let framed = subjects.length ? subjects : units.filter((u) => !u.shell);
+    // A rail, platform or rug under the subject is ground, not what the shot is of.
+    if (framed.some((u) => u.height > LOW_COVER)) framed = framed.filter((u) => u.height > LOW_COVER);
     // A street of subject buildings is framed on its camera-nearest row and
     // allowed to recede, instead of being shrunk to fit the whole formation.
     if (immersive && framed.length >= 3 && framed.every((u) => architectural(sc.elements[u.element]))) {
@@ -959,6 +1018,9 @@ export class PolyEngine {
     const disposables: { dispose(): void }[] = [];
     // Long, thin units (bridges, walls, long sheds) keep out a chain of
     // circles along their length, not one circle the size of their length.
+    const sweeps: Circle[] = bodies.flatMap((body, i) =>
+      body.motion ? sweptCircles(body, 0.4).map((c) => ({ ...c, h: solid[i].height })) : [],
+    );
     const keepOut: Circle[] = units.flatMap((u) => {
       const long = Math.max(u.span.x, u.span.z),
         short = Math.max(0.5, Math.min(u.span.x, u.span.z));
@@ -970,9 +1032,74 @@ export class PolyEngine {
         return { x: u.base.x + (alongX ? t : 0), z: u.base.z + (alongX ? 0 : t), r: short * 0.6 + 0.3, h: u.height };
       });
     });
+    keepOut.push(...sweeps);
     const sceneModels = new Set(
       sc.elements.filter((e) => !isFrontage(e) && e.role !== "background").map((e) => e.model),
     );
+
+    const liveCentre = new THREE.Vector3().copy(groundAt).setY(lift0);
+    const actorCircles: Circle[] = units.map((u) => ({ x: u.base.x, z: u.base.z, r: u.radius, h: u.height }));
+    const actorLive = actorCircles.filter((_, i) => units[i].placement !== "air" && !units[i].shell);
+    // A whole-building definition has no authored detail target. Cropping its
+    // ground-level centre produces a blank wall; keep its silhouette readable.
+    const structuralWhole = framed.length > 0 && framed.every((u) => architectural(sc.elements[u.element]));
+    const shotSpec = (obstacles: Circle[]): ShotSpec => ({
+      shotSize: structuralWhole ? "wide" : sc.shotSize,
+      move: sc.camera,
+      immersive,
+      portrait,
+      index,
+      seed: this.script.seed,
+      focus: groundAt,
+      radius,
+      height: maxH,
+      restLift: lift0,
+      yaw: viewYaw,
+      viewAzimuth,
+      follow: () => liveCentre,
+      aerial: orbit,
+      corridor,
+      obstacles,
+      subjects: () => actorLive,
+      room: room
+        ? {
+            minX: room.rect.minX,
+            maxX: room.rect.maxX,
+            minZ: room.rect.minZ,
+            maxZ: room.rect.maxZ,
+            maxY: env.heightAt(room.x, room.z) + room.top - 0.35,
+          }
+        : null,
+      heightAt: floorAt,
+    });
+    // Where the camera will look from, before the set exists: dressing and
+    // tall scatter stay out of those sight lines, so a dense set never hides
+    // the subject. The final shot is then fitted against the finished set.
+    const eyes: THREE.Vector3[] = [];
+    if (!orbit && !room) {
+      const preview = makeShot(shotSpec([]));
+      const probe = new THREE.PerspectiveCamera(50, this.width / this.height, 0.3, 1400);
+      for (let k = 0; k <= 8; k++) {
+        preview.place(probe, (k / 8) * sc.duration, sc.duration);
+        eyes.push(probe.position.clone());
+      }
+    }
+    const aimY = groundAt.y + lift0 + maxH * 0.5;
+    const sight = (x: number, z: number, r: number, h: number) => {
+      const top = env.heightAt(x, z) + h;
+      for (const e of eyes) {
+        // Anything taller than the lens that crowds it fills the frame instead of framing it.
+        if (top > e.y && Math.hypot(x - e.x, z - e.z) < r + 2 + h * 0.4) return true;
+        const dx = groundAt.x - e.x,
+          dz = groundAt.z - e.z;
+        const t = ((x - e.x) * dx + (z - e.z) * dz) / Math.max(1e-6, dx * dx + dz * dz);
+        // Behind the lens, or at and beyond the subject, nothing hides it.
+        if (t <= 0 || t >= 0.95) continue;
+        const apart = Math.hypot(e.x + dx * t - x, e.z + dz * t - z);
+        if (apart < r + radius * 0.6 + 0.4 && top > lerp(e.y, aimY, t) - 0.3) return true;
+      }
+      return false;
+    };
     const dressing =
       corridor && scenery.length
         ? buildDressing({
@@ -987,6 +1114,7 @@ export class PolyEngine {
             corridor,
             terminus,
             keepOut,
+            sight,
             heightAt: env.heightAt,
             isWater: env.isWater,
           })
@@ -1044,13 +1172,14 @@ export class PolyEngine {
             isWater: env.isWater,
             trees: !this.script.models.some((m) => m.category === "nature"),
             settlement,
-            blocked: (x, z, r) =>
+            blocked: (x, z, r, h) =>
               (!!corridor &&
                 Math.abs(x - corridor.cx) < pathHalf + r &&
                 z < corridor.cz + corridor.front &&
                 z > corridor.cz - corridor.back - 30) ||
               keepOut.some((c) => Math.hypot(c.x - x, c.z - z) < c.r + r) ||
-              footprints.some((c) => Math.hypot(c.x - x, c.z - z) < c.r * 0.95 + r),
+              footprints.some((c) => Math.hypot(c.x - x, c.z - z) < c.r * 0.95 + r) ||
+              (h > 0.5 && sight(x, z, r, h)),
           });
     if (scatter) {
       scene.add(scatter.group);
@@ -1103,41 +1232,7 @@ export class PolyEngine {
     }
 
     // ------------------------------------------------------------ camera
-    const liveCentre = new THREE.Vector3();
-    const actorCircles: Circle[] = units.map((u) => ({ x: u.base.x, z: u.base.z, r: u.radius, h: u.height }));
-    const actorLive = actorCircles.filter((_, i) => units[i].placement !== "air" && !units[i].shell);
-    // A whole-building definition has no authored detail target. Cropping its
-    // ground-level centre produces a blank wall; keep its silhouette readable.
-    const structuralWhole = framed.length > 0 && framed.every((u) => architectural(sc.elements[u.element]));
-    const shot = makeShot({
-      shotSize: structuralWhole ? "wide" : sc.shotSize,
-      move: sc.camera,
-      immersive,
-      portrait,
-      index,
-      seed: this.script.seed,
-      focus: groundAt,
-      radius,
-      height: maxH,
-      restLift: lift0,
-      yaw: viewYaw,
-      viewAzimuth,
-      follow: () => liveCentre,
-      aerial: orbit,
-      corridor,
-      obstacles: footprints,
-      subjects: () => actorLive,
-      room: room
-        ? {
-            minX: room.rect.minX,
-            maxX: room.rect.maxX,
-            minZ: room.rect.minZ,
-            maxZ: room.rect.maxZ,
-            maxY: env.heightAt(room.x, room.z) + room.top - 0.35,
-          }
-        : null,
-      heightAt: floorAt,
-    });
+    const shot = makeShot(shotSpec(footprints));
     camera.fov = shot.fov;
     camera.near = shot.near;
     camera.updateProjectionMatrix();
@@ -1301,7 +1396,11 @@ export class PolyEngine {
         units.forEach((u, ui) => {
           const k = local / sc.duration;
           // Take-off: rest position at mid-scene, accelerating roll from behind it.
-          const d = u.takeoff ? u.takeoff.travel * (k * k - 0.25) : u.speed ? u.speed * (local - sc.duration * 0.5) : 0;
+          const d = u.takeoff
+            ? u.takeoff.travel * (k * k - 0.25)
+            : u.speed
+              ? clamp(u.speed * (local - sc.duration * 0.5), u.travel[0], u.travel[1])
+              : 0;
           const x = u.base.x + u.fwd.x * d,
             z = u.base.z + u.fwd.z * d;
           let y: number;

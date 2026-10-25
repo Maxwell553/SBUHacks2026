@@ -30,9 +30,7 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     ".builds/local/types/**/*.ts",
-    ".builds/local/dev/types/**/*.ts",
-    ".next-cinematic-contract-dev/types/**/*.ts",
-    ".next-cinematic-contract-dev/dev/types/**/*.ts"
+    ".builds/local/dev/types/**/*.ts"
   ],
-  "exclude": ["node_modules", "scripts", ".specimen", "tmp", ".builds/archive"]
+  "exclude": ["node_modules", "scripts", "tmp", ".builds/archive"]
 }

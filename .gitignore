@@ -3,8 +3,8 @@
 
 # Next.js build output (side builds go in .builds/<name> via NEXT_DIST_DIR)
 /.next/
+/.next-*/
 /.builds/
-/.next-verify/
 /out/
 next-env.d.ts
 *.tsbuildinfo
@@ -36,9 +36,3 @@ npm-debug.log*
 *.p12
 *.pfx
 *.sql.gz
-
-.next-polychronicle
-
-.next-hero-preview
-
-.next-*/

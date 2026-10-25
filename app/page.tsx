@@ -5,6 +5,7 @@ import { SHOWCASE_SCRIPT } from "@/lib/content/showcase";
 import { EXAMPLE_BIPLANE, EXAMPLE_COG_SHIP, EXAMPLE_FOOT_SOLDIER } from "@/lib/content/model-examples";
 import { getViewer } from "@/lib/server/viewer";
 import { TOPIC_IDEAS } from "@/lib/content/topics";
+import { SITE } from "@/lib/content/site";
 
 export default async function Home({ searchParams }: { searchParams: Promise<{ deleted?: string }> }) {
   const [user, { deleted }] = await Promise.all([getViewer(), searchParams]);
@@ -75,36 +76,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
         </Reveal>
       </section>
 
-      <section className="section tint" aria-labelledby="ideas">
-        <div className="container split">
-          <Reveal className="section-head">
-            <span className="eyebrow">Get inspired</span>
-            <h2 id="ideas" className="section-title">
-              What would you like to learn about?
-            </h2>
-            <p className="lead">
-              Pick a starting point or bring your own question — inventions, journeys of exploration, daily life, art
-              and scientific discoveries all work.
-            </p>
-          </Reveal>
-          <Reveal delay={0.15}>
-            <div className="topics">
-              {TOPIC_IDEAS.map((t) => (
-                <Link
-                  key={t}
-                  className="chip"
-                  href={`${start}?q=${encodeURIComponent(t)}`}
-                  style={{ textDecoration: "none", fontSize: 16, padding: "9px 16px" }}
-                >
-                  {t}
-                </Link>
-              ))}
-            </div>
-          </Reveal>
-        </div>
-      </section>
-
-      <section id="how" className="section" aria-labelledby="how-title">
+      <section id="how" className="section tint" aria-labelledby="how-title">
         <div className="container">
           <Reveal className="section-head">
             <span className="eyebrow">How it works</span>
@@ -141,7 +113,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
         </div>
       </section>
 
-      <section id="showcase" className="section tint" aria-labelledby="showcase-title">
+      <section id="showcase" className="section" aria-labelledby="showcase-title">
         <div className="container split" style={{ alignItems: "start" }}>
           <Reveal>
             <Player script={SHOWCASE_SCRIPT} aspect="landscape" autoPlay loop />
@@ -160,6 +132,35 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
               <li>Short captions keep to the key facts, dates and places.</li>
               <li>Every real video comes with the list of sources it used.</li>
             </ul>
+          </Reveal>
+        </div>
+      </section>
+
+      <section className="section tint" aria-labelledby="ideas">
+        <div className="container split">
+          <Reveal className="section-head">
+            <span className="eyebrow">Get inspired</span>
+            <h2 id="ideas" className="section-title">
+              What would you like to learn about?
+            </h2>
+            <p className="lead">
+              Pick a starting point or bring your own question — inventions, journeys of exploration, daily life, art
+              and scientific discoveries all work.
+            </p>
+          </Reveal>
+          <Reveal delay={0.15}>
+            <div className="topics">
+              {TOPIC_IDEAS.map((t) => (
+                <Link
+                  key={t}
+                  className="chip"
+                  href={`${start}?q=${encodeURIComponent(t)}`}
+                  style={{ textDecoration: "none", fontSize: 16, padding: "9px 16px" }}
+                >
+                  {t}
+                </Link>
+              ))}
+            </div>
           </Reveal>
         </div>
       </section>
@@ -187,14 +188,14 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
               {
                 def: EXAMPLE_COG_SHIP,
                 tint: "#f1e7d2",
-                moving: false,
+                moving: true,
                 title: "A medieval cog",
                 body: "A single square sail, raised decks and a pennant in the wind.",
               },
               {
                 def: EXAMPLE_BIPLANE,
                 tint: "#c99a3c",
-                moving: false,
+                moving: true,
                 title: "An early biplane",
                 body: "Two wings, wooden struts and a spinning propeller.",
               },
@@ -249,7 +250,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
         </div>
       </section>
 
-      <section className="section tint" aria-labelledby="cta-title">
+      <section className="section" aria-labelledby="cta-title">
         <div className="container" style={{ textAlign: "center", display: "grid", gap: 22, justifyItems: "center" }}>
           <Reveal>
             <h2 id="cta-title" className="section-title">
@@ -258,7 +259,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
           </Reveal>
           <Reveal delay={0.1}>
             <p className="lead" style={{ margin: "0 auto" }}>
-              Create a free account and make your first video in a couple of minutes.
+              Create a free account and make your first video in a couple of minutes. Each account can make{" "}
+              {SITE.dailyVideos} videos per day.
             </p>
           </Reveal>
           <Reveal delay={0.2}>

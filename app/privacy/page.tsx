@@ -230,9 +230,10 @@ export default function PrivacyPage() {
 
       <h2 id="cookies">7. Cookies</h2>
       <p>
-        We use a single essential cookie, <code>polyhistor_session</code>, to keep you signed in. It is HTTP-only, sent
-        only over secure connections in production, restricted to our site, and expires after 30 days or when you sign
-        out. We don’t use advertising, analytics or third-party tracking cookies, so there is nothing to opt out of.
+        We use a single essential cookie, <code>polychronicle_session</code>, to keep you signed in. It is HTTP-only,
+        sent only over secure connections in production, restricted to our site, and expires after 30 days or when you
+        sign out. We don’t use advertising, analytics or third-party tracking cookies, so there is nothing to opt out
+        of.
       </p>
 
       <h2 id="retention">8. How long we keep it</h2>

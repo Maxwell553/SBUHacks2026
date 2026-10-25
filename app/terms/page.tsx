@@ -193,10 +193,10 @@ export default function TermsPage() {
 
       <h2 id="limits">11. Usage limits and changes</h2>
       <p>
-        To keep the Service available to everyone we apply limits, which currently include a daily number of new videos
-        per account, a maximum library size and storage limits for saved files. We may change limits at any time. We may
-        also change, suspend or discontinue the Service or any part of it; where reasonable we will give notice and an
-        opportunity to download your videos.
+        To keep the Service available to everyone we apply limits, which currently include {SITE.dailyVideos} new videos
+        per account per day, a maximum library size and storage limits for saved files. We may change limits at any
+        time. We may also change, suspend or discontinue the Service or any part of it; where reasonable we will give
+        notice and an opportunity to download your videos.
       </p>
 
       <h2 id="termination">12. Ending your use</h2>

@@ -5,7 +5,7 @@ import { z } from "zod";
 import { query } from "@/lib/server/db";
 import { ApiError } from "@/lib/server/http";
 const scrypt = promisify(scryptCallback);
-const cookieName = "polyhistor_session";
+const cookieName = "polychronicle_session";
 export type User = {
   id: string;
   name: string;

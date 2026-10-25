@@ -1,6 +1,6 @@
 # Deployment and operations
 
-Polyhistor deploys as one Next.js project. Vercel works out of the box: no separate backend host, no persistent disk, and no background workers.
+PolyChronicle deploys as one Next.js project. Vercel works out of the box: no separate backend host, no persistent disk, and no background workers.
 
 ## Environment variables
 
@@ -10,11 +10,14 @@ Copy `.env.example` to `.env.local` for development. Set the same values in your
 | --------------------------- | --------------- | ------------------------------------------------------------------------------------------------------------ |
 | `GEMINI_API_KEY`            | yes             | Google Gemini key (Vertex AI Express key by default).                                                        |
 | `GEMINI_PROVIDER`           | no              | `vertex` (default) or `developer` for Google AI Studio keys.                                                 |
-| `GEMINI_CREATIVE_MODEL`     | no              | Model for model planning, geometry and storyboards. Default `gemini-3.1-pro-preview`.                        |
-| `GEMINI_FAST_MODEL`         | no              | Model for research, moderation and caption repairs. Default `gemini-3.8-flash`.                              |
+| `GEMINI_PROJECT`            | for Argon       | Google Cloud project (id or number) of the Vertex key. Without it Vertex Express only reaches `us-central1`. |
+| `GEMINI_LOCATION`           | no              | Vertex location used with `GEMINI_PROJECT`. Default `global` (`gemini-4-argon` is served from global/us/eu). |
+| `GEMINI_CREATIVE_MODEL`     | no              | Model that creates the film: model plan, geometry and storyboard. Default `gemini-4-argon`.                  |
+| `GEMINI_FAST_MODEL`         | no              | Model for research and moderation, and the fallback for a timed-out build. Default `gemini-3.8-flash`.       |
 | `GEMINI_PLANNER_MODEL`      | no              | Model for the model plan. Defaults to `GEMINI_CREATIVE_MODEL`.                                               |
-| `GEMINI_BUILDER_MODEL`      | no              | Model that builds each 3D geometry definition. See [the builder benchmark](BUILDER_BENCHMARK.md).            |
-| `GEMINI_MODEL`              | no              | Fallback for either of the above when unset.                                                                 |
+| `GEMINI_BUILDER_MODEL`      | no              | Model that builds each 3D geometry definition. Defaults to `GEMINI_CREATIVE_MODEL`.                          |
+| `GEMINI_ARTICULATED_MODEL`  | no              | Builder for articulated models (people, animals). Defaults to `GEMINI_BUILDER_MODEL`.                        |
+| `GEMINI_MODEL`              | no              | Fallback for `GEMINI_FAST_MODEL` when unset.                                                                 |
 | `DATABASE_URL`              | yes             | PostgreSQL URL for the **runtime** role (DML only). `sslmode` flags are stripped; TLS is configured in code. |
 | `DATABASE_CA_CERT`          | for TigerData   | Pinned CA certificate as one line with literal `\n` separators. Certificate verification stays on.           |
 | `MIGRATION_DATABASE_URL`    | migrations only | Admin URL used by `npm run db:migrate`. **Never** set this in the production runtime.                        |
@@ -34,13 +37,13 @@ Check the AI configuration with `npm run gemini:check` (uses billable API calls)
    MIGRATION_DATABASE_URL=… DATABASE_CA_CERT=… npm run db:migrate
    ```
    `db/schema.sql` is idempotent and never drops data.
-4. Deploy, then verify sign-up, sign-in, one generation, the saved GIF in the library, download, and sign-out on the deployed URL.
+4. Deploy, then verify sign-up, sign-in, one generation, the saved HD video in the library, download, and sign-out on the deployed URL.
 
-The generation route allows up to 300 seconds (`maxDuration`), and the provider pipeline is bounded at 260 seconds. Media is uploaded in 1 MiB chunks and streamed back from PostgreSQL with HTTP Range support, so nothing relies on the function filesystem.
+The generation route allows up to 300 seconds (`maxDuration`), and the provider pipeline is bounded at 260 seconds. The example films in `references/` are read at runtime, so `next.config.ts` traces them into the `/api/videos` function; files that would push the request past a 14 MiB inline budget (measured after base64 encoding) are skipped. Media is uploaded in 1 MiB chunks and streamed back from PostgreSQL with HTTP Range support, so nothing relies on the function filesystem.
 
 ## Database
 
-- **Roles.** The runtime uses a limited role (`polyhistor_app`: table DML only). Migrations use a separate admin role. Keep the admin URL out of the runtime environment.
+- **Roles.** The runtime uses a limited role (`polyhistor_app`: table DML only; the role, advisory-lock keys and connection `application_name` keep the project's earlier name, Polyhistor, so existing databases keep working). Migrations use a separate admin role. Keep the admin URL out of the runtime environment.
 - **TLS.** Free-tier TigerData uses a private CA, which is pinned through `DATABASE_CA_CERT`. Rotate it using TigerData's connection guidance before it expires.
 - **Pooling.** Each server instance keeps a small `pg` pool (max 3) attached with `@vercel/functions` so connections close cleanly between invocations.
 
@@ -48,6 +51,7 @@ The generation route allows up to 300 seconds (`maxDuration`), and the provider 
 
 | Item                                           | Limit or retention                          |
 | ---------------------------------------------- | ------------------------------------------- |
+| New videos                                     | 10 per account per day (`SITE.dailyVideos`) |
 | Rendered file                                  | 32 MiB each                                 |
 | Media per account                              | 96 MiB                                      |
 | Global media reservation                       | 700 MiB (headroom within a 1 GiB database)  |
@@ -87,7 +91,7 @@ Storing media chunks in PostgreSQL suits a demo or hackathon. Before public scal
 
 The repository includes `.github/workflows/ci.yml`: Node 24, locked dependency install, type/lint/format/unit checks, secret scan, production dependency audit and a build. CI needs no database or Gemini secrets and never deploys or migrates. Enable the `verify` job as a required branch check in GitHub when ready.
 
-Run `npm run release:check` with the intended production runtime variables before deployment. It rejects missing contact/operator settings, invalid or conflicting HTTPS origins, public credential variables and migration credentials in the runtime. Local `.env.local` intentionally contains development/migration settings and can fail this check. To check exported target variables without loading local settings, run `node scripts/check-production-config.mjs`. This validates structure, not ownership of the contact address or availability of external services.
+Run `npm run release:check` with the intended production runtime variables before deployment. It rejects missing contact/operator settings, invalid or conflicting HTTPS origins, public credential variables and migration credentials in the runtime. Local `.env.local` intentionally contains development/migration settings and can fail this check. To check exported target variables without loading local settings, run `node scripts/checks/check-production-config.mjs`. This validates structure, not ownership of the contact address or availability of external services.
 
 Keep the current placeholders during development. Before opening public registration, configure a real support contact, decide how to handle email verification and account recovery, verify the target Gemini models/quotas and hosting function-duration limits, and configure database backups with a tested restore procedure. Media currently has a small shared storage budget; public scale needs private object storage.
 

@@ -867,7 +867,7 @@ export function buildEnvironment(spec: EnvSpec, seed: number, o: EnvOptions = {}
   // Clouds.
   const cloudCount = space
     ? 0
-    : ({ clear: 5, cloudy: 13, rain: 16, storm: 18, fog: 3, dust: 3, smoke: 6, snow: 12 } as Record<Weather, number>)[
+    : ({ clear: 14, cloudy: 30, rain: 34, storm: 36, fog: 6, dust: 8, smoke: 14, snow: 28 } as Record<Weather, number>)[
         spec.weather
       ];
   const cloudMat = new THREE.MeshStandardMaterial({
@@ -876,24 +876,34 @@ export function buildEnvironment(spec: EnvSpec, seed: number, o: EnvOptions = {}
     roughness: 1,
     transparent: true,
     opacity: 0.95,
+    // Clouds are sky, not scenery: distance haze would erase the band.
+    fog: spec.weather === "fog",
   });
   const cloudGeo = new THREE.IcosahedronGeometry(1, 0);
   disposables.push(cloudMat, cloudGeo);
-  const clouds: { g: THREE.Group; x0: number; speed: number }[] = [];
+  // A distant band all around the place, so no camera ends up beneath one.
+  const clouds: { g: THREE.Group; a0: number; r: number; w: number }[] = [];
   for (let i = 0; i < cloudCount; i++) {
     const g = new THREE.Group();
-    const puffs = 3 + Math.floor(rng() * 3);
+    const puffs = 3 + Math.floor(rng() * 4);
+    const size = range(rng, 7, 16);
     for (let k = 0; k < puffs; k++) {
       const m = new THREE.Mesh(cloudGeo, cloudMat);
-      const s = range(rng, 3, 6);
-      m.scale.set(s * 1.3, s * 0.8, s);
-      m.position.set(k * 4 - puffs * 2 + range(rng, -1, 1), range(rng, -1, 1.5), range(rng, -1.5, 1.5));
-      m.castShadow = true;
+      const s = size * range(rng, 0.6, 1.1);
+      m.scale.set(s * 1.4, s * 0.62, s);
+      m.position.set(
+        (k - (puffs - 1) / 2) * size * 1.25 + range(rng, -2, 2),
+        range(rng, -1, 2) * size * 0.25,
+        range(rng, -1, 1) * size * 0.4,
+      );
       g.add(m);
     }
-    g.position.set(F.x + range(rng, -120, 120), range(rng, 34, 56), F.z + range(rng, -160, 40));
+    const a0 = rng() * Math.PI * 2,
+      r = range(rng, 150, 380);
+    g.position.set(F.x + Math.cos(a0) * r, range(rng, 45, 115) + r * 0.08, F.z + Math.sin(a0) * r);
+    g.lookAt(F.x, g.position.y, F.z);
     group.add(g);
-    clouds.push({ g, x0: g.position.x - F.x, speed: range(rng, 0.6, 1.6) });
+    clouds.push({ g, a0, r, w: range(rng, 0.6, 1.6) / r });
   }
 
   // ---------------------------------------------------------- weather
@@ -994,7 +1004,11 @@ export function buildEnvironment(spec: EnvSpec, seed: number, o: EnvOptions = {}
     update(t) {
       waterUpdate?.(t);
       weatherUpdate?.(t);
-      for (const c of clouds) c.g.position.x = F.x + ((((c.x0 + t * c.speed + 140) % 280) + 280) % 280) - 140;
+      for (const c of clouds) {
+        const a = c.a0 + t * c.w;
+        c.g.position.x = F.x + Math.cos(a) * c.r;
+        c.g.position.z = F.z + Math.sin(a) * c.r;
+      }
       const st = { time: t, progress: 0, moving: false, night, phase: 0 };
       for (const fx of effects) fx.update(st);
       const f = flash(t);

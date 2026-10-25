@@ -1,4 +1,4 @@
--- Polyhistor database schema (PostgreSQL / TigerData).
+-- PolyChronicle database schema (PostgreSQL / TigerData).
 -- Idempotent: safe to re-run with `npm run db:migrate`. Never drops data.
 
 -- Accounts. Passwords are salted scrypt hashes; terms acceptance is versioned.

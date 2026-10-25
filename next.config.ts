@@ -14,6 +14,8 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   serverExternalPackages: ["pg"],
+  // Read at runtime by lib/server/references.ts, so the tracer cannot see them.
+  outputFileTracingIncludes: { "/api/videos": ["./references/**/*"] },
   async headers() {
     return [
       { source: "/:path*", headers: securityHeaders },

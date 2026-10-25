@@ -7,6 +7,26 @@ import { ModelLibrary } from "@/lib/lowpoly/compiler";
 import type { ModelDefinition } from "@/lib/schema/model";
 import { useInView } from "@/components/three/useInView";
 
+const VIEW = new THREE.Vector3(0.6, 0.35, 1).normalize();
+const SCREEN_RIGHT = new THREE.Vector3(0, 1, 0).cross(VIEW).normalize();
+const scratch = new THREE.Vector3();
+const TRAVEL_SPEED = 0.7;
+
+/**
+ * Water mark that slides from `from` to `to` along the heading. Ripples swell and fade mid-way;
+ * wake foam is fullest where it leaves the bow and thins out towards the stern.
+ */
+type Streak = {
+  m: THREE.Mesh;
+  from: number;
+  to: number;
+  lateral: number;
+  spread: number;
+  offset: number;
+  size: number;
+  wake: boolean;
+};
+
 function Turntable({
   def,
   tint,
@@ -34,22 +54,41 @@ function Turntable({
     subject.add(inst.object);
     subject.scale.setScalar(scale);
     subject.rotation.y = def.placement === "water" ? -0.55 : def.placement === "air" ? -0.45 : -0.65;
+    // Pitch and roll about the vessel's own axes, after its heading.
+    subject.rotation.order = "YXZ";
     const subjectHeight = extent.y * scale;
     const floor = -subjectHeight * 0.45;
     subject.position.y = floor + (def.placement === "air" ? 0.4 : def.placement === "water" ? -0.12 : 0);
     root.add(subject);
     const resources: { dispose(): void }[] = [];
-    const mesh = (geometry: THREE.BufferGeometry, color: string, position: [number, number, number]) => {
+    const mesh = (
+      geometry: THREE.BufferGeometry,
+      color: string,
+      position: [number, number, number],
+      parent: THREE.Object3D = root,
+    ) => {
       const mat = new THREE.MeshStandardMaterial({ color, flatShading: true, roughness: 0.8 });
       const m = new THREE.Mesh(geometry, mat);
       m.position.set(...position);
       m.receiveShadow = true;
       m.castShadow = true;
       resources.push(geometry, mat);
-      root.add(m);
+      parent.add(m);
       return m;
     };
     const radius = Math.max(1.3, Math.hypot(extent.x, extent.z) * scale * 0.5 + 0.35);
+    const streaks: Streak[] = [];
+    const clouds: { g: THREE.Group; base: THREE.Vector3; speed: number }[] = [];
+    const cloud = (x: number, y: number, z: number, speed: number) => {
+      const g = new THREE.Group();
+      g.position.set(x, y, z);
+      root.add(g);
+      for (let i = 0; i < 3; i++) {
+        const puff = mesh(new THREE.IcosahedronGeometry(0.35, 1), "#fffdf6", [i * 0.3, i === 1 ? 0.12 : 0, 0], g);
+        puff.scale.set(1.1, 0.6, 0.7);
+      }
+      clouds.push({ g, base: g.position.clone(), speed });
+    };
     if (def.placement !== "air") {
       mesh(new THREE.CylinderGeometry(radius, radius, 0.18, 64), def.placement === "water" ? "#358e9c" : "#8c9b74", [
         0,
@@ -57,36 +96,76 @@ function Turntable({
         0,
       ]);
       mesh(new THREE.CylinderGeometry(radius * 1.01, radius * 0.97, 0.16, 64), "#c7b695", [0, floor - 0.26, 0]);
+    }
+    if (def.placement === "water") {
+      // Streaks live in the ship's heading frame: +x points at the bow, z is abeam.
+      const water = new THREE.Group();
+      water.rotation.y = subject.rotation.y;
+      root.add(water);
+      const streak = (s: Omit<Streak, "m">, color: string) => {
+        const m = mesh(new THREE.IcosahedronGeometry(0.12, 0), color, [0, floor + 0.025, 0], water);
+        m.rotation.y = Math.atan(s.spread);
+        streaks.push({ m, ...s });
+      };
+      for (let i = 0; i < 18; i++) {
+        const lateral = radius * (-0.82 + (1.64 * (((i * 7) % 18) + 0.5)) / 18);
+        const half = Math.sqrt(radius * radius - lateral * lateral) * 0.92;
+        streak(
+          { from: half, to: -half, lateral, spread: 0, offset: (i * 0.618) % 1, size: 2.4, wake: false },
+          "#b7d9d7",
+        );
+      }
+      const length = extent.x * scale;
+      const beam = extent.z * scale * 0.5;
+      for (const side of [-1, 1]) {
+        for (let i = 0; i < 5; i++) {
+          streak(
+            {
+              from: length * 0.38,
+              to: -length * 0.5,
+              lateral: side * beam * 0.55,
+              spread: side * 0.16,
+              offset: i / 5,
+              size: 2.2,
+              wake: true,
+            },
+            "#f4faf7",
+          );
+        }
+      }
+    } else if (def.placement === "ground") {
       for (let i = 0; i < 16; i++) {
         const angle = (i / 16) * Math.PI * 2;
         const r = radius * (0.78 + (i % 3) * 0.055);
-        const detail = mesh(new THREE.IcosahedronGeometry(0.12, 0), def.placement === "water" ? "#b7d9d7" : "#d5c8a7", [
+        const detail = mesh(new THREE.IcosahedronGeometry(0.12, 0), "#d5c8a7", [
           Math.sin(angle) * r,
           floor + 0.025,
           Math.cos(angle) * r,
         ]);
-        detail.scale.set(def.placement === "water" ? 2.4 : 1, def.placement === "water" ? 0.12 : 0.6, 0.5);
+        detail.scale.set(1, 0.6, 0.5);
         detail.rotation.y = -angle;
       }
     } else {
-      // Clouds remain behind the wings, never scattered across the silhouette.
-      for (const [x, y, z] of [
-        [-1.7, 1.4, -2.4],
-        [1.9, 0.9, -2.8],
-        [-1.5, -0.8, -2.2],
-      ]) {
-        for (let i = 0; i < 3; i++) {
-          const cloud = mesh(new THREE.IcosahedronGeometry(0.35, 1), "#fffdf6", [
-            x + i * 0.3,
-            y + (i === 1 ? 0.12 : 0),
-            z,
-          ]);
-          cloud.scale.set(1.1, 0.6, 0.7);
-        }
-      }
+      // Clouds stay behind the wings and drift past at a constant depth from the camera. Slightly
+      // different speeds keep them from travelling in lockstep.
+      cloud(-1.7, 1.4, -2.4, 1.4);
+      cloud(1.9, 0.9, -2.8, 1.25);
+      cloud(-1.5, -0.8, -2.2, 1.1);
     }
     const fullBounds = new THREE.Box3().setFromObject(root);
-    return { lib, inst, root, subject, baseY: subject.position.y, resources, bounds: fullBounds };
+    // Framing ignores this one so the opening composition stays the same; it fills the gap in the drift.
+    if (def.placement === "air") cloud(-4.2, -1.1, -2.6, 1.2);
+    return {
+      lib,
+      inst,
+      root,
+      subject,
+      baseY: subject.position.y,
+      streaks,
+      clouds,
+      resources,
+      bounds: fullBounds,
+    };
   }, [def, tint]);
   useEffect(() => {
     const cam = camera as THREE.PerspectiveCamera;
@@ -96,7 +175,7 @@ function Turntable({
       Math.max(extent.y / 0.78, extent.x / (size.width / size.height) / 0.84) /
         (2 * Math.tan(THREE.MathUtils.degToRad(cam.fov / 2))) +
       extent.z * 0.2;
-    cam.position.copy(center).add(new THREE.Vector3(0.6, 0.35, 1).normalize().multiplyScalar(distance));
+    cam.position.copy(center).addScaledVector(VIEW, distance);
     cam.lookAt(center);
     cam.updateProjectionMatrix();
   }, [built, camera, size.width, size.height]);
@@ -110,14 +189,31 @@ function Turntable({
   );
   useFrame((state) => {
     const t = still ? 0 : state.clock.elapsedTime;
+    const travel = moving ? t * TRAVEL_SPEED : 0;
     built.inst.update({ time: t, progress: 0, moving: moving && !still, night: false, phase: 0 });
-    // Keep a readable three-quarter view; animate the subject instead of spinning the display.
+    // Keep a readable three-quarter view; animate the subject and its surroundings instead of spinning the display.
     if (def.placement === "water") {
-      built.subject.position.setY(built.baseY + Math.sin(t * 1.2) * 0.025);
-      built.subject.rotation.set(0, built.subject.rotation.y, Math.sin(t * 0.9) * 0.015);
+      built.subject.position.setY(built.baseY + Math.sin(t * 1.1) * 0.04);
+      built.subject.rotation.set(Math.sin(t * 0.8) * 0.035, built.subject.rotation.y, Math.sin(t * 1.1 + 0.6) * 0.022);
+      for (const s of built.streaks) {
+        const span = s.from - s.to;
+        const p = (((s.offset + travel / span) % 1) + 1) % 1;
+        const fade = Math.max(s.wake ? Math.min(1, p * 12) * (1 - p) : Math.sin(Math.PI * p), 0.001);
+        s.m.position.set(s.from - p * span, s.m.position.y, s.lateral + s.spread * p * span);
+        s.m.scale.set(s.size * fade, 0.12, 0.5 * fade);
+      }
     } else if (def.placement === "air") {
-      built.subject.position.setY(built.baseY + Math.sin(t * 0.8) * 0.06);
-      built.subject.rotation.set(Math.sin(t * 0.6) * 0.035, built.subject.rotation.y, 0);
+      built.subject.position.setY(built.baseY + Math.sin(t * 0.8) * 0.07);
+      built.subject.rotation.set(Math.sin(t * 0.55) * 0.07, built.subject.rotation.y, Math.sin(t * 0.9 + 1) * 0.03);
+      // Wrap each cloud just outside the visible width at its own depth, so it never pops in view.
+      const cam = state.camera as THREE.PerspectiveCamera;
+      const halfTan = Math.tan(THREE.MathUtils.degToRad(cam.fov / 2)) * cam.aspect;
+      for (const c of built.clouds) {
+        const half = scratch.copy(cam.position).sub(c.base).dot(VIEW) * halfTan + 1;
+        const start = scratch.copy(c.base).sub(cam.position).dot(SCREEN_RIGHT);
+        const across = ((((start + half - travel * c.speed) % (2 * half)) + 2 * half) % (2 * half)) - half;
+        c.g.position.copy(c.base).addScaledVector(SCREEN_RIGHT, across - start);
+      }
     }
   });
   return <primitive object={built.root} />;

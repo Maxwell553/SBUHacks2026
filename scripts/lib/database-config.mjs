@@ -1,4 +1,4 @@
-/** Shared PostgreSQL TLS settings for Polyhistor's provisioned TigerData service.
+/** Shared PostgreSQL TLS settings for PolyChronicle's provisioned TigerData service.
  * DATABASE_URL is server-only. DATABASE_CA_CERT is the pinned free-tier CA PEM,
  * stored as a single env value with literal \\n sequences.
  * Never pass sslmode=require alongside a pg ssl object: pg's URL parser may

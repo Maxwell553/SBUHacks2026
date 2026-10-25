@@ -60,12 +60,19 @@ export function requestKey(request: Request) {
     : "localhost";
   return createHash("sha256").update(ip).digest("hex");
 }
-export async function limit(key: string, maximum: number, seconds: number) {
+export async function limit(
+  key: string,
+  maximum: number,
+  seconds: number,
+  message?: (retryInSeconds: number) => string,
+) {
   const { rows } = await query(
     `INSERT INTO ph_rate_limits(key,count,reset_at) VALUES($1,1,now()+$2*interval '1 second')
  ON CONFLICT(key) DO UPDATE SET count=CASE WHEN ph_rate_limits.reset_at<=now() THEN 1 ELSE ph_rate_limits.count+1 END,
- reset_at=CASE WHEN ph_rate_limits.reset_at<=now() THEN now()+$2*interval '1 second' ELSE ph_rate_limits.reset_at END RETURNING count`,
+ reset_at=CASE WHEN ph_rate_limits.reset_at<=now() THEN now()+$2*interval '1 second' ELSE ph_rate_limits.reset_at END
+ RETURNING count, ceil(extract(epoch FROM reset_at-now()))::int AS retry`,
     [key, seconds],
   );
-  if (rows[0].count > maximum) throw new ApiError(429, "Too many requests. Please try again later.");
+  if (rows[0].count > maximum)
+    throw new ApiError(429, message ? message(rows[0].retry) : "Too many requests. Please try again later.");
 }

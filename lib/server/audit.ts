@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { query } from "@/lib/server/db";
+import { fastModel } from "@/lib/server/models";
 
 export type ModerationStage = "input" | "output";
 export type ModerationSource = "keyword" | "classifier" | "provider";
@@ -51,7 +52,7 @@ export async function recordModeration(ctx: AuditContext, verdict: ModerationVer
     source: verdict.source,
     reason: clean(verdict.reason, 300),
     ...(verdict.rule ? { rule: verdict.rule } : {}),
-    ...(verdict.source !== "keyword" ? { model: process.env.GEMINI_MODEL || "gemini-3.5-flash" } : {}),
+    ...(verdict.source !== "keyword" ? { model: fastModel() } : {}),
     textSha256: createHash("sha256").update(text).digest("hex"),
     textChars: text.length,
   };

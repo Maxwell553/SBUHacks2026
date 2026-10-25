@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for helping improve Polyhistor. This guide covers the local workflow and the conventions the codebase follows.
+Thanks for helping improve PolyChronicle. This guide covers the local workflow and the conventions the codebase follows.
 
 ## Setup
 
@@ -35,7 +35,9 @@ If you change the pipeline, the database or the safety code, also run `npm run t
   - `lib/client/` is browser-only helpers.
   - `lib/lowpoly/` and `lib/render/` are the renderer. Keep them deterministic: no `Math.random()` or wall-clock time in frame code; use the seeded RNG in `lib/lowpoly/core.ts`.
   - `lib/content/` holds copy and static demo content.
-- **No hard-coded model catalogue.** Generated videos must use per-request `ModelDefinition`s. To add a capability, extend the primitive vocabulary or the modelling skills, not a named model.
+  - `references/` holds the example films attached to every creative Gemini request. The prompts describe only the data format, accuracy and safety, so the look of generated films is changed here, not in prompt text.
+  - `scripts/` holds Node CLI scripts, grouped as `assets/` (generators), `bench/`, `checks/`, `db/` and `tests/`. Add a new unit check to `scripts/tests/` and to the `test:unit` script in `package.json`.
+- **No hard-coded model catalogue.** Generated videos must use per-request `ModelDefinition`s. To add a capability, extend the primitive vocabulary and `MODEL_FORMAT_GUIDE` in `lib/schema/model.ts`, not a named model.
 - **Never execute generated content.** Models and scripts are data, validated against hard limits.
 - **User-facing copy** follows [docs/DESIGN.md](docs/DESIGN.md): friendly, plain language, no provider or implementation jargon in the main flows, and honest about uncertainty.
 - **Accessibility.** Visible labels, keyboard focus states, sufficient contrast, and reduced-motion support for every animation, including WebGL loops.
@@ -43,10 +45,10 @@ If you change the pipeline, the database or the safety code, also run `npm run t
 
 ## Generated assets
 
-| Asset                                         | Source                                                         | Regenerate with           |
-| --------------------------------------------- | -------------------------------------------------------------- | ------------------------- |
-| `public/fonts/*.otf`, `lib/typography/*.json` | `scripts/build-fonts.mjs`                                      | `npm run assets:fonts`    |
-| `lib/lowpoly/landmask.ts`                     | `scripts/build-landmask.mjs` (Natural Earth via `world-atlas`) | `npm run assets:landmask` |
+| Asset                                         | Source                                                                | Regenerate with           |
+| --------------------------------------------- | --------------------------------------------------------------------- | ------------------------- |
+| `public/fonts/*.otf`, `lib/typography/*.json` | `scripts/assets/build-fonts.mjs`                                      | `npm run assets:fonts`    |
+| `lib/lowpoly/landmask.ts`                     | `scripts/assets/build-landmask.mjs` (Natural Earth via `world-atlas`) | `npm run assets:landmask` |
 
 Commit regenerated files together with the script change that produced them.
 

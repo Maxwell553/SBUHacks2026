@@ -5,6 +5,7 @@ import { query, transaction } from "@/lib/server/db";
 import { body, sameOrigin, limit, json, failure, ApiError } from "@/lib/server/http";
 import { videoResponse } from "@/lib/server/videos";
 import { moderate, researchEvent, writeScript } from "@/lib/server/gemini";
+import { SITE } from "@/lib/content/site";
 export const runtime = "nodejs";
 export const maxDuration = 300;
 const input = z.object({
@@ -36,7 +37,12 @@ export async function POST(request: Request) {
     const parsed = input.safeParse(await body(request));
     if (!parsed.success)
       throw new ApiError(400, "Describe a historical event in 8–2000 characters and choose 20–60 seconds.");
-    await limit("generate:" + user.id, 10, 86400);
+    await limit("generate:" + user.id, SITE.dailyVideos, 86400, (wait) => {
+      const hours = Math.round(wait / 3600);
+      const minutes = Math.max(1, Math.round(wait / 60));
+      const when = hours >= 1 ? `${hours} hour${hours > 1 ? "s" : ""}` : `${minutes} minute${minutes > 1 ? "s" : ""}`;
+      return `Each account can make ${SITE.dailyVideos} videos per day, and you’ve reached today’s limit. You can make another in about ${when}.`;
+    });
     const { prompt, duration, aspect } = parsed.data;
     id = await transaction(async (db) => {
       await db.query("SELECT pg_advisory_xact_lock(hashtext($1))", [user.id]);

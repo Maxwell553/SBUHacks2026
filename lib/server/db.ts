@@ -1,7 +1,7 @@
 import { attachDatabasePool } from "@vercel/functions";
 import pg, { type PoolClient, type QueryResultRow } from "pg";
 
-const globalDb = globalThis as unknown as { polyhistorPool?: pg.Pool };
+const globalDb = globalThis as unknown as { polychroniclePool?: pg.Pool };
 function makePool() {
   const raw = process.env.DATABASE_URL;
   if (!raw) throw new Error("Database configuration is missing");
@@ -19,7 +19,7 @@ function makePool() {
           rejectUnauthorized: true,
           ...(process.env.DATABASE_CA_CERT ? { ca: process.env.DATABASE_CA_CERT.replace(/\\n/g, "\n") } : {}),
         },
-    application_name: "polyhistor",
+    application_name: "polychronicle",
   });
   databasePool.on("error", (error) => {
     // Idle sockets may close during TigerData maintenance. pg removes them;
@@ -30,7 +30,7 @@ function makePool() {
   return databasePool;
 }
 export function pool() {
-  return (globalDb.polyhistorPool ??= makePool());
+  return (globalDb.polychroniclePool ??= makePool());
 }
 export async function query<T extends QueryResultRow = QueryResultRow>(sql: string, values: unknown[] = []) {
   return pool().query<T>(sql, values);

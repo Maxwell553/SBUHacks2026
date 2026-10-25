@@ -1,3 +1,4 @@
+import { LandmarkReel } from "@/components/LandmarkReel";
 import type { Aspect } from "@/lib/schema/video";
 
 /** A lightweight, responsive storyboard preview; no renderer needed before creation. */
@@ -10,23 +11,7 @@ export function StudioPreview({ duration, aspect, prompt }: { duration: number; 
           {duration}s · {aspect === "portrait" ? "9:16" : "16:9"}
         </span>
       </div>
-      <div className="preview-scene" aria-hidden="true">
-        <div className="preview-orbit orbit-one" />
-        <div className="preview-orbit orbit-two" />
-        <div className="preview-sun" />
-        <div className="preview-mountain mountain-back" />
-        <div className="preview-mountain mountain-front" />
-        <div className="preview-ground" />
-        <div className="preview-temple">
-          <div className="temple-roof" />
-          <div className="temple-columns">
-            {[0, 1, 2, 3, 4].map((i) => (
-              <i key={i} />
-            ))}
-          </div>
-          <div className="temple-steps" />
-        </div>
-      </div>
+      <LandmarkReel />
       <div className="preview-copy">
         <span className="eyebrow">{prompt.trim() ? "Your starting point" : "The past, in motion"}</span>
         <h2>{prompt.trim() || "A moment worth exploring."}</h2>

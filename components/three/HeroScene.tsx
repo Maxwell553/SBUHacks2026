@@ -1,12 +1,41 @@
 "use client";
-import { Canvas, useThree } from "@react-three/fiber";
-import { useEffect, useMemo, useState } from "react";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { useReducedMotion } from "motion/react";
+import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { makeRng } from "@/lib/lowpoly/core";
+import { buildGlobe } from "@/lib/lowpoly/globe";
+import {
+  CRATERS,
+  LANDER,
+  ROCKS,
+  START,
+  SURFACE_RADIUS,
+  createMoonWalker,
+  type MoonWalker,
+  type WalkPose,
+} from "@/components/three/moonWalk";
+import { useInView } from "@/components/three/useInView";
+
+/** Radians per second: one full turn every 50 seconds. */
+const SPIN = (Math.PI * 2) / 50;
+const HOME = new THREE.Vector3(8, 6, 12);
+const TARGET = new THREE.Vector3(0, 1.2, 0);
+const HOME_TILT = new THREE.Spherical().setFromVector3(HOME.clone().sub(TARGET)).phi;
+const offset = new THREE.Vector3();
+const view = new THREE.Spherical();
+/** Lunar surface gravity in m/s² (a world unit is about a metre), so kicked-up dust arcs like the real thing. */
+const MOON_G = 1.62;
+/** Height of the astronaut rig that rests his boots on the surface. */
+const BOOT_BASE = 0.035;
+const PRINTS = 64;
+const DUST = 64;
+const dummy = new THREE.Object3D();
+const foot = new THREE.Vector3();
 
 /** A deliberately composed Apollo 11 illustration, separate from generated film assets. */
-function MoonLanding() {
+function MoonLanding({ animate }: { animate: boolean }) {
   const scene = useMemo(() => {
     const root = new THREE.Group();
     const resources: { dispose(): void }[] = [];
@@ -59,23 +88,12 @@ function MoonLanding() {
     // The entire tableau stays inside the lunar terrain at every allowed angle.
     mesh(new THREE.CylinderGeometry(5.3, 5.1, 0.55, 64), edge, [0, -0.33, 0]);
     mesh(new THREE.CylinderGeometry(5.3, 5.3, 0.12, 64), moon, [0, 0, 0]);
-    const rng = makeRng(1969);
-    for (let i = 0; i < 65; i++) {
-      const a = rng() * Math.PI * 2,
-        r = 1.5 + rng() * 3.5;
-      const x = Math.cos(a) * r,
-        z = Math.sin(a) * r;
-      if (Math.abs(x) < 2.4 && z > -2.5 && z < 2.4) continue;
-      const rock = mesh(new THREE.IcosahedronGeometry(0.06 + rng() * 0.18, 0), rng() > 0.5 ? rim : edge, [x, 0.08, z]);
+    for (const k of ROCKS) {
+      const rock = mesh(new THREE.IcosahedronGeometry(k.size, 0), k.light ? rim : edge, [k.x, 0.08, k.z]);
       rock.scale.set(1.3, 0.65, 1);
-      rock.rotation.set(rng(), rng(), rng());
+      rock.rotation.set(...k.spin);
     }
-    for (const [x, z, r] of [
-      [-3.5, 1.2, 0.65],
-      [2.7, -2.7, 0.8],
-      [1.4, 3.5, 0.48],
-      [-2.5, -2.5, 0.35],
-    ]) {
+    for (const [x, z, r] of CRATERS) {
       const ring = mesh(new THREE.TorusGeometry(r, r * 0.13, 5, 24), rim, [x, 0.08, z]);
       ring.rotation.x = Math.PI / 2;
       ring.scale.z = 0.35;
@@ -83,7 +101,7 @@ function MoonLanding() {
       hollow.rotation.x = -Math.PI / 2;
     }
     const lander = new THREE.Group();
-    lander.position.set(-0.45, 0, -0.6);
+    lander.position.set(LANDER.x, 0, LANDER.z);
     root.add(lander);
     mesh(new THREE.CylinderGeometry(1.15, 1.25, 1.02, 8), gold, [0, 1.42, 0], lander).rotation.y = Math.PI / 8;
     // Contrasting foil panels around the octagonal descent stage.
@@ -130,30 +148,77 @@ function MoonLanding() {
       const p = i / 7;
       beam([-0.23, 0.4 + p * 1.5, 1.94 - p * 0.73], [0.23, 0.4 + p * 1.5, 1.94 - p * 0.73], 0.025, silver, lander);
     }
-    // Astronaut with pressure suit, life-support backpack and reflective visor.
+    // Astronaut with pressure suit, life-support backpack and reflective visor, jointed at the
+    // hips, shoulders and helmet so he can lope around the surface.
+    const joint = (parent: THREE.Group, x: number, y: number) => {
+      const group = new THREE.Group();
+      group.position.set(x, y, 0);
+      parent.add(group);
+      return group;
+    };
     const astronaut = new THREE.Group();
-    astronaut.position.set(2.2, 0.1, 1.25);
-    astronaut.rotation.y = -0.25;
+    astronaut.position.set(START.x, BOOT_BASE, START.z);
+    astronaut.rotation.y = START.heading;
     root.add(astronaut);
-    box([0.48, 0.62, 0.3], white, [0, 0.9, 0], astronaut);
-    box([0.4, 0.55, 0.25], silver, [0, 0.93, -0.23], astronaut);
-    box([0.22, 0.2, 0.04], silver, [0, 1.0, 0.17], astronaut);
-    mesh(new THREE.SphereGeometry(0.29, 12, 8), white, [0, 1.43, 0], astronaut);
-    const face = mesh(new THREE.SphereGeometry(0.235, 12, 8), visor, [0, 1.45, 0.14], astronaut);
+    const legs = [-0.15, 0.15].map((x) => {
+      const hip = joint(astronaut, x, 0.65);
+      beam([0, 0, 0], [x * 0.15, -0.43, 0.04], 0.11, white, hip);
+      return { hip, boot: box([0.23, 0.14, 0.35], white, [x * 0.15, -0.55, 0.12], hip) };
+    });
+    // The upper body pivots at the hips, so leaning into a stride never pushes a boot into the ground.
+    const upper = joint(astronaut, 0, 0.65);
+    const torso = joint(upper, 0, -0.65);
+    box([0.48, 0.62, 0.3], white, [0, 0.9, 0], torso);
+    box([0.4, 0.55, 0.25], silver, [0, 0.93, -0.23], torso);
+    box([0.22, 0.2, 0.04], silver, [0, 1.0, 0.17], torso);
+    const helmet = joint(torso, 0, 1.43);
+    mesh(new THREE.SphereGeometry(0.29, 12, 8), white, [0, 0, 0], helmet);
+    const face = mesh(new THREE.SphereGeometry(0.235, 12, 8), visor, [0, 0.02, 0.14], helmet);
     face.scale.set(1, 0.83, 0.6);
-    for (const x of [-0.15, 0.15]) {
-      beam([x, 0.65, 0], [x * 1.15, 0.22, 0.04], 0.11, white, astronaut);
-      box([0.23, 0.14, 0.35], white, [x * 1.15, 0.1, 0.12], astronaut);
-      beam([x * 1.9, 1.1, 0], [x * 2.4, 0.7, 0.12], 0.09, white, astronaut);
-    }
+    const arms = [-0.15, 0.15].map((x) => {
+      const shoulder = joint(torso, x * 1.9, 1.1);
+      beam([0, 0, 0], [x * 0.5, -0.4, 0.12], 0.09, white, shoulder);
+      mesh(new THREE.SphereGeometry(0.1, 6, 4), silver, [x * 0.5, -0.42, 0.12], shoulder);
+      return shoulder;
+    });
+    const pose = (p: WalkPose) => {
+      const swing = Math.cos(p.phase * Math.PI * 2);
+      const s = (p.phase * 2) % 1;
+      // Every step (or two-footed hop) is a ballistic arc that lands at s = 0.
+      const arc = 4 * s * (1 - s);
+      const stride = 0.45 * p.gait * (1 - p.bound) * swing;
+      const tuck = 0.4 * p.gait * p.bound * arc;
+      // Spread legs lift the boots, so drop the hips until both touch down.
+      const dip = 0.55 * (1 - Math.cos(stride));
+      astronaut.position.set(p.x, BOOT_BASE + (0.12 + 0.2 * p.bound) * p.gait * arc - dip, p.z);
+      astronaut.rotation.set(0, p.heading, 0);
+      legs[0].hip.rotation.set(-stride - tuck, 0, 0);
+      legs[1].hip.rotation.set(stride - tuck, 0, 0);
+      upper.rotation.set(
+        (0.1 + 0.08 * p.bound) * p.gait,
+        0,
+        0.05 * p.gait * (1 - p.bound) * Math.sin(p.phase * Math.PI * 2),
+      );
+      helmet.rotation.set(-p.lookUp, p.look, 0);
+      const free = Math.max(0, 1 - p.salute - p.wave);
+      arms[0].rotation.set(
+        (0.6 * stride - 0.5 * tuck) * free - 2.4 * p.salute + 0.25 * p.wave,
+        0,
+        0.4 * p.salute + (-2.5 + 0.35 * Math.sin(p.time * 9)) * p.wave,
+      );
+      arms[1].rotation.set(-0.6 * stride - 0.5 * tuck, 0, 0);
+    };
     // A rigid support bar: flags on the Moon do not flutter in wind.
     beam([3.3, 0.1, -0.1], [3.3, 2.75, -0.1], 0.025, silver);
     box([1.1, 0.025, 0.025], silver, [3.85, 2.75, -0.1]);
     box([1.1, 0.65, 0.025], white, [3.85, 2.4, -0.1]);
-    for (let i = 0; i < 7; i++) box([1.1, 0.05, 0.03], red, [3.85, 2.7 - i * 0.1, -0.08]);
-    box([0.48, 0.35, 0.04], blue, [3.54, 2.55, -0.06]);
-    for (let i = 0; i < 9; i++)
-      box([0.035, 0.035, 0.012], white, [3.39 + (i % 3) * 0.14, 2.65 - Math.floor(i / 3) * 0.1, -0.032]);
+    // Printed on both faces so the flag reads correctly as the scene turns.
+    for (const side of [1, -1]) {
+      for (let i = 0; i < 7; i++) box([1.1, 0.05, 0.03], red, [3.85, 2.7 - i * 0.1, -0.1 + side * 0.02]);
+      box([0.48, 0.35, 0.04], blue, [3.54, 2.55, -0.1 + side * 0.04]);
+      for (let i = 0; i < 9; i++)
+        box([0.035, 0.035, 0.012], white, [3.39 + (i % 3) * 0.14, 2.65 - Math.floor(i / 3) * 0.1, -0.1 + side * 0.068]);
+    }
     for (let i = 0; i < 14; i++) {
       const footprint = mesh(new THREE.CircleGeometry(0.065, 8), edge, [
         0.1 + i * 0.14,
@@ -163,34 +228,237 @@ function MoonLanding() {
       footprint.rotation.x = -Math.PI / 2;
       footprint.scale.y = 1.6;
     }
-    return { root, resources };
+
+    // State of the running animation. The walker starts on the first animated frame.
+    const live = { walker: null as MoonWalker | null, rand: Math.random, printHead: 0, grainHead: 0 };
+
+    // Fresh bootprints, fading back into the regolith as newer ones are pressed.
+    const prints = new THREE.InstancedMesh(new THREE.CircleGeometry(0.08, 8), material("#ffffff"), PRINTS);
+    resources.push(prints.geometry, prints);
+    prints.receiveShadow = true;
+    prints.frustumCulled = false;
+    prints.count = 0;
+    root.add(prints);
+    const fresh = new THREE.Color("#686e79");
+    const worn = new THREE.Color("#9b9ea5");
+    const tint = new THREE.Color();
+    for (let i = 0; i < PRINTS; i++) prints.setColorAt(i, worn);
+    const stamp = (boot: THREE.Object3D, heading: number) => {
+      boot.getWorldPosition(foot);
+      // Stagger heights slightly so crossing trails never z-fight.
+      dummy.position.set(foot.x, 0.066 + (live.printHead % 12) * 0.0003, foot.z);
+      dummy.rotation.set(-Math.PI / 2, heading, 0, "YXZ");
+      dummy.scale.set(1, 1.7, 1);
+      dummy.updateMatrix();
+      prints.setMatrixAt(live.printHead, dummy.matrix);
+      live.printHead = (live.printHead + 1) % PRINTS;
+      prints.count = Math.min(PRINTS, prints.count + 1);
+      for (let i = 0; i < prints.count; i++) {
+        const age = (live.printHead - 1 - i + PRINTS) % PRINTS;
+        prints.setColorAt(i, tint.copy(fresh).lerp(worn, THREE.MathUtils.smoothstep(age, PRINTS * 0.25, PRINTS - 1)));
+      }
+      prints.instanceMatrix.needsUpdate = true;
+      if (prints.instanceColor) prints.instanceColor.needsUpdate = true;
+    };
+
+    // Dust kicked up by each landing. With no air on the Moon it flies in clean arcs and drops straight back.
+    const dust = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1, 0), rim, DUST);
+    resources.push(dust.geometry, dust);
+    dust.frustumCulled = false;
+    root.add(dust);
+    const grains = Array.from({ length: DUST }, () => ({ x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, size: 0, rest: 0 }));
+    const kick = (boot: THREE.Object3D, heading: number, count: number) => {
+      const { rand } = live;
+      boot.getWorldPosition(foot);
+      for (let n = 0; n < count; n++) {
+        const g = grains[live.grainHead];
+        live.grainHead = (live.grainHead + 1) % DUST;
+        const a = heading + Math.PI + (rand() - 0.5) * 2.4;
+        const v = 0.2 + rand() * 0.45;
+        Object.assign(g, {
+          x: foot.x,
+          y: 0.08,
+          z: foot.z,
+          vx: Math.sin(a) * v,
+          vy: 0.35 + rand() * 0.6,
+          vz: Math.cos(a) * v,
+          size: 0.018 + rand() * 0.028,
+          rest: 0,
+        });
+      }
+    };
+    const settle = (dt: number) => {
+      for (let i = 0; i < DUST; i++) {
+        const g = grains[i];
+        if (g.size && !g.rest) {
+          g.vy -= MOON_G * dt;
+          g.x += g.vx * dt;
+          g.y += g.vy * dt;
+          g.z += g.vz * dt;
+          if (g.vy < 0 && g.y <= 0.07 && Math.hypot(g.x, g.z) < SURFACE_RADIUS) {
+            g.y = 0.07;
+            g.rest = dt;
+          } else if (g.y < -2) g.size = 0;
+        } else if (g.rest && (g.rest += dt) > 0.5) g.size = 0;
+        dummy.position.set(g.x, g.y, g.z);
+        dummy.rotation.set(g.vx * 9, g.vz * 9, 0);
+        dummy.scale.setScalar(g.size * Math.min(1, 1.25 - g.rest * 2.5));
+        dummy.updateMatrix();
+        dust.setMatrixAt(i, dummy.matrix);
+      }
+      dust.instanceMatrix.needsUpdate = true;
+    };
+    settle(0);
+
+    const tick = (dt: number, viewer: THREE.Vector3) => {
+      if (!live.walker) {
+        // A fresh stroll on every visit.
+        const seed = (Math.random() * 2 ** 32) >>> 0;
+        live.walker = createMoonWalker(seed);
+        live.rand = makeRng(seed + 1);
+      }
+      let landed = -1;
+      live.walker.update(dt, viewer, (side) => (landed = side));
+      const p = live.walker.pose;
+      pose(p);
+      if (landed >= 0) {
+        astronaut.updateMatrixWorld(true);
+        const hop = p.bound > 0.5;
+        for (const leg of hop ? legs : [legs[landed]]) {
+          stamp(leg.boot, p.heading);
+          kick(leg.boot, p.heading, hop ? 6 : 4);
+        }
+      }
+      settle(dt);
+    };
+    return { root, resources, tick };
   }, []);
   useEffect(() => () => scene.resources.forEach((r) => r.dispose()), [scene]);
+  useFrame(({ camera }, delta) => {
+    if (animate) scene.tick(Math.min(delta, 0.1), camera.position);
+  });
   return <primitive object={scene.root} />;
 }
 
-function DragCamera({ resetKey }: { resetKey: number }) {
+/** Twinkling stars and a turning Earth, fixed to the camera so they hang behind the Moon from every angle. */
+function Sky({ animate }: { animate: boolean }) {
+  const { camera, scene } = useThree();
+  const sky = useMemo(() => {
+    const group = new THREE.Group();
+    const resources: { dispose(): void }[] = [];
+    const rng = makeRng(7);
+    // Stars live in a unit square stretched to the view each frame, so they fill any aspect ratio.
+    const stars = new THREE.Group();
+    stars.position.z = -70;
+    group.add(stars);
+    const layers = (
+      [
+        [120, 1.5],
+        [28, 2.5],
+      ] as const
+    ).map(([count, size]) => {
+      const position = new Float32Array(count * 3);
+      const color = new Float32Array(count * 4);
+      const glow = new Float32Array(count * 3);
+      for (let i = 0; i < count; i++) {
+        position.set([rng() * 2 - 1, rng() * 2 - 1, 0], i * 3);
+        const hue = rng();
+        color.set(hue < 0.15 ? [1, 0.86, 0.7, 0] : hue < 0.3 ? [0.75, 0.86, 1, 0] : [1, 1, 1, 0], i * 4);
+        glow.set([0.3 + rng() * 0.7, 0.8 + rng() * 2.4, rng() * Math.PI * 2], i * 3);
+      }
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute("position", new THREE.BufferAttribute(position, 3));
+      geometry.setAttribute("color", new THREE.BufferAttribute(color, 4));
+      const points = new THREE.Points(
+        geometry,
+        new THREE.PointsMaterial({
+          size,
+          sizeAttenuation: false,
+          vertexColors: true,
+          transparent: true,
+          depthWrite: false,
+        }),
+      );
+      points.frustumCulled = false;
+      stars.add(points);
+      resources.push(geometry, points.material);
+      return { color, glow, attribute: geometry.getAttribute("color") };
+    });
+    const globe = buildGlobe(0.5, 3, 4);
+    resources.push(globe);
+    const earth = new THREE.Group();
+    earth.rotation.z = 0.41;
+    earth.add(globe.group);
+    group.add(earth);
+    const clock = { time: 0 };
+    const shine = () => {
+      const { time } = clock;
+      globe.group.rotation.y = time * 0.15;
+      for (const { color, glow, attribute } of layers) {
+        for (let i = 0; i < glow.length / 3; i++)
+          color[i * 4 + 3] = glow[i * 3] * (0.6 + 0.4 * Math.sin(time * glow[i * 3 + 1] + glow[i * 3 + 2]));
+        attribute.needsUpdate = true;
+      }
+    };
+    shine();
+    const frame = (dt: number, cam: THREE.OrthographicCamera) => {
+      const halfW = (cam.right - cam.left) / (2 * cam.zoom),
+        halfH = (cam.top - cam.bottom) / (2 * cam.zoom);
+      stars.scale.set(halfW, halfH, 1);
+      earth.position.set(-halfW * 0.62, halfH * 0.5, -60);
+      if (!dt) return;
+      clock.time += dt;
+      shine();
+    };
+    return { group, resources, frame };
+  }, []);
+  useEffect(() => {
+    // The default camera sits outside the scene graph; parent it so the sky renders with it.
+    scene.add(camera);
+    camera.add(sky.group);
+    return () => {
+      camera.remove(sky.group);
+      scene.remove(camera);
+    };
+  }, [camera, scene, sky]);
+  useEffect(() => () => sky.resources.forEach((r) => r.dispose()), [sky]);
+  useFrame((_, delta) => sky.frame(animate ? Math.min(delta, 0.1) : 0, camera as THREE.OrthographicCamera));
+  return null;
+}
+
+function DragCamera({ animate }: { animate: boolean }) {
   const { camera, gl, invalidate, size } = useThree();
+  const orbit = useRef<OrbitControls | null>(null);
+  // 0 = still, 1 = full speed. Eases so the turn never starts or stops abruptly.
+  const motion = useRef(0);
+  const dragging = useRef(false);
   useEffect(() => {
     const cam = camera as THREE.OrthographicCamera;
-    cam.position.set(8, 6, 12);
-    // Three.js cameras are mutable scene objects; update their projection imperatively.
-    // eslint-disable-next-line react-hooks/immutability
-    cam.zoom = Math.min(size.width / 12.5, size.height / 10.3);
-    cam.updateProjectionMatrix();
+    cam.position.copy(HOME);
     const controls = new OrbitControls(cam, gl.domElement);
-    controls.target.set(0, 1.2, 0);
+    controls.target.copy(TARGET);
     controls.enablePan = false;
     controls.enableZoom = false;
     controls.enableDamping = false;
     controls.autoRotate = false;
     controls.minPolarAngle = 0.65;
     controls.maxPolarAngle = 1.4;
-    controls.minAzimuthAngle = -0.6;
-    controls.maxAzimuthAngle = 1.6;
     controls.rotateSpeed = 0.7;
+    controls.cursorStyle = "grab";
     controls.update();
+    // Horizontal swipes turn the scene; vertical swipes still scroll the page on touch screens.
+    gl.domElement.style.setProperty("touch-action", "pan-y");
+    orbit.current = controls;
     const change = () => invalidate();
+    // Grabbing the scene stops the turn at once; letting go eases it back in.
+    const grab = () => {
+      dragging.current = true;
+      motion.current = 0;
+    };
+    const release = () => {
+      dragging.current = false;
+      invalidate();
+    };
     const key = (e: KeyboardEvent) => {
       if (!["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(e.key)) return;
       e.preventDefault();
@@ -202,22 +470,69 @@ function DragCamera({ resetKey }: { resetKey: number }) {
       invalidate();
     };
     gl.domElement.setAttribute("tabindex", "0");
-    gl.domElement.setAttribute("aria-label", "Apollo 11 Moon landing. Drag to orbit, or use the arrow keys.");
+    gl.domElement.setAttribute("aria-label", "Apollo 11 Moon landing. Drag to look around, or use the arrow keys.");
     gl.domElement.addEventListener("keydown", key);
     controls.addEventListener("change", change);
+    controls.addEventListener("start", grab);
+    controls.addEventListener("end", release);
     invalidate();
     return () => {
+      orbit.current = null;
+      dragging.current = false;
       controls.dispose();
       gl.domElement.removeEventListener("keydown", key);
     };
-  }, [camera, gl, invalidate, size.width, size.height, resetKey]);
+  }, [camera, gl, invalidate]);
+  useEffect(() => {
+    const cam = camera as THREE.OrthographicCamera;
+    // Three.js cameras are mutable scene objects; update their projection imperatively.
+    // eslint-disable-next-line react-hooks/immutability
+    cam.zoom = Math.min(size.width / 12.5, size.height / 10.3);
+    cam.updateProjectionMatrix();
+    invalidate();
+  }, [camera, invalidate, size.width, size.height]);
+  useEffect(() => {
+    if (animate) invalidate();
+  }, [animate, invalidate]);
+  useFrame((_, delta) => {
+    const controls = orbit.current;
+    if (!controls) return;
+    // Frames are on demand, so the first delta after a pause can be long.
+    const dt = Math.min(delta, 0.1);
+    const goal = animate && !dragging.current ? 1 : 0;
+    motion.current += (goal - motion.current) * Math.min(1, dt * 2.5);
+    if (Math.abs(goal - motion.current) < 0.005) motion.current = goal;
+    // The astronaut, dust and stars need every frame, even mid-drag.
+    if (animate || motion.current) invalidate();
+    if (!motion.current) return;
+    // Turn passively and drift back to the composed tilt after someone has dragged it.
+    view.setFromVector3(offset.copy(camera.position).sub(controls.target));
+    view.theta += SPIN * motion.current * dt;
+    view.phi += (HOME_TILT - view.phi) * Math.min(1, dt * 0.6) * motion.current;
+    camera.position.setFromSpherical(view).add(controls.target);
+    controls.update();
+  });
   return null;
 }
 
-export function HeroScene() {
-  const [resetKey, setResetKey] = useState(0);
+function OnFirstFrame({ onReady }: { onReady?: () => void }) {
+  const done = useRef(false);
+  useFrame(() => {
+    if (done.current) return;
+    done.current = true;
+    requestAnimationFrame(() => onReady?.());
+  });
+  return null;
+}
+
+export function HeroScene({ onReady }: { onReady?: () => void }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref);
+  const reduce = useReducedMotion();
+  // Reduced motion keeps the composed still pose; off-screen, nothing renders at all.
+  const animate = inView && !reduce;
   return (
-    <div className="moon-scene">
+    <div ref={ref} className="moon-scene">
       <Canvas
         orthographic
         shadows="percentage"
@@ -240,12 +555,11 @@ export function HeroScene() {
           shadow-normalBias={0.04}
         />
         <directionalLight position={[6, 3, -8]} intensity={1.2} color="#99bcff" />
-        <MoonLanding />
-        <DragCamera resetKey={resetKey} />
+        <MoonLanding animate={animate} />
+        <DragCamera animate={animate} />
+        <Sky animate={animate} />
+        <OnFirstFrame onReady={onReady} />
       </Canvas>
-      <button className="scene-reset" onClick={() => setResetKey((k) => k + 1)}>
-        Reset view ↺
-      </button>
     </div>
   );
 }

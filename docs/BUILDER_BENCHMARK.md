@@ -1,6 +1,8 @@
 # Builder model benchmark
 
-Which model should build the 3D geometry: the fast default (`gemini-3.5-flash`), or the strongest available (`gemini-3.1-pro-preview`)? Run on 2026-10-24 with `npm run bench:builder -- --films` ([`scripts/bench-builder.ts`](../scripts/bench-builder.ts)).
+> **Status: historical.** This comparison predates the current configuration. Gemini 4 Argon (`GEMINI_CREATIVE_MODEL`) now plans, builds and directs every film, and a Flash model is used only for research, safety checks and as the fallback for a timed-out build (`lib/server/models.ts`). The motion-quality check and repair step described below is no longer part of the pipeline; `lib/server/motion-quality.ts` is kept for the unit checks. The benchmark script still works for comparing any builders.
+
+Which model should build the 3D geometry: the fast default (`gemini-3.5-flash`), or the strongest available (`gemini-3.1-pro-preview`)? Run on 2026-10-24 with `npm run bench:builder -- --films` ([`scripts/bench/bench-builder.ts`](../scripts/bench/bench-builder.ts)).
 
 ## Method
 

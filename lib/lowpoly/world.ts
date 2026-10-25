@@ -52,6 +52,8 @@ export interface DressingSpec {
   /** World z of a facade row that closes the street (camera-facing). */
   terminus?: number | null;
   keepOut: Circle[];
+  /** True where an object of radius r and height h would hide the subject from the camera. */
+  sight?(x: number, z: number, r: number, h: number): boolean;
   heightAt(x: number, z: number): number;
   isWater(x: number, z: number): boolean;
 }
@@ -103,8 +105,9 @@ export function dressingModels(script: VideoScript, lib: ModelLibrary): string[]
     .filter((m) => m.instancePolicy !== "unique")
     .map((m) => m.id)
     .filter((id) => lib.has(id));
+  // A landform of any size the director repeats becomes distant landscape, not a row of units through the action.
   const eligible = ids.filter(
-    (id) => (ARCHITECTURE.has(kind(id)) || kind(id) === "nature") && repeated.has(id) && fits(id, MAX_FRONTAGE_SIZE),
+    (id) => repeated.has(id) && (kind(id) === "nature" || (ARCHITECTURE.has(kind(id)) && fits(id, MAX_FRONTAGE_SIZE))),
   );
   if (eligible.some((id) => ARCHITECTURE.has(kind(id)))) return eligible;
   return [...eligible, ...ids.filter((id) => kind(id) === "building" && fits(id, 18) && !eligible.includes(id))];
@@ -175,9 +178,10 @@ export function buildDressing(spec: DressingSpec): Dressing {
   const q = new THREE.Quaternion();
   const up = new THREE.Vector3(0, 1, 0);
 
-  const blocked = (x: number, z: number, r: number) =>
+  const blocked = (x: number, z: number, r: number, h: number) =>
     spec.keepOut.some((c) => Math.hypot(c.x - x, c.z - z) < c.r + r) ||
-    footprints.some((c) => Math.hypot(c.x - x, c.z - z) < (c.r + r) * 0.82);
+    footprints.some((c) => Math.hypot(c.x - x, c.z - z) < (c.r + r) * 0.82) ||
+    !!spec.sight?.(x, z, r, h);
 
   const groundMin = (x: number, z: number, hx: number, hz: number) =>
     Math.min(
@@ -204,7 +208,8 @@ export function buildDressing(spec: DressingSpec): Dressing {
     const hx = ((across ? c.width : c.depth) * s) / 2,
       hz = ((across ? c.depth : c.width) * s) / 2;
     const r = Math.hypot(hx, hz) * 0.8;
-    if (spec.isWater(x, z) || spec.isWater(x - hx, z) || spec.isWater(x + hx, z) || blocked(x, z, r)) return false;
+    if (spec.isWater(x, z) || spec.isWater(x - hx, z) || spec.isWater(x + hx, z) || blocked(x, z, r, c.height * s * sy))
+      return false;
     const y = groundMin(x, z, hx, hz) - 0.04 * c.height * s;
     const variant = Math.floor(rng() * c.variants);
     const key = `${c.id}|${variant}|${shadows ? 1 : 0}`;
