@@ -1986,10 +1986,6 @@ input[type="range"].duration::-moz-range-thumb {
   color: #263d40;
   font-size: 13px;
 }
-.apollo-art .caption small {
-  color: var(--ink-2);
-  font-size: 11px;
-}
 @media (max-width: 600px) {
   .scene-label {
     top: 16px;
@@ -2000,9 +1996,6 @@ input[type="range"].duration::-moz-range-thumb {
   .apollo-art .caption {
     font-size: 11px;
     gap: 8px;
-  }
-  .apollo-art .caption small {
-    font-size: 9px;
   }
 }
 

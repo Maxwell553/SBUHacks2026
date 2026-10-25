@@ -521,6 +521,47 @@ strikeBody.dispose();
 strikeLib.dispose();
 console.log("PASS a held tool on any figure stays aimed instead of striking the air");
 
+const walker = normalizeModelDefinition({
+  id: "walker",
+  name: "Walker",
+  category: "figure",
+  placement: "ground",
+  materials: [{ id: "m", color: "#888888", finish: "matte" }],
+  parts: [
+    { id: "torso", shape: "box", material: "m", size: [0.3, 0.6, 0.2], position: [0, 1, 0] },
+    {
+      id: "arm",
+      parent: "torso",
+      shape: "box",
+      material: "m",
+      size: [0.1, 0.6, 0.1],
+      position: [0, 0.2, 0.2],
+      animationAnchor: "top",
+      animation: [{ property: "rotation", axis: "z", wave: "sine", amplitude: 26, frequency: 1.6, when: "moving" }],
+    },
+  ],
+});
+const walkLib = new ModelLibrary([walker]);
+const walkBody = walkLib.instance("walker")!;
+const hand = (time: number) => {
+  walkBody.update({ time, progress: 0, moving: true, night: false, phase: 0 });
+  walkBody.object.updateMatrixWorld(true);
+  let tip = new THREE.Vector3();
+  walkBody.object.traverse((obj) => {
+    if (!(obj instanceof THREE.Mesh)) return;
+    obj.geometry.computeBoundingBox();
+    const size = obj.geometry.boundingBox!.getSize(new THREE.Vector3());
+    if (size.y < 0.5 || size.x > 0.2) return;
+    tip = obj.localToWorld(new THREE.Vector3(0, -0.3, 0));
+  });
+  return tip;
+};
+const stride = hand(0).distanceTo(hand(0.16));
+assert(stride > 0.2, `A walking arm keeps its swing (${stride.toFixed(2)} m)`);
+walkBody.dispose();
+walkLib.dispose();
+console.log("PASS a walking arm keeps a readable swing");
+
 const raised = normalizeModelDefinition({
   id: "raised_arms",
   name: "Raised arms",
@@ -560,3 +601,49 @@ assert.equal(raised.parts[1].rotation?.[2], 80, "The stored pose is not rewritte
 raisedBody.dispose();
 raisedLib.dispose();
 console.log("PASS extreme arms are eased into a reachable pose");
+
+const bike = normalizeModelDefinition({
+  id: "bike",
+  name: "Bike",
+  category: "vehicle",
+  placement: "ground",
+  materials: [{ id: "m", color: "#888888", finish: "matte" }],
+  parts: [
+    { id: "frame", shape: "box", material: "m", size: [1.2, 0.7, 0.08], position: [0, 0.6, 0] },
+    { id: "tires", shape: "torus", material: "m", size: [0.7, 0.05, 0.7], position: [0.4, 0.35, 0], parent: "frame" },
+  ],
+});
+const bikeLib = new ModelLibrary([bike]);
+const bikeBody = bikeLib.instance("bike")!;
+const wheelMark = () => {
+  bikeBody.object.updateWorldMatrix(true, true);
+  let mark = 0;
+  const v = new THREE.Vector3();
+  bikeBody.object.traverse((obj) => {
+    if (!(obj instanceof THREE.Mesh)) return;
+    const pos = obj.geometry.getAttribute("position");
+    if (!pos?.count) return;
+    v.fromBufferAttribute(pos, 0).applyMatrix4(obj.matrixWorld);
+    mark += v.x + v.z;
+  });
+  return mark;
+};
+bikeBody.object.updateMatrixWorld(true);
+let tireSize = new THREE.Vector3();
+bikeBody.object.traverse((obj) => {
+  if (!(obj instanceof THREE.Mesh)) return;
+  obj.geometry.computeBoundingBox();
+  const size = obj.geometry.boundingBox!.clone().applyMatrix4(obj.matrixWorld).getSize(new THREE.Vector3());
+  if (size.x > 0.4) tireSize = size;
+});
+assert(
+  tireSize.y > tireSize.z,
+  `A flat tire stands up (${tireSize.y.toFixed(2)} tall, ${tireSize.z.toFixed(2)} thick)`,
+);
+bikeBody.update({ time: 0, progress: 0, moving: true, night: false, phase: 0 });
+const stillWheel = wheelMark();
+bikeBody.update({ time: 0.2, progress: 0.2, moving: true, night: false, phase: 0 });
+assert.notEqual(stillWheel, wheelMark(), "A tire with no authored cycle still rolls");
+bikeBody.dispose();
+bikeLib.dispose();
+console.log("PASS unnamed tires roll while the vehicle moves");

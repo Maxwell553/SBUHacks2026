@@ -489,12 +489,12 @@ function calmHeldWork(def: ModelDefinition, part: ModelPart): ModelPart {
   const tool = HELD_TOOL.test(id);
   const arm = HELD_ARM.test(id);
   if (!tool && !arm) return part;
-  const cap = tool ? 6 : 10;
+  const cap = tool ? 6 : 28;
   let changed = false;
   const animation = part.animation.map((channel) => {
     if (channel.property !== "rotation") return channel;
     const amplitude = Math.max(-cap, Math.min(cap, channel.amplitude));
-    const frequency = Math.min(channel.frequency, 0.85);
+    const frequency = Math.min(channel.frequency, tool ? 0.85 : 1.8);
     if (amplitude === channel.amplitude && frequency === channel.frequency) return channel;
     changed = true;
     return { ...channel, amplitude, frequency };
@@ -528,8 +528,8 @@ function limbLife(def: ModelDefinition, part: ModelPart, byId: Map<string, Model
           property: "rotation",
           axis: "z",
           wave: "sine",
-          amplitude: arm ? 8 : 30,
-          frequency: arm ? 0.85 : 1.7,
+          amplitude: arm ? 22 : 30,
+          frequency: 1.6,
           phase: arm ? 180 : 0,
           alternate: true,
           when: "moving",
@@ -546,16 +546,24 @@ function limbLife(def: ModelDefinition, part: ModelPart, byId: Map<string, Model
       ],
     };
   }
-  if ((def.category === "vehicle" || def.category === "aircraft") && /wheel|propeller|rotor|blade/.test(id)) {
+  if (
+    (def.category === "vehicle" || def.category === "aircraft") &&
+    /wheel|tire|tyre|rim|hub|spoke|propeller|rotor|blade/.test(id)
+  ) {
     const air = /propeller|rotor|blade/.test(id);
     const reverse = /right|_r$/.test(id);
+    const [sx, sy, sz] = part.size;
+    // A wheel drawn flat on the ground is stood up, axle running to the side.
+    const lying = !air && !part.geometryRotation && sy < sx * 0.35 && sy < sz * 0.35;
+    const axle: "x" | "y" | "z" = lying ? "z" : sx <= sy && sx <= sz ? "x" : sz <= sx && sz <= sy ? "z" : "y";
+    const stood = lying ? { ...part, geometryRotation: [90, 0, 0] as [number, number, number] } : part;
     return {
-      ...part,
-      animationAnchor: part.animationAnchor ?? "center",
+      ...stood,
+      animationAnchor: stood.animationAnchor ?? "center",
       animation: [
         {
           property: "rotation",
-          axis: air ? "x" : "z",
+          axis: air ? "x" : axle,
           wave: "spin",
           amplitude: (air ? 840 : 280) * (reverse ? -1 : 1),
           frequency: 1,
@@ -1064,7 +1072,13 @@ function liftBuriedMasses(nodes: Node[]) {
   for (const s of solids) if (s.box.max.y > foundation + 0.05) top = Math.max(top, s.box.max.y);
   const above = Math.max(0.5, top - foundation);
   const buried = new Set<Node>();
+  const ancestorOfWidest = (node: Node) => {
+    for (let parent = widest.node.parent; parent; parent = parent.parent) if (parent === node) return true;
+    return false;
+  };
   for (const s of solids) {
+    // Moving the walls under a wider roof only slides the whole model upward.
+    if (s.node === widest.node || ancestorOfWidest(s.node)) continue;
     const height = s.box.max.y - s.box.min.y;
     // Table legs and wheels meet the underside and stay there. Only a mass
     // almost as tall as everything above the foundation is a misplaced base.

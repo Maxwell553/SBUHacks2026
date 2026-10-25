@@ -66,8 +66,6 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
             <div className="caption">
               <span>
                 <strong>Apollo 11</strong> · The first Moon landing
-                <br />
-                <small>July 1969 · Sea of Tranquility</small>
               </span>
             </div>
           </div>

@@ -244,6 +244,17 @@ function sourcesFrom(candidate: {
   return { sources: sources.slice(0, 20), searchQueries: candidate.groundingMetadata?.webSearchQueries ?? [] };
 }
 
+function usableBrief(text: string | undefined) {
+  const brief = text?.trim() ?? "";
+  return brief.length >= 40 ? brief : null;
+}
+
+const BLOCKED_FINISH = new Set(["SAFETY", "PROHIBITED_CONTENT", "BLOCKLIST", "SPII"]);
+
+function safetyBlocked(candidate: { finishReason?: string } | undefined) {
+  return !!candidate?.finishReason && BLOCKED_FINISH.has(candidate.finishReason);
+}
+
 export async function researchEvent(
   prompt: string,
   duration: number,
@@ -265,7 +276,7 @@ export async function researchEvent(
         abortSignal: budgeted(signal, ms),
         ...(search ? { tools: [{ googleSearch: {} }] } : {}),
         safetySettings,
-        maxOutputTokens: 512,
+        maxOutputTokens: 2048,
         thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
       },
     });
@@ -280,22 +291,35 @@ export async function researchEvent(
     response = null;
   }
   const grounded = response?.candidates?.[0];
-  if (grounded?.finishReason === "STOP" && response?.text) {
-    const cited = sourcesFrom(grounded);
-    return { research: response.text, ...cited };
+  const searched = usableBrief(response?.text);
+  if (!safetyBlocked(grounded) && searched) {
+    const cited = sourcesFrom(grounded ?? {});
+    return { research: searched, ...cited };
   }
-  const left = Math.min(6_000, total - (Date.now() - started));
-  if (left < 800) throw new ApiError(502, "Web research is temporarily unavailable. Please try again.");
+  if (safetyBlocked(grounded)) {
+    console.warn("Research blocked", { finish: grounded?.finishReason });
+    throw new ApiError(422, "Research could not be completed safely. Please narrow the historical event.");
+  }
+  const left = Math.min(8_000, Math.max(3_000, total - (Date.now() - started)));
   try {
     response = await ask(left, false);
   } catch (error) {
     providerError(error);
-    throw new ApiError(502, "Web research is temporarily unavailable. Please try again.");
+    response = null;
   }
-  const brief = response.candidates?.[0];
-  if (brief?.finishReason !== "STOP" || !response.text)
+  const brief = response?.candidates?.[0];
+  if (safetyBlocked(brief)) {
+    console.warn("Research blocked", { finish: brief?.finishReason });
     throw new ApiError(422, "Research could not be completed safely. Please narrow the historical event.");
-  return { research: response.text, sources: [] as Source[], searchQueries: [] as string[] };
+  }
+  const text = usableBrief(response?.text);
+  if (text) return { research: text, sources: [] as Source[], searchQueries: [] as string[] };
+  console.warn("Research returned no briefing", { finish: brief?.finishReason ?? "none" });
+  return {
+    research: `Established historical knowledge for a short film. The question was: ${prompt}. Cover the accepted date, place, people, and what changed. Say plainly where the record is uncertain. Do not invent quotations.`,
+    sources: [] as Source[],
+    searchQueries: [] as string[],
+  };
 }
 
 import {

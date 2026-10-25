@@ -550,7 +550,7 @@ export function Studio({ initialPrompt = "" }: { initialPrompt?: string }) {
                   role="alert"
                 >
                   <strong>{error.title}.</strong> {error.message}
-                  {error.kind === "declined" ? (
+                  {error.kind === "declined" && error.message.startsWith("Please choose") ? (
                     <> Try asking about a specific historical event, person’s achievement or period.</>
                   ) : null}
                 </motion.div>
