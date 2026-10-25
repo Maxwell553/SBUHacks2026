@@ -1,6 +1,8 @@
-import type { Scene } from "@/lib/schema/video";
+import type { VideoScript } from "@/lib/schema/video";
+import { renderSoundtrack } from "@/lib/audio/soundtrack";
 
 let shared: AudioContext | null = null;
+const rendered = new WeakMap<VideoScript, AudioBuffer>();
 
 /** One context for the page, created inside a click so later films can play without another gesture. */
 export function ambienceContext() {
@@ -14,77 +16,84 @@ export function primeAmbience() {
   return context.resume().then(() => context.state === "running");
 }
 
-/** Quiet, synthesized environmental beds: no downloads, licenses or API latency. */
+/**
+ * Plays the film's own soundtrack in step with the picture.
+ * The buffer is the same one baked into a saved movie.
+ */
 export class Ambience {
   private context = ambienceContext();
-  private source: AudioBufferSourceNode;
-  private filter = this.context.createBiquadFilter();
   private gain = this.context.createGain();
-  private level = 0;
-  /** Gain is only remembered once the context is running, so a suspended start cannot stick at silence. */
-  private arm = true;
+  private source: AudioBufferSourceNode | null = null;
+  private buffer: AudioBuffer | null = null;
+  private startedAt = 0;
+  private offset = 0;
+
   constructor() {
-    const buffer = this.context.createBuffer(1, this.context.sampleRate * 4, this.context.sampleRate);
-    const data = buffer.getChannelData(0);
-    let brown = 0;
-    let seed = 431;
-    for (let i = 0; i < data.length; i++) {
-      seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
-      const white = (seed / 4294967296) * 2 - 1;
-      brown = (brown + 0.02 * white) / 1.02;
-      data[i] = brown * 2.5 + white * 0.09;
-    }
-    this.source = this.context.createBufferSource();
-    this.source.buffer = buffer;
-    this.source.loop = true;
-    this.filter.type = "lowpass";
     this.gain.gain.value = 0;
-    this.source.connect(this.filter).connect(this.gain).connect(this.context.destination);
-    this.source.start();
+    this.gain.connect(this.context.destination);
   }
+
   isRunning() {
     return this.context.state === "running";
   }
+
   async resume() {
     if (this.context.state === "closed") return false;
     if (this.context.state !== "running") await this.context.resume();
-    const running = this.context.state === "running";
-    if (running) this.arm = true;
-    return running;
+    return this.context.state === "running";
   }
-  update(scene: Scene, time: number, active: boolean) {
+
+  /** `time` is the film clock in seconds. `active` is false while paused, hidden or muted. */
+  sync(script: VideoScript, time: number, active: boolean) {
     if (this.context.state !== "running") return;
-    const interior = scene.layout === "interior";
-    const space = !interior && (scene.setting === "orbit" || scene.setting === "lunar");
-    const water = !interior && ["ocean", "coast", "river"].includes(scene.setting);
-    const rain = !interior && ["rain", "storm"].includes(scene.weather);
-    const fire = scene.elements.some((e) => e.motion === "burn");
-    const level =
-      active && !space
-        ? (interior ? 0.04 : rain ? 0.22 : water ? 0.18 : fire ? 0.12 : 0.08) *
-          (0.85 + 0.15 * Math.sin(time * (water ? 0.65 : 0.23)))
-        : 0;
-    this.filter.frequency.setTargetAtTime(
-      interior ? 350 : rain ? 4600 : fire ? 2200 : water ? 1200 : 550,
-      this.context.currentTime,
-      0.5,
-    );
-    if (!this.arm && Math.abs(level - this.level) <= 0.002) return;
+    let buffer = rendered.get(script);
+    if (!buffer) {
+      buffer = renderSoundtrack(script);
+      rendered.set(script, buffer);
+    }
+    if (buffer !== this.buffer) {
+      this.buffer = buffer;
+      this.stop();
+    }
+    if (!active || !this.buffer) {
+      this.stop();
+      return;
+    }
+    const now = this.context.currentTime;
+    const expected = this.source ? this.offset + (now - this.startedAt) : Number.NaN;
+    if (!this.source || Math.abs(expected - time) > 0.35) this.playAt(time);
+  }
+
+  dispose() {
+    this.stop();
+    this.gain.disconnect();
+  }
+
+  private playAt(time: number) {
+    if (!this.buffer) return;
+    this.stop();
+    const src = this.context.createBufferSource();
+    src.buffer = this.buffer;
+    src.connect(this.gain);
+    const offset = Math.min(Math.max(0, time), Math.max(0, this.buffer.duration - 0.05));
     const now = this.context.currentTime;
     this.gain.gain.cancelScheduledValues(now);
-    this.gain.gain.setValueAtTime(this.gain.gain.value, now);
-    this.gain.gain.linearRampToValueAtTime(level, now + 0.18);
-    this.level = level;
-    this.arm = false;
+    this.gain.gain.setValueAtTime(0, now);
+    this.gain.gain.linearRampToValueAtTime(0.95, now + 0.06);
+    src.start(now, offset);
+    this.source = src;
+    this.startedAt = now;
+    this.offset = offset;
   }
-  dispose() {
+
+  private stop() {
+    if (!this.source) return;
     try {
       this.source.stop();
     } catch {
       /* already stopped */
     }
     this.source.disconnect();
-    this.filter.disconnect();
-    this.gain.disconnect();
+    this.source = null;
   }
 }

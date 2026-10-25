@@ -68,9 +68,8 @@ export function Player({
         ambienceRef.current ??= new Ambience();
         void ambienceRef.current.resume().then((running) => {
           if (!running || !ambienceRef.current || !engineRef.current) return;
-          const scene = script.scenes[engineRef.current.sceneAt(timeRef.current).index];
-          ambienceRef.current.update(
-            scene,
+          ambienceRef.current.sync(
+            script,
             timeRef.current,
             playingRef.current && visibleRef.current && !document.hidden,
           );
@@ -116,9 +115,8 @@ export function Player({
           raf = requestAnimationFrame(loopFn);
           const dt = Math.min(0.1, (now - last) / 1000);
           last = now;
-          const audioScene = engine.sceneAt(timeRef.current).index;
           const active = playingRef.current && visibleRef.current && !document.hidden;
-          ambienceRef.current?.update(script.scenes[audioScene], timeRef.current, active && ambientEnabled.current);
+          ambienceRef.current?.sync(script, timeRef.current, active && ambientEnabled.current);
           if (!active) return;
           let t = timeRef.current + dt;
           if (t >= engine.duration) {
@@ -144,7 +142,7 @@ export function Player({
     document.addEventListener("pointerdown", startAmbience, true);
     document.addEventListener("keydown", startAmbience, true);
     const visibility = () => {
-      if (document.hidden) ambienceRef.current?.update(script.scenes[0], 0, false);
+      if (document.hidden) ambienceRef.current?.sync(script, timeRef.current, false);
     };
     document.addEventListener("visibilitychange", visibility);
     return () => {
@@ -182,7 +180,7 @@ export function Player({
       ambienceRef.current ??= new Ambience();
       const wasRunning = ambienceRef.current.isRunning();
       const running = await primeAmbience();
-      const scene = script.scenes[engineRef.current?.sceneAt(timeRef.current).index ?? 0];
+      const audible = visibleRef.current && !document.hidden;
       // The control already says on before the browser has allowed sound. That click
       // should start it, not flip the preference off.
       if (ambientEnabled.current && !wasRunning) {
@@ -192,7 +190,7 @@ export function Player({
         }
         playingRef.current = true;
         setPlaying(true);
-        ambienceRef.current.update(scene, timeRef.current, visibleRef.current && !document.hidden);
+        ambienceRef.current.sync(script, timeRef.current, audible);
         return;
       }
       ambientEnabled.current = !ambientEnabled.current;
@@ -201,11 +199,7 @@ export function Player({
         playingRef.current = true;
         setPlaying(true);
       }
-      ambienceRef.current.update(
-        scene,
-        timeRef.current,
-        ambientEnabled.current && visibleRef.current && !document.hidden,
-      );
+      ambienceRef.current.sync(script, timeRef.current, ambientEnabled.current && audible);
     } catch {
       setAudioError("Ambient audio is unavailable in this browser.");
     }
@@ -260,7 +254,7 @@ export function Player({
             aria-label="Ambience"
             aria-checked={ambient}
             onClick={toggleAmbience}
-            title="Environmental sound in the player; saved HD videos also include ambience"
+            title="A score under the sounds of the shot. Saved films include the same track"
           >
             {ambient ? "Ambience on" : "Ambience off"}
           </button>
