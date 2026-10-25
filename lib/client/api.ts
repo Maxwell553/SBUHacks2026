@@ -52,6 +52,8 @@ export interface Video {
   movieUrl?: string | null;
   movieMime?: "video/mp4" | "video/webm" | null;
   posterUrl: string | null;
+  /** Recorded narration, mixed into the film's soundtrack. */
+  narrationUrl?: string | null;
   gifBytes?: number | null;
   error?: string | null;
   createdAt: string;
@@ -119,6 +121,8 @@ export const videos = {
     api<{ video: Video }>(`/api/videos/${id}/finish`, { method: "POST", signal }),
   review: (id: string, json: { round: number; sheet: string; issues: ShotIssue[] }, signal?: AbortSignal) =>
     api<{ video: Video; review: ReviewSummary }>(`/api/videos/${id}/review`, { method: "POST", json, signal }),
+  narrate: (id: string, signal?: AbortSignal) =>
+    api<{ video: Video }>(`/api/videos/${id}/narrate`, { method: "POST", signal }),
   discard: (id: string) =>
     api<{ ok: boolean }>(`/api/videos/${id}?incomplete=1`, { method: "DELETE", keepalive: true }),
   remove: (id: string) => api<{ ok: boolean }>(`/api/videos/${id}`, { method: "DELETE" }),

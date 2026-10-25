@@ -27,6 +27,7 @@ export function videoResponse(row: Record<string, unknown>) {
     updatedAt: new Date(row.updated_at as string).toISOString(),
     gifUrl: row.gif_asset_id ? `/api/videos/${row.id}/media?assetId=${row.gif_asset_id}` : null,
     posterUrl: row.poster_asset_id ? `/api/videos/${row.id}/media?assetId=${row.poster_asset_id}` : null,
+    narrationUrl: row.narration_asset_id ? `/api/videos/${row.id}/media?assetId=${row.narration_asset_id}` : null,
     gifBytes: row.gif_bytes ?? null,
     mediaUrl: row.status === "rendered" ? `/api/videos/${row.id}/media` : null,
   };

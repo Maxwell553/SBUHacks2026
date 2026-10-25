@@ -8,6 +8,10 @@ export const fastModel = () => process.env.GEMINI_FAST_MODEL || process.env.GEMI
 export const plannerModel = () => process.env.GEMINI_PLANNER_MODEL || fastModel();
 /** Reviews rendered shots and repairs broken models while a film is being made. */
 export const reviewModel = () => process.env.GEMINI_REVIEW_MODEL || creativeModel();
+/** Reads each finished caption aloud for the film's narration. */
+export const ttsModel = () => process.env.GEMINI_TTS_MODEL || "gemini-3.8-flash-tts";
+/** One of the provider's prebuilt voices. */
+export const ttsVoice = () => process.env.GEMINI_TTS_VOICE || "Charon";
 export const builderModel = (articulated = false) =>
   (articulated ? process.env.GEMINI_ARTICULATED_MODEL : undefined) ||
   process.env.GEMINI_BUILDER_MODEL ||

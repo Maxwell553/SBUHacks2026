@@ -178,7 +178,13 @@ export function VideoView({ id }: { id: string }) {
                 />
               </div>
             ) : (
-              <Player script={video.script} aspect={portrait ? "portrait" : "landscape"} autoPlay loop />
+              <Player
+                script={video.script}
+                aspect={portrait ? "portrait" : "landscape"}
+                narrationUrl={video.narrationUrl}
+                autoPlay
+                loop
+              />
             )}
           </div>
           <VideoDetails video={video} />

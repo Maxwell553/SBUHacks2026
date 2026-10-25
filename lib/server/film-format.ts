@@ -14,7 +14,9 @@ this film is narrated like a documentary.
   caption that sets the scene with facts: where, when, who, and what is at stake.
 - Narration. Third person, past or historical present, in the measured voice of a documentary narrator. Each caption
   teaches something specific and verifiable: names, dates, numbers, causes and consequences. Usually one or two
-  sentences of 10 to 22 words. No rhetorical questions, no addressing the viewer, no hype.
+  sentences of 10 to 22 words. No rhetorical questions, no addressing the viewer, no hype. A narrator reads each
+  caption aloud over its shot, so write it to be heard as well as read: plain sentences, numbers and dates a speaker
+  can say, no abbreviations, symbols or parentheses.
 - Structure. Context, then the event unfolding as cause and effect, then its consequences, then why it mattered. Each
   shot advances the story by one development and shows it. Scale can grow from the people involved to the street, the
   city and the wider world (a map shot when geography matters). Return to places already shown so change is visible.

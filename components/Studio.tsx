@@ -8,6 +8,7 @@ import { ApiError, videos, type Video } from "@/lib/client/api";
 import { saveRender, type SaveProgress } from "@/lib/client/save";
 import { reviewRender, type ReviewProgress } from "@/lib/client/review";
 import { produceFilm, type ProduceProgress } from "@/lib/client/produce";
+import { loadNarration } from "@/lib/audio/narration";
 import type { Aspect } from "@/lib/schema/video";
 import { TOPIC_IDEAS } from "@/lib/content/topics";
 import dynamic from "next/dynamic";
@@ -128,6 +129,8 @@ export function Studio({ initialPrompt = "" }: { initialPrompt?: string }) {
     const ac = new AbortController();
     abortRef.current = ac;
     try {
+      // A film without narration (or whose recording failed) is saved with music and effects only.
+      const voice = v.narrationUrl ? ((await loadNarration(v.narrationUrl)) ?? undefined) : undefined;
       const saved = await saveRender(
         v,
         (p) => {
@@ -138,6 +141,7 @@ export function Studio({ initialPrompt = "" }: { initialPrompt?: string }) {
           }
         },
         ac.signal,
+        voice,
       );
       mark("animate", "done");
       mark("save", "done");
@@ -212,11 +216,17 @@ export function Studio({ initialPrompt = "" }: { initialPrompt?: string }) {
       setSteps((s) => ({ ...s, build: "done", review: "active" }));
       setVideo(v);
       router.refresh();
+      // The narration is recorded while the draft is reviewed: the review never changes captions.
+      const narration = videos
+        .narrate(v.id, ac.signal)
+        .then(({ video: narrated }) => narrated.narrationUrl ?? null)
+        .catch(() => null);
       const reviewed = await reviewRender(v, setReviewProgress, ac.signal);
+      const ready = { ...reviewed, narrationUrl: await narration };
       setReviewProgress(null);
       mark("review", "done");
-      setVideo(reviewed);
-      await runSave(reviewed);
+      setVideo(ready);
+      await runSave(ready);
       router.refresh();
     } catch (err) {
       polling = false;
@@ -405,6 +415,7 @@ export function Studio({ initialPrompt = "" }: { initialPrompt?: string }) {
               <Player
                 script={video.script}
                 aspect={video.aspect === "portrait" ? "portrait" : "landscape"}
+                narrationUrl={video.narrationUrl}
                 autoPlay
                 loop
               />
