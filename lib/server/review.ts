@@ -65,7 +65,8 @@ Judge what a viewer sees. Look for objects that intersect, overlap or float; mod
 detached or jammed into each other; frames that are cluttered, empty or confusing; subjects that are hidden, cut off or
 too small; and shots that fail to show what their caption describes. Measured problems are reliable evidence, but
 check them against the picture. A figure or animal with moves false has no moving limbs: giving it march, charge or
-retreat makes it glide, so give it idle or a slower role instead.
+retreat makes it glide, so give it idle or a slower role instead. A model with oneWayAction plays that action across
+every shot it appears in; set actionStage after in shots that come later than the action and before in earlier ones.
 
 For each shot that needs it, return only the fields to change: a complete replacement elements list (separate things
 with offset in metres, reduce counts, adjust scale, set roles so the subject is clear), a different camera, shotSize or

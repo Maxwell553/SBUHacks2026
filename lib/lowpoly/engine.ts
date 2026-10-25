@@ -14,6 +14,7 @@ import { makeShot, type ShotSpec } from "@/lib/lowpoly/camera";
 import { framingBounds, groundPlacement, ModelLibrary, type ModelInstance } from "@/lib/lowpoly/compiler";
 import { clamp, easeInOut, lerp, makeRng, range, smooth, type Rng } from "@/lib/lowpoly/core";
 import { type Effect, makeExplosion, makeFire, makeSmoke } from "@/lib/lowpoly/effects";
+import { stageProgress } from "@/lib/lowpoly/motion";
 import { buildEnvironment, type Environment } from "@/lib/lowpoly/environment";
 import { buildGlobe, latLonToVec3 } from "@/lib/lowpoly/globe";
 import { resolveLayout, sweptCircles, type Body } from "@/lib/lowpoly/layout";
@@ -154,6 +155,8 @@ interface Unit {
   fwd: THREE.Vector3;
   speed: number;
   motion: SceneElement["motion"];
+  /** Where the model's own one-way action stands in this shot. */
+  stage: SceneElement["actionStage"];
   placement: Placement;
   phase: number;
   height: number;
@@ -830,6 +833,7 @@ export class PolyEngine {
                 Math.max(1, sc.duration),
             ),
           motion: e.motion,
+          stage: e.actionStage,
           placement,
           phase: rng() * 6,
           height,
@@ -1466,7 +1470,7 @@ export class PolyEngine {
           }
           const st = {
             time: local,
-            progress: p,
+            progress: stageProgress(u.stage, p),
             moving: MOVING.has(u.motion) && (u.motion !== "launch" || local > 0.6),
             night,
             phase: u.phase,

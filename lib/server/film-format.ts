@@ -18,6 +18,8 @@ this film is narrated like a documentary.
 - Structure. Context, then the event unfolding as cause and effect, then its consequences, then why it mattered. Each
   shot advances the story by one development and shows it. Scale can grow from the people involved to the street, the
   city and the wider world (a map shot when geography matters). Return to places already shown so change is visible.
+  A model's one-way action (its plan's action timing is progressive or mixed) plays in the shot that shows it happening;
+  set actionStage after for that model in later shots and before in earlier ones, so it does not happen again.
 - A clock. Keep a running clock or count on screen (scene.counter) as a documentary readout: the hour, the day, the
   year, a distance, a tally. Carry it through consecutive shots, each continuing from where the last stopped. Time can
   slow down for the decisive minutes and leap ahead across years.

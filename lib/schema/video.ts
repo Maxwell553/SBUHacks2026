@@ -100,6 +100,8 @@ export const MOTIONS = [
   "explode",
 ] as const;
 export const FACINGS = ["left", "right", "camera", "away", "center"] as const;
+/** Where a model's own one-way action (its keyframed animation) stands in a shot. */
+export const ACTION_STAGES = ["before", "during", "after"] as const;
 export const SCENE_KINDS = ["diorama", "map"] as const;
 /** number: a tally; duration: seconds shown as m:ss; clock: hour of day shown as HH:MM. */
 export const COUNTER_FORMATS = ["number", "duration", "clock"] as const;
@@ -137,6 +139,7 @@ export const sceneElementSchema = z.object({
   color: hex.optional(),
   scale: z.number().min(0.5).max(3).optional(),
   label: z.string().max(28).optional(),
+  actionStage: z.enum(ACTION_STAGES).optional(),
 });
 
 export const mapSpecSchema = z.object({
@@ -338,6 +341,7 @@ function normalizeElement(raw: unknown, models: ModelDefinition[]): SceneElement
   if (color) out.color = color;
   if (e.scale !== undefined) out.scale = num(e.scale, 0.5, 3, 1);
   if (typeof e.label === "string" && e.label.trim()) out.label = text(e.label, 28);
+  if (e.actionStage === "before" || e.actionStage === "after") out.actionStage = e.actionStage;
   return out;
 }
 
@@ -697,6 +701,10 @@ export function geminiVideoScriptJsonSchema(
                   color: hexS("Recolours the model's tint:true materials (faction colour)"),
                   scale: { type: "number", minimum: 0.5, maximum: 3 },
                   label: str("Optional floating tag, e.g. 'Norman cavalry'", 28),
+                  actionStage: en(
+                    ACTION_STAGES,
+                    "The model's own one-way action in this shot: during plays it across the shot (default), before holds its start and after its finished state",
+                  ),
                 },
                 required: ["model", "count", "formation", "position", "motion"],
               },
@@ -788,6 +796,10 @@ How the renderer reads a shot:
 - motion: march, charge and retreat travel along the facing on land, sail on water, fly in the air; launch takes off; burn and
   explode attach fire or blasts to the object; collapse topples it; idle, wave and sway stay put while the model's own
   animation plays. color recolours a model's tint:true materials.
+- A model's own one-way action (a door opening, a sail raising, a bridge span lowering) plays across every shot it is in
+  unless actionStage says otherwise: during (the default) plays it across this shot, before holds the starting state and
+  after holds the finished state. Play it in the shot that shows it happening, after in later shots, before in earlier
+  ones.
 - layout: street (a built corridor), open (land, water or flight), interior (inside a room-shell model that is an element of
   the shot). settlement, waterWidth, banks and structureState describe the place; shotSize and camera choose the coverage.
 - kind=map flies a faceted globe to map.lat/lon, with an optional route.

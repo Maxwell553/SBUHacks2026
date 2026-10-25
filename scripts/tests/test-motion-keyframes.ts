@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
 import * as THREE from "three";
 import { hasProgressiveMotion, hasUsefulMotion } from "../../lib/server/motion-quality";
-import { channelValue } from "../../lib/lowpoly/motion";
+import { channelValue, stageProgress } from "../../lib/lowpoly/motion";
+import { normalizeVideoScript } from "../../lib/schema/video";
+import { SHOWCASE_SCRIPT } from "../../lib/content/showcase";
 import { ModelLibrary } from "../../lib/lowpoly/compiler";
 import { normalizeModelDefinition, type ModelChannel } from "../../lib/schema/model";
 const channel: ModelChannel = {
@@ -77,6 +79,13 @@ assert.equal(sample(1) - sample(0), 4, "Compiler applies one-shot channels to ac
 const middle = sample(0.4);
 sample(1);
 assert.equal(sample(0.4), middle, "Rewinding is deterministic");
+// actionStage: the shot that shows the action plays it; earlier shots hold the start, later ones the end.
+for (const p of [0, 0.3, 0.9]) {
+  assert.equal(sample(stageProgress("after", p)), sample(1), "A finished action stays finished");
+  assert.equal(sample(stageProgress("before", p)), sample(0), "An action yet to happen holds its start");
+  assert.equal(stageProgress("during", p), p);
+  assert.equal(stageProgress(undefined, p), p, "Playing across the shot is the default");
+}
 inst.dispose();
 lib.dispose();
 console.log(
@@ -96,6 +105,17 @@ returning.parts[0].animation![0].keyframes = [
 ];
 assert(!hasProgressiveMotion(returning), "A cycle encoded as keys is still not a settled state change");
 console.log("PASS progressive action contracts reject static poses and repeating cycles");
+
+// The storyboard keeps actionStage through normalization; unknown values fall back to the default.
+const staged = structuredClone(SHOWCASE_SCRIPT);
+const stagedElement = staged.scenes.find((s) => s.elements.length)!.elements[0] as Record<string, unknown>;
+stagedElement.actionStage = "after";
+const kept = normalizeVideoScript(staged, { targetDuration: staged.totalDuration, seed: staged.seed });
+assert.equal(kept.scenes.find((s) => s.elements.length)!.elements[0].actionStage, "after");
+stagedElement.actionStage = "sideways";
+const dropped = normalizeVideoScript(staged, { targetDuration: staged.totalDuration, seed: staged.seed });
+assert.equal(dropped.scenes.find((s) => s.elements.length)!.elements[0].actionStage, undefined);
+console.log("PASS actionStage holds a one-way action before and after the shot that shows it");
 
 const absolute = normalizeModelDefinition({
   ...model,
