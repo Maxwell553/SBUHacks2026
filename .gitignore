@@ -1,8 +1,9 @@
 # Dependencies
 /node_modules
 
-# Next.js build output
+# Next.js build output (side builds go in .builds/<name> via NEXT_DIST_DIR)
 /.next/
+/.builds/
 /.next-verify/
 /out/
 next-env.d.ts
@@ -17,6 +18,7 @@ next-env.d.ts
 
 # Local scratch
 /tmp/
+/tools/visual-harness/dist/
 
 # Vercel
 .vercel
@@ -34,3 +36,9 @@ npm-debug.log*
 *.p12
 *.pfx
 *.sql.gz
+
+.next-polychronicle
+
+.next-hero-preview
+
+.next-*/

@@ -17,9 +17,9 @@ export default function GlobalError({ retry }: { error: unknown; retry: () => vo
           padding: 24,
         }}
       >
-        <title>Polyhistor — something went wrong</title>
+        <title>PolyChronicle — something went wrong</title>
         <div style={{ maxWidth: 520, display: "grid", gap: 16 }}>
-          <h1 style={{ margin: 0, fontSize: 32 }}>Polyhistor is having a moment</h1>
+          <h1 style={{ margin: 0, fontSize: 32 }}>PolyChronicle is having a moment</h1>
           <p style={{ margin: 0, fontSize: 18, lineHeight: 1.6 }}>
             Something went wrong while loading the site. Please try again in a few minutes.
           </p>

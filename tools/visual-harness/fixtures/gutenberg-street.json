@@ -1,0 +1,1066 @@
+{
+  "version": 2,
+  "presentation": "immersive",
+  "title": "The Mainz Press",
+  "subtitle": "The invention of the Gutenberg press in 1455.",
+  "dateLabel": "1455",
+  "location": "Mainz, Germany",
+  "coordinates": { "lat": 49.9929, "lon": 8.2732 },
+  "totalDuration": 40,
+  "seed": 1987104805,
+  "palette": { "primary": "#8b5a2b", "secondary": "#a0522d", "accent": "#d2b48c" },
+  "factions": [{ "name": "Printers", "color": "#8b5a2b" }],
+  "models": [
+    {
+      "id": "gutenberg_screw_press",
+      "name": "Gutenberg wooden screw press",
+      "category": "vehicle",
+      "placement": "ground",
+      "scale": 1,
+      "materials": [
+        { "id": "heavy_timber", "color": "#5c4033", "finish": "matte" },
+        { "id": "aged_oak", "color": "#8b5a2b", "finish": "matte" },
+        { "id": "iron", "color": "#4a4a4a", "finish": "metal" },
+        { "id": "paper", "color": "#f1eccd", "finish": "cloth" },
+        { "id": "metal_type", "color": "#7c8d9c", "finish": "metal" }
+      ],
+      "parts": [
+        {
+          "id": "base_skids",
+          "shape": "box",
+          "material": "heavy_timber",
+          "size": [0.3, 0.15, 2.4],
+          "position": [0, 0.075, 0],
+          "mirror": "z"
+        },
+        {
+          "id": "cross_beams_base",
+          "shape": "box",
+          "material": "heavy_timber",
+          "size": [1.4, 0.15, 0.3],
+          "position": [0, 0.075, 0.8],
+          "repeat": { "mode": "linear", "count": 2, "step": [0, 0, -1.6] }
+        },
+        {
+          "id": "cheek_posts",
+          "shape": "box",
+          "material": "heavy_timber",
+          "size": [0.25, 2.2, 0.25],
+          "position": [0, 1.1, 0.55],
+          "mirror": "z"
+        },
+        {
+          "id": "cap_timber",
+          "shape": "box",
+          "material": "heavy_timber",
+          "size": [0.35, 0.25, 1.5],
+          "position": [0, 2.3, 0]
+        },
+        {
+          "id": "winter_beam",
+          "shape": "box",
+          "material": "heavy_timber",
+          "size": [0.3, 0.2, 1.3],
+          "position": [0, 0.8, 0]
+        },
+        {
+          "id": "spindle_assembly",
+          "shape": "group",
+          "size": [0.4, 0.8, 0.4],
+          "position": [0, 1.8, 0],
+          "animation": [
+            { "property": "rotation", "axis": "y", "wave": "sine", "amplitude": 45, "frequency": 0.5, "when": "always" }
+          ]
+        },
+        {
+          "id": "wooden_screw",
+          "parent": "spindle_assembly",
+          "shape": "cylinder",
+          "material": "aged_oak",
+          "size": [0.18, 0.8, 0.18],
+          "position": [0, 0, 0]
+        },
+        {
+          "id": "lever_bar",
+          "shape": "capsule",
+          "material": "aged_oak",
+          "size": [0.08, 1.3, 0.08],
+          "position": [0.5, 0.1, 0],
+          "rotation": [90, 0, 90],
+          "segments": 6,
+          "taper": 0.75
+        },
+        {
+          "id": "lever_handle",
+          "parent": "spindle_assembly",
+          "shape": "sphere",
+          "material": "iron",
+          "size": [0.12, 0.12, 0.12],
+          "position": [0.5, 0.75, 0]
+        },
+        {
+          "id": "platen_hose",
+          "parent": "spindle_assembly",
+          "shape": "box",
+          "material": "iron",
+          "size": [0.22, 0.3, 0.22],
+          "position": [0, -0.4, 0]
+        },
+        {
+          "id": "platen_plate",
+          "parent": "spindle_assembly",
+          "shape": "box",
+          "material": "aged_oak",
+          "size": [0.6, 0.08, 0.8],
+          "position": [0, -0.55, 0]
+        },
+        {
+          "id": "carriage_tracks",
+          "shape": "box",
+          "material": "heavy_timber",
+          "size": [0.08, 0.08, 2.2],
+          "position": [0, 0.9, 0.45],
+          "mirror": "z"
+        },
+        {
+          "id": "carriage_coffin",
+          "shape": "box",
+          "material": "aged_oak",
+          "size": [0.7, 0.12, 0.9],
+          "position": [0.1, 0.96, 0],
+          "animation": [
+            {
+              "property": "position",
+              "axis": "x",
+              "wave": "sine",
+              "amplitude": 0.4,
+              "frequency": 0.5,
+              "when": "always"
+            }
+          ]
+        },
+        {
+          "id": "metal_forme",
+          "parent": "carriage_coffin",
+          "shape": "box",
+          "material": "metal_type",
+          "size": [0.5, 0.04, 0.7],
+          "position": [0, 0.08, 0]
+        },
+        {
+          "id": "tympan_frame",
+          "shape": "box",
+          "material": "aged_oak",
+          "size": [0.55, 0.02, 0.75],
+          "position": [-0.3, 0.12, 0],
+          "rotation": [0, 0, 15],
+          "segments": 4,
+          "taper": 1
+        },
+        {
+          "id": "tympan_paper",
+          "shape": "box",
+          "material": "paper",
+          "size": [0.48, 0.01, 0.68],
+          "position": [-0.3, 0.13, 0],
+          "rotation": [0, 0, 15]
+        },
+        {
+          "id": "frisket_hinge",
+          "shape": "cylinder",
+          "material": "iron",
+          "size": [0.03, 0.78, 0.03],
+          "position": [-0.58, 0.14, 0],
+          "rotation": [90, 0, 0]
+        },
+        {
+          "id": "crank_spindle",
+          "shape": "cylinder",
+          "material": "iron",
+          "size": [0.06, 1.2, 0.06],
+          "position": [0, 0.85, 0],
+          "rotation": [90, 0, 0]
+        },
+        {
+          "id": "crank_handle",
+          "shape": "torus",
+          "material": "iron",
+          "size": [0.22, 0.04, 0.22],
+          "position": [0, 0.85, 0.65],
+          "rotation": [0, 90, 0]
+        }
+      ],
+      "notes": "Solid timber frames support the central vertical screw and platen. The movable press bed glides horizontally, complete with a tympan sheet ready for printing."
+    },
+    {
+      "id": "german_printing_house",
+      "name": "Mainz Printing House Workshop",
+      "category": "building",
+      "placement": "ground",
+      "materials": [
+        { "id": "plaster", "color": "#ded6c5", "finish": "matte" },
+        { "id": "oak", "color": "#422e1b", "finish": "matte" },
+        { "id": "roof_tile", "color": "#a84e32", "finish": "matte" },
+        { "id": "glass", "color": "#a1b1b5", "finish": "glass" },
+        { "id": "stone", "color": "#787671", "finish": "matte" }
+      ],
+      "parts": [
+        {
+          "id": "foundation",
+          "shape": "box",
+          "material": "stone",
+          "size": [12.2, 0.4, 8.2],
+          "position": [0, 0, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "ground_floor_walls",
+          "shape": "box",
+          "material": "plaster",
+          "size": [12, 3.2, 8],
+          "position": [0, 0.4, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "corner_posts",
+          "shape": "box",
+          "material": "oak",
+          "size": [0.3, 3.2, 0.3],
+          "position": [5.9, 0.4, 3.9],
+          "anchor": "bottom",
+          "mirror": "z"
+        },
+        {
+          "id": "corner_posts_back",
+          "shape": "box",
+          "material": "oak",
+          "size": [0.3, 3.2, 0.3],
+          "position": [-5.9, 0.4, 3.9],
+          "anchor": "bottom",
+          "mirror": "z"
+        },
+        {
+          "id": "timber_beams_side",
+          "shape": "box",
+          "material": "oak",
+          "size": [0.15, 3.2, 0.15],
+          "position": [-4, 0.4, 4.02],
+          "anchor": "bottom",
+          "mirror": "z",
+          "repeat": { "mode": "linear", "count": 5, "step": [2, 0, 0] }
+        },
+        {
+          "id": "timber_cross_side",
+          "shape": "box",
+          "material": "oak",
+          "size": [1.4, 0.15, 0.1],
+          "position": [-3, 2, 4.02],
+          "rotation": [0, 0, 35],
+          "anchor": "center",
+          "segments": 3,
+          "taper": 1
+        },
+        {
+          "id": "main_door",
+          "shape": "box",
+          "material": "oak",
+          "size": [0.2, 2.2, 1.4],
+          "position": [6.02, 0.4, -1.5],
+          "anchor": "bottom"
+        },
+        {
+          "id": "main_door_arch",
+          "shape": "box",
+          "material": "stone",
+          "size": [0.3, 0.15, 1.6],
+          "position": [6.04, 2.6, -1.5],
+          "anchor": "bottom"
+        },
+        {
+          "id": "front_windows",
+          "shape": "box",
+          "material": "glass",
+          "size": [0.1, 1.2, 0.8],
+          "position": [6.02, 1.4, 1.8],
+          "anchor": "bottom",
+          "repeat": { "mode": "linear", "count": 2, "step": [0, 0, 1.2] }
+        },
+        {
+          "id": "front_window_frames",
+          "shape": "box",
+          "material": "oak",
+          "size": [0.15, 1.3, 0.9],
+          "position": [6.03, 1.35, 1.8],
+          "anchor": "bottom",
+          "repeat": { "mode": "linear", "count": 2, "step": [0, 0, 1.2] }
+        },
+        {
+          "id": "side_windows",
+          "shape": "box",
+          "material": "glass",
+          "size": [0.8, 1, 0.1],
+          "position": [-3, 1.5, 4.02],
+          "anchor": "bottom",
+          "mirror": "z",
+          "repeat": { "mode": "linear", "count": 3, "step": [3, 0, 0] }
+        },
+        {
+          "id": "mid_floor_ledge",
+          "shape": "box",
+          "material": "oak",
+          "size": [12.4, 0.25, 8.4],
+          "position": [0, 3.6, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "front_gable_wall",
+          "shape": "wedge",
+          "material": "plaster",
+          "size": [8, 5, 0.4],
+          "position": [6, 3.85, 0],
+          "rotation": [0, 90, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "back_gable_wall",
+          "shape": "wedge",
+          "material": "plaster",
+          "size": [8, 5, 0.4],
+          "position": [-6, 3.85, 0],
+          "rotation": [0, -90, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "roof_pitch_right",
+          "shape": "box",
+          "material": "roof_tile",
+          "size": [12.6, 6.4, 0.25],
+          "position": [0, 6.35, 2.25],
+          "rotation": [51.3, 0, 0],
+          "anchor": "center"
+        },
+        {
+          "id": "roof_pitch_left",
+          "shape": "box",
+          "material": "roof_tile",
+          "size": [12.6, 6.4, 0.25],
+          "position": [0, 6.35, -2.25],
+          "rotation": [-51.3, 0, 0],
+          "anchor": "center"
+        },
+        {
+          "id": "attic_window_front",
+          "shape": "box",
+          "material": "glass",
+          "size": [0.1, 0.9, 0.6],
+          "position": [6.02, 4.8, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "attic_window_frame",
+          "shape": "box",
+          "material": "oak",
+          "size": [0.15, 1, 0.7],
+          "position": [6.03, 4.75, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "attic_timbers_front",
+          "shape": "box",
+          "material": "oak",
+          "size": [0.1, 4, 0.15],
+          "position": [6.01, 3.85, -1.8],
+          "rotation": [0, 0, -38.7],
+          "anchor": "bottom",
+          "segments": 3,
+          "taper": 1
+        },
+        {
+          "id": "attic_timbers_front_mirror",
+          "shape": "box",
+          "material": "oak",
+          "size": [0.1, 4, 0.15],
+          "position": [6.01, 3.85, 1.8],
+          "rotation": [0, 0, 38.7],
+          "anchor": "bottom",
+          "segments": 3,
+          "taper": 1
+        },
+        {
+          "id": "chimney",
+          "shape": "box",
+          "material": "stone",
+          "size": [0.8, 6, 0.8],
+          "position": [-3.5, 3, -2.8],
+          "anchor": "bottom"
+        },
+        {
+          "id": "chimney_top",
+          "shape": "cylinder",
+          "material": "stone",
+          "size": [0.6, 0.5, 0.6],
+          "position": [-3.5, 9, -2.8],
+          "anchor": "bottom"
+        },
+        {
+          "id": "chimney_smoke",
+          "shape": "smoke",
+          "material": "plaster",
+          "size": [0.4, 4, 0.01],
+          "position": [-3.5, 9.6, -2.8],
+          "anchor": "bottom"
+        }
+      ],
+      "notes": "15th-century German workshops featured deep layouts, steep roofs, half-timbering (Fachwerk), and massive stone fireplaces for melting metals like typesetter alloy."
+    },
+    {
+      "id": "compositor_workbench",
+      "name": "Compositor typesetting workbench",
+      "category": "prop",
+      "placement": "ground",
+      "materials": [
+        { "id": "dark_oak", "color": "#4a321f", "finish": "matte" },
+        { "id": "light_wood", "color": "#9e7d5a", "finish": "matte" },
+        { "id": "lead_alloy", "color": "#78818c", "finish": "metal" },
+        { "id": "brass", "color": "#b59b50", "finish": "metal" }
+      ],
+      "parts": [
+        {
+          "id": "table_top",
+          "shape": "box",
+          "material": "dark_oak",
+          "size": [0.8, 0.05, 1.4],
+          "position": [0, 0.75, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "leg",
+          "shape": "box",
+          "material": "dark_oak",
+          "size": [0.08, 0.75, 0.08],
+          "position": [0.32, 0, 0.6],
+          "anchor": "bottom",
+          "mirror": "z"
+        },
+        {
+          "id": "leg_back",
+          "shape": "box",
+          "material": "dark_oak",
+          "size": [0.08, 0.75, 0.08],
+          "position": [-0.32, 0, 0.6],
+          "anchor": "bottom",
+          "mirror": "z"
+        },
+        {
+          "id": "stretcher",
+          "shape": "box",
+          "material": "dark_oak",
+          "size": [0.04, 0.08, 1.2],
+          "position": [0, 0.15, 0],
+          "anchor": "center"
+        },
+        {
+          "id": "inclined_rack",
+          "shape": "wedge",
+          "material": "light_wood",
+          "size": [0.5, 0.25, 1.2],
+          "position": [-0.1, 0.8, 0],
+          "rotation": [0, 90, 0],
+          "segments": 3
+        },
+        {
+          "id": "tray_divider",
+          "shape": "box",
+          "material": "dark_oak",
+          "size": [0.01, 0.1, 0.45],
+          "position": [-0.05, 0.95, 0],
+          "rotation": [0, 0, -26.5],
+          "segments": 4,
+          "taper": 1
+        },
+        {
+          "id": "tray_shelf",
+          "shape": "box",
+          "material": "dark_oak",
+          "size": [0.4, 0.01, 0.02],
+          "position": [-0.05, 0.92, 0],
+          "rotation": [0, 0, -26.5],
+          "segments": 4,
+          "taper": 1
+        },
+        {
+          "id": "type_letter_cluster",
+          "shape": "box",
+          "material": "lead_alloy",
+          "size": [0.1, 0.02, 0.15],
+          "position": [-0.05, 0.94, 0.2],
+          "rotation": [0, 0, -26.5],
+          "segments": 4,
+          "taper": 1
+        },
+        {
+          "id": "type_letter_cluster_b",
+          "shape": "box",
+          "material": "lead_alloy",
+          "size": [0.08, 0.02, 0.12],
+          "position": [-0.05, 0.94, -0.3],
+          "rotation": [0, 0, -26.5],
+          "segments": 4,
+          "taper": 1
+        },
+        {
+          "id": "composing_stick_body",
+          "shape": "box",
+          "material": "brass",
+          "size": [0.06, 0.02, 0.25],
+          "position": [0.22, 0.82, -0.2],
+          "rotation": [0, -10, 0]
+        },
+        {
+          "id": "composing_stick_stop",
+          "shape": "box",
+          "material": "brass",
+          "size": [0.06, 0.03, 0.02],
+          "position": [0.22, 0.835, -0.09],
+          "rotation": [0, -10, 0]
+        },
+        {
+          "id": "letters_in_stick",
+          "shape": "box",
+          "material": "lead_alloy",
+          "size": [0.04, 0.02, 0.14],
+          "position": [0.22, 0.835, -0.22],
+          "rotation": [0, -10, 0]
+        },
+        {
+          "id": "galley_tray",
+          "shape": "box",
+          "material": "light_wood",
+          "size": [0.24, 0.02, 0.36],
+          "position": [0.2, 0.81, 0.25],
+          "rotation": [0, 5, 0]
+        },
+        {
+          "id": "galley_rim_left",
+          "shape": "box",
+          "material": "light_wood",
+          "size": [0.01, 0.04, 0.36],
+          "position": [0.08, 0.83, 0.25],
+          "rotation": [0, 5, 0]
+        },
+        {
+          "id": "galley_rim_back",
+          "shape": "box",
+          "material": "light_wood",
+          "size": [0.24, 0.04, 0.01],
+          "position": [0.2, 0.83, 0.07],
+          "rotation": [0, 5, 0]
+        },
+        {
+          "id": "assembled_lines",
+          "shape": "box",
+          "material": "lead_alloy",
+          "size": [0.18, 0.025, 0.26],
+          "position": [0.2, 0.83, 0.25],
+          "rotation": [0, 5, 0]
+        }
+      ],
+      "notes": "Classic mid-15th century Gutenberg-style compositor's workbench. Scaled appropriately with tilted type cases, metal type compartments, a brass composing stick, and galley."
+    },
+    {
+      "id": "press_operator_artisan",
+      "name": "Renaissance printmaker figure",
+      "category": "figure",
+      "placement": "ground",
+      "scale": 1,
+      "materials": [
+        { "id": "skin", "color": "#d2a085", "finish": "matte" },
+        { "id": "tunic", "color": "#ded6c5", "finish": "cloth", "tint": true },
+        { "id": "apron", "color": "#8c6a50", "finish": "cloth" },
+        { "id": "trousers", "color": "#4a3c31", "finish": "cloth" },
+        { "id": "leather", "color": "#5c3317", "finish": "satin" },
+        { "id": "ink", "color": "#111111", "finish": "matte" }
+      ],
+      "parts": [
+        {
+          "id": "pelvis",
+          "shape": "box",
+          "material": "trousers",
+          "size": [0.28, 0.16, 0.24],
+          "position": [0, 0.8, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "leg_left",
+          "parent": "pelvis",
+          "shape": "capsule",
+          "material": "trousers",
+          "size": [0.12, 0.44, 0.12],
+          "position": [0, -0.05, -0.09],
+          "rotation": [0, 0, 5],
+          "taper": 1
+        },
+        {
+          "id": "calf_left",
+          "parent": "leg_left",
+          "shape": "capsule",
+          "material": "trousers",
+          "size": [0.1, 0.42, 0.1],
+          "position": [0, -0.38, 0],
+          "taper": 1
+        },
+        {
+          "id": "foot_left",
+          "parent": "calf_left",
+          "shape": "box",
+          "material": "leather",
+          "size": [0.18, 0.08, 0.09],
+          "position": [0.04, -0.21, 0]
+        },
+        {
+          "id": "leg_right",
+          "parent": "pelvis",
+          "shape": "capsule",
+          "material": "trousers",
+          "size": [0.12, 0.44, 0.12],
+          "position": [0, -0.05, 0.09],
+          "rotation": [5, 0, -5],
+          "taper": 1
+        },
+        {
+          "id": "calf_right",
+          "parent": "leg_right",
+          "shape": "capsule",
+          "material": "trousers",
+          "size": [0.1, 0.42, 0.1],
+          "position": [0, -0.38, 0],
+          "taper": 1
+        },
+        {
+          "id": "foot_right",
+          "parent": "calf_right",
+          "shape": "box",
+          "material": "leather",
+          "size": [0.18, 0.08, 0.09],
+          "position": [0.04, -0.21, 0]
+        },
+        {
+          "id": "torso",
+          "parent": "pelvis",
+          "shape": "box",
+          "material": "tunic",
+          "size": [0.32, 0.46, 0.26],
+          "position": [0, 0.16, 0]
+        },
+        {
+          "id": "apron_chest",
+          "parent": "torso",
+          "shape": "box",
+          "material": "apron",
+          "size": [0.33, 0.38, 0.23],
+          "position": [0.01, 0.02, 0]
+        },
+        {
+          "id": "apron_skirt",
+          "parent": "pelvis",
+          "shape": "wedge",
+          "material": "apron",
+          "size": [0.1, 0.55, 0.25],
+          "position": [0.12, -0.2, 0],
+          "rotation": [0, 0, 15]
+        },
+        {
+          "id": "neck",
+          "parent": "torso",
+          "shape": "cylinder",
+          "material": "skin",
+          "size": [0.09, 0.09, 0.09],
+          "position": [0, 0.25, 0]
+        },
+        {
+          "id": "head",
+          "parent": "neck",
+          "shape": "box",
+          "material": "skin",
+          "size": [0.18, 0.22, 0.18],
+          "position": [0, 0.08, 0]
+        },
+        {
+          "id": "hair",
+          "parent": "head",
+          "shape": "box",
+          "material": "leather",
+          "size": [0.19, 0.11, 0.19],
+          "position": [0, 0.07, 0]
+        },
+        {
+          "id": "shoulder_l",
+          "parent": "torso",
+          "shape": "group",
+          "size": [0.1, 0.1, 0.1],
+          "position": [0, 0.18, -0.17],
+          "rotation": [20, -10, -25]
+        },
+        {
+          "id": "upper_arm_l",
+          "parent": "shoulder_l",
+          "shape": "capsule",
+          "material": "tunic",
+          "size": [0.1, 0.3, 0.1],
+          "position": [0, -0.12, 0],
+          "taper": 1
+        },
+        {
+          "id": "lower_arm_l",
+          "parent": "upper_arm_l",
+          "shape": "capsule",
+          "material": "skin",
+          "size": [0.09, 0.28, 0.09],
+          "position": [0.04, -0.22, 0.04],
+          "rotation": [0, 0, -45],
+          "taper": 1
+        },
+        {
+          "id": "hand_l",
+          "parent": "lower_arm_l",
+          "shape": "box",
+          "material": "skin",
+          "size": [0.08, 0.08, 0.07],
+          "position": [0, -0.14, 0]
+        },
+        {
+          "id": "shoulder_r",
+          "parent": "torso",
+          "shape": "group",
+          "size": [0.1, 0.1, 0.1],
+          "position": [0, 0.18, 0.17],
+          "rotation": [-20, 10, -35],
+          "taper": 1
+        },
+        {
+          "id": "upper_arm_r",
+          "parent": "shoulder_r",
+          "shape": "capsule",
+          "material": "tunic",
+          "size": [0.1, 0.3, 0.1],
+          "position": [0, -0.12, 0],
+          "taper": 1
+        },
+        {
+          "id": "lower_arm_r",
+          "parent": "upper_arm_r",
+          "shape": "capsule",
+          "material": "skin",
+          "size": [0.09, 0.28, 0.09],
+          "position": [0.04, -0.22, -0.04],
+          "rotation": [0, 0, -45],
+          "taper": 1
+        },
+        {
+          "id": "hand_r",
+          "parent": "lower_arm_r",
+          "shape": "box",
+          "material": "skin",
+          "size": [0.08, 0.08, 0.07],
+          "position": [0, -0.14, 0]
+        },
+        {
+          "id": "upper_body_pivot",
+          "shape": "group",
+          "size": [0.1, 0.1, 0.1],
+          "position": [0, 0.85, 0],
+          "animation": [
+            {
+              "property": "rotation",
+              "axis": "y",
+              "wave": "sine",
+              "amplitude": 12,
+              "frequency": 1.5,
+              "when": "always"
+            },
+            { "property": "rotation", "axis": "x", "wave": "sine", "amplitude": 5, "frequency": 1.5, "when": "always" }
+          ]
+        }
+      ],
+      "notes": "Renaissance printmaker figure wielding two leather inking balls. Dynamic torso rocking animation simulates the vigorous task of inking the metal typeforme."
+    }
+  ],
+  "scenes": [
+    {
+      "kind": "map",
+      "duration": 5,
+      "kicker": "1455",
+      "caption": "Johannes Gutenberg pioneers the printing press in Germany.",
+      "setting": "city",
+      "timeOfDay": "day",
+      "weather": "clear",
+      "camera": "static",
+      "elements": [],
+      "map": { "lat": 49.9929, "lon": 8.2732, "label": "Mainz, Germany", "zoom": "local" }
+    },
+    {
+      "kind": "diorama",
+      "duration": 6,
+      "kicker": "The Typesetter",
+      "caption": "A compositor arranges metal type on a workbench.",
+      "setting": "city",
+      "timeOfDay": "day",
+      "weather": "clear",
+      "camera": "tracking",
+      "elements": [
+        {
+          "model": "compositor_workbench",
+          "count": 1,
+          "formation": "single",
+          "position": "center",
+          "motion": "idle",
+          "role": "subject",
+          "facing": "camera",
+          "color": "#d2b48c",
+          "scale": 1
+        },
+        {
+          "model": "press_operator_artisan",
+          "count": 1,
+          "formation": "single",
+          "position": "back",
+          "motion": "idle",
+          "role": "background",
+          "facing": "camera",
+          "color": "#8b5a2b",
+          "scale": 1
+        },
+        {
+          "model": "german_printing_house",
+          "count": 10,
+          "formation": "line",
+          "position": "left",
+          "motion": "idle",
+          "role": "background",
+          "offset": { "x": -10, "z": 0 },
+          "facing": "right",
+          "color": "#5c4033",
+          "scale": 1
+        }
+      ]
+    },
+    {
+      "kind": "diorama",
+      "duration": 6,
+      "kicker": "The Forme",
+      "caption": "Metal type is locked in a frame for inking.",
+      "setting": "city",
+      "timeOfDay": "day",
+      "weather": "clear",
+      "camera": "push_in",
+      "elements": [
+        {
+          "model": "compositor_workbench",
+          "count": 1,
+          "formation": "single",
+          "position": "center",
+          "motion": "idle",
+          "role": "subject",
+          "facing": "camera",
+          "color": "#d2b48c",
+          "scale": 1
+        },
+        {
+          "model": "german_printing_house",
+          "count": 10,
+          "formation": "line",
+          "position": "right",
+          "motion": "idle",
+          "role": "background",
+          "offset": { "x": 10, "z": 0 },
+          "facing": "left",
+          "color": "#5c4033",
+          "scale": 1
+        }
+      ]
+    },
+    {
+      "kind": "diorama",
+      "duration": 6,
+      "kicker": "Gutenberg's Ink",
+      "caption": "Workers stamp thick oil-based ink onto metal type.",
+      "setting": "city",
+      "timeOfDay": "day",
+      "weather": "clear",
+      "camera": "pan_right",
+      "elements": [
+        {
+          "model": "press_operator_artisan",
+          "count": 2,
+          "formation": "line",
+          "position": "center",
+          "motion": "wave",
+          "role": "subject",
+          "facing": "left",
+          "color": "#8b5a2b",
+          "scale": 1
+        },
+        {
+          "model": "gutenberg_screw_press",
+          "count": 1,
+          "formation": "single",
+          "position": "left",
+          "motion": "idle",
+          "role": "foreground",
+          "facing": "right",
+          "color": "#8b5a2b",
+          "scale": 1
+        },
+        {
+          "model": "german_printing_house",
+          "count": 10,
+          "formation": "line",
+          "position": "back",
+          "motion": "idle",
+          "role": "background",
+          "offset": { "x": 0, "z": -15 },
+          "facing": "camera",
+          "color": "#5c4033",
+          "scale": 1
+        }
+      ]
+    },
+    {
+      "kind": "diorama",
+      "duration": 6,
+      "kicker": "The Mechanism",
+      "caption": "A paper sheet is pressed onto the inked type.",
+      "setting": "city",
+      "timeOfDay": "day",
+      "weather": "clear",
+      "camera": "eye_level",
+      "elements": [
+        {
+          "model": "gutenberg_screw_press",
+          "count": 1,
+          "formation": "single",
+          "position": "center",
+          "motion": "idle",
+          "role": "subject",
+          "facing": "right",
+          "color": "#8b5a2b",
+          "scale": 1
+        },
+        {
+          "model": "german_printing_house",
+          "count": 8,
+          "formation": "scatter",
+          "position": "back",
+          "motion": "idle",
+          "role": "background",
+          "facing": "camera",
+          "color": "#5c4033",
+          "scale": 1
+        }
+      ]
+    },
+    {
+      "kind": "diorama",
+      "duration": 6,
+      "kicker": "The Pull",
+      "caption": "A lever pulls the wooden screw to press the ink.",
+      "setting": "city",
+      "timeOfDay": "day",
+      "weather": "clear",
+      "camera": "push_in",
+      "elements": [
+        {
+          "model": "press_operator_artisan",
+          "count": 1,
+          "formation": "single",
+          "position": "center",
+          "motion": "sway",
+          "role": "subject",
+          "offset": { "x": -1, "z": 1 },
+          "facing": "right",
+          "color": "#8b5a2b",
+          "scale": 1
+        },
+        {
+          "model": "gutenberg_screw_press",
+          "count": 1,
+          "formation": "single",
+          "position": "center",
+          "motion": "sway",
+          "role": "subject",
+          "facing": "right",
+          "color": "#8b5a2b",
+          "scale": 1
+        },
+        {
+          "model": "german_printing_house",
+          "count": 8,
+          "formation": "line",
+          "position": "right",
+          "motion": "idle",
+          "role": "background",
+          "offset": { "x": 12, "z": 0 },
+          "facing": "left",
+          "color": "#5c4033",
+          "scale": 1
+        }
+      ]
+    },
+    {
+      "kind": "diorama",
+      "duration": 5,
+      "kicker": "A New Era",
+      "caption": "The completed 42-Line Bible changed history.",
+      "setting": "city",
+      "timeOfDay": "day",
+      "weather": "clear",
+      "camera": "pull_out",
+      "elements": [
+        {
+          "model": "gutenberg_screw_press",
+          "count": 1,
+          "formation": "single",
+          "position": "center",
+          "motion": "idle",
+          "role": "subject",
+          "facing": "right",
+          "color": "#8b5a2b",
+          "scale": 1
+        },
+        {
+          "model": "press_operator_artisan",
+          "count": 2,
+          "formation": "scatter",
+          "position": "left",
+          "motion": "wave",
+          "role": "foreground",
+          "facing": "right",
+          "color": "#8b5a2b",
+          "scale": 1
+        },
+        {
+          "model": "compositor_workbench",
+          "count": 1,
+          "formation": "single",
+          "position": "right",
+          "motion": "idle",
+          "role": "background",
+          "facing": "left",
+          "color": "#d2b48c",
+          "scale": 1
+        },
+        {
+          "model": "german_printing_house",
+          "count": 12,
+          "formation": "scatter",
+          "position": "back",
+          "motion": "idle",
+          "role": "background",
+          "facing": "camera",
+          "color": "#5c4033",
+          "scale": 1
+        }
+      ]
+    }
+  ]
+}

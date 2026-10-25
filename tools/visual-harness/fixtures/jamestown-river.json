@@ -1,0 +1,499 @@
+{
+  "seed": 1636224673,
+  "title": "The Fate of Jamestown",
+  "models": [
+    {
+      "id": "jamestown_fort_module",
+      "name": "Jamestown Fort Module",
+      "notes": "Invalid JSON due to early closing bracket in draft. Rewriting cleanly.",
+      "parts": [
+        {
+          "id": "palisade_wall",
+          "size": [0.4, 6, 0.4],
+          "shape": "cylinder",
+          "taper": 0.35,
+          "anchor": "bottom",
+          "material": "wood_raw",
+          "position": [3.5, 0, -3.8]
+        }
+      ],
+      "scale": 1,
+      "category": "building",
+      "materials": [
+        { "id": "wood_raw", "color": "#63503f", "finish": "matte" },
+        { "id": "wood_dark", "color": "#382a1f", "finish": "matte" },
+        { "id": "wattle_daub", "color": "#d6cbb8", "finish": "matte" },
+        { "id": "thatch", "color": "#8f7a4a", "finish": "matte" },
+        { "id": "void", "color": "#1a1816", "finish": "matte" }
+      ],
+      "placement": "ground"
+    },
+    {
+      "id": "colonial_settler_planter",
+      "name": "Colonial Settler with Hoe",
+      "notes": "17th-century Jamestown colonist performing manual agricultural labor with a hoe, wearing period-appropriate loose shirt, breeches, and wide-brim hat.",
+      "parts": [
+        {
+          "id": "root_pelvis",
+          "size": [0.01, 0.01, 0.01],
+          "shape": "group",
+          "taper": 1,
+          "position": [0, 0.9, 0],
+          "rotation": [15, 0, 0]
+        },
+        {
+          "id": "torso",
+          "size": [0.4, 0.55, 0.25],
+          "shape": "box",
+          "taper": 1,
+          "parent": "root_pelvis",
+          "material": "m_shirt",
+          "position": [0, 0, 0],
+          "rotation": [0, 0, 0],
+          "animation": [
+            { "axis": "x", "wave": "sine", "when": "always", "property": "rotation", "amplitude": 12, "frequency": 0.5 }
+          ]
+        },
+        {
+          "id": "head",
+          "size": [0.22, 0.25, 0.22],
+          "shape": "sphere",
+          "taper": 1,
+          "parent": "torso",
+          "material": "m_skin",
+          "position": [0, 0.65, 0]
+        },
+        {
+          "id": "hat_brim",
+          "size": [0.45, 0.02, 0.45],
+          "shape": "cylinder",
+          "taper": 1,
+          "parent": "head",
+          "material": "m_breeches",
+          "position": [0, 0.05, 0]
+        },
+        {
+          "id": "hat_crown",
+          "size": [0.22, 0.15, 0.22],
+          "shape": "cylinder",
+          "taper": 0.8,
+          "parent": "head",
+          "material": "m_breeches",
+          "position": [0, 0.1, 0]
+        },
+        {
+          "id": "arm_r_upper",
+          "size": [0.12, 0.35, 0.12],
+          "shape": "capsule",
+          "taper": 1,
+          "parent": "torso",
+          "material": "m_shirt",
+          "position": [0.25, 0.5, 0],
+          "rotation": [45, 0, 0],
+          "animation": [
+            { "axis": "x", "wave": "sine", "when": "always", "property": "rotation", "amplitude": 25, "frequency": 0.5 }
+          ]
+        },
+        {
+          "id": "arm_r_lower",
+          "size": [0.1, 0.35, 0.1],
+          "shape": "capsule",
+          "taper": 1,
+          "parent": "arm_r_upper",
+          "material": "m_skin",
+          "position": [0, -0.3, 0],
+          "rotation": [-30, 0, 0]
+        },
+        {
+          "id": "arm_l_upper",
+          "size": [0.12, 0.35, 0.12],
+          "shape": "capsule",
+          "taper": 1,
+          "parent": "torso",
+          "material": "m_shirt",
+          "position": [-0.25, 0.5, 0],
+          "rotation": [45, 0, 0],
+          "animation": [
+            { "axis": "x", "wave": "sine", "when": "always", "property": "rotation", "amplitude": 20, "frequency": 0.5 }
+          ]
+        },
+        {
+          "id": "arm_l_lower",
+          "size": [0.1, 0.35, 0.1],
+          "shape": "capsule",
+          "taper": 1,
+          "parent": "arm_l_upper",
+          "material": "m_skin",
+          "position": [0, -0.3, 0],
+          "rotation": [-30, 0, 0]
+        },
+        {
+          "id": "hoe_handle",
+          "size": [0.04, 1.5, 0.04],
+          "shape": "cylinder",
+          "taper": 1,
+          "parent": "arm_r_lower",
+          "material": "m_wood",
+          "position": [-0.25, -0.2, 0.2],
+          "rotation": [90, 0, -15]
+        },
+        {
+          "id": "hoe_blade",
+          "size": [0.15, 0.2, 0.02],
+          "shape": "box",
+          "taper": 1,
+          "parent": "hoe_handle",
+          "material": "m_wood",
+          "position": [0, -0.7, -0.1],
+          "rotation": [90, 0, 0]
+        },
+        {
+          "id": "leg_r_upper",
+          "size": [0.15, 0.45, 0.15],
+          "shape": "capsule",
+          "taper": 1,
+          "parent": "root_pelvis",
+          "material": "m_breeches",
+          "position": [0.12, 0, 0],
+          "rotation": [-10, 0, 0]
+        },
+        {
+          "id": "leg_r_lower",
+          "size": [0.12, 0.45, 0.12],
+          "shape": "capsule",
+          "taper": 1,
+          "parent": "leg_r_upper",
+          "material": "m_skin",
+          "position": [0, -0.4, 0],
+          "rotation": [10, 0, 0]
+        },
+        {
+          "id": "leg_l_upper",
+          "size": [0.15, 0.45, 0.15],
+          "shape": "capsule",
+          "taper": 1,
+          "parent": "root_pelvis",
+          "material": "m_breeches",
+          "position": [-0.12, 0, 0],
+          "rotation": [20, 0, 0]
+        },
+        {
+          "id": "leg_l_lower",
+          "size": [0.12, 0.45, 0.12],
+          "shape": "capsule",
+          "taper": 1,
+          "parent": "leg_l_upper",
+          "material": "m_skin",
+          "position": [0, -0.4, 0],
+          "rotation": [10, 0, 0]
+        }
+      ],
+      "scale": 1,
+      "category": "figure",
+      "materials": [
+        { "id": "m_shirt", "color": "#e3dac9", "finish": "cloth" },
+        { "id": "m_breeches", "color": "#6e5c47", "finish": "cloth" },
+        { "id": "m_skin", "color": "#d2a679", "finish": "matte" },
+        { "id": "m_wood", "color": "#5c4033", "finish": "matte" }
+      ],
+      "placement": "ground"
+    },
+    {
+      "id": "burning_statehouse_ruin",
+      "name": "Burning Statehouse Ruin",
+      "notes": "Representation of the Jamestown statehouse ruin post-Bacon's Rebellion, with deterministic collapsing truss and effects.",
+      "parts": [
+        { "id": "foundation", "size": [14, 1, 8], "shape": "box", "anchor": "bottom", "material": "mat_brick" },
+        {
+          "id": "chimney_ruin",
+          "size": [2.5, 9, 2.5],
+          "shape": "box",
+          "anchor": "bottom",
+          "material": "mat_brick",
+          "position": [-5.5, 1, 0],
+          "rotation": [0, 0, 5]
+        },
+        {
+          "id": "wall_front",
+          "size": [10, 4, 1],
+          "shape": "box",
+          "anchor": "bottom",
+          "material": "mat_brick",
+          "position": [1.5, 1, 3.5],
+          "rotation": [0, 0, -2]
+        },
+        {
+          "id": "wall_back",
+          "size": [11, 2.5, 1],
+          "shape": "box",
+          "anchor": "bottom",
+          "material": "mat_brick",
+          "position": [1, 1, -3.5]
+        },
+        {
+          "id": "collapsing_truss_hinge",
+          "size": [0.01, 0.01, 0.01],
+          "shape": "group",
+          "taper": 1,
+          "anchor": "center",
+          "position": [2, 4, 0],
+          "rotation": [0, 0, -15],
+          "segments": 4,
+          "animation": [
+            { "axis": "z", "wave": "sine", "when": "always", "property": "rotation", "amplitude": 3, "frequency": 0.35 }
+          ]
+        },
+        {
+          "id": "roof_beam_main",
+          "size": [6, 0.4, 0.4],
+          "shape": "box",
+          "taper": 1,
+          "anchor": "left",
+          "parent": "collapsing_truss_hinge",
+          "material": "mat_charred",
+          "position": [0, 0, 0],
+          "rotation": [0, 0, -10],
+          "segments": 4
+        },
+        {
+          "id": "roof_beam_cross",
+          "size": [0.4, 0.4, 7],
+          "shape": "box",
+          "taper": 1,
+          "anchor": "center",
+          "parent": "collapsing_truss_hinge",
+          "material": "mat_charred",
+          "position": [3, 0, 0],
+          "rotation": [0, 0, 0],
+          "segments": 4
+        },
+        {
+          "id": "flames_main",
+          "size": [3, 4, 0.01],
+          "shape": "fire",
+          "anchor": "bottom",
+          "material": "mat_fire",
+          "position": [2, 1, 1],
+          "animation": [
+            { "axis": "y", "wave": "pulse", "when": "always", "property": "scale", "amplitude": 0.25, "frequency": 0.7 }
+          ]
+        },
+        {
+          "id": "flames_chimney",
+          "size": [2.5, 3.5, 0.01],
+          "shape": "fire",
+          "anchor": "bottom",
+          "material": "mat_fire",
+          "position": [-4.5, 1, -1]
+        },
+        {
+          "id": "smoke_plume",
+          "size": [4, 12, 0.01],
+          "shape": "smoke",
+          "anchor": "bottom",
+          "material": "mat_smoke",
+          "position": [1, 2, 0],
+          "animation": [
+            {
+              "axis": "y",
+              "wave": "sine",
+              "when": "always",
+              "property": "position",
+              "amplitude": 0.3,
+              "frequency": 0.25
+            }
+          ]
+        }
+      ],
+      "scale": 1,
+      "category": "building",
+      "materials": [
+        { "id": "mat_brick", "color": "#7a3826", "finish": "matte" },
+        { "id": "mat_charred", "color": "#2c2b2a", "finish": "matte" },
+        { "id": "mat_fire", "color": "#ff5500", "finish": "emissive" },
+        { "id": "mat_smoke", "color": "#333333", "finish": "matte" }
+      ],
+      "placement": "ground"
+    }
+  ],
+  "scenes": [
+    {
+      "kind": "diorama",
+      "camera": "tracking",
+      "kicker": "May 1607 · James River",
+      "caption": "English colonists establish North America's first permanent English settlement.",
+      "setting": "river",
+      "weather": "clear",
+      "duration": 7,
+      "elements": [
+        {
+          "role": "subject",
+          "color": "#8b5a2b",
+          "count": 6,
+          "model": "jamestown_fort_module",
+          "scale": 1,
+          "facing": "center",
+          "motion": "idle",
+          "position": "center",
+          "formation": "ring"
+        }
+      ],
+      "timeOfDay": "day"
+    },
+    {
+      "kind": "diorama",
+      "camera": "push_in",
+      "kicker": "Winter 1609–1610",
+      "caption": "Drought, tainted water, disease, and war reduce the population to about sixty.",
+      "setting": "river",
+      "weather": "snow",
+      "duration": 8,
+      "elements": [
+        {
+          "role": "subject",
+          "color": "#a9a9a9",
+          "count": 1,
+          "model": "colonial_settler_planter",
+          "scale": 1,
+          "facing": "camera",
+          "motion": "sway",
+          "position": "center",
+          "formation": "single"
+        },
+        {
+          "role": "background",
+          "color": "#5c4033",
+          "count": 3,
+          "model": "jamestown_fort_module",
+          "scale": 1,
+          "facing": "camera",
+          "motion": "idle",
+          "position": "back",
+          "formation": "line"
+        }
+      ],
+      "timeOfDay": "dawn"
+    },
+    {
+      "kind": "diorama",
+      "camera": "pan_right",
+      "kicker": "1610s–1620s",
+      "caption": "Supply ships and successful tobacco cultivation brought economic stability to the colony.",
+      "setting": "plains",
+      "weather": "clear",
+      "duration": 7,
+      "elements": [
+        {
+          "role": "subject",
+          "color": "#f4a460",
+          "count": 4,
+          "model": "colonial_settler_planter",
+          "scale": 1,
+          "facing": "right",
+          "motion": "march",
+          "position": "front",
+          "formation": "scatter"
+        },
+        {
+          "role": "background",
+          "color": "#8b5a2b",
+          "count": 4,
+          "model": "jamestown_fort_module",
+          "scale": 1,
+          "facing": "away",
+          "motion": "idle",
+          "position": "back",
+          "formation": "block"
+        }
+      ],
+      "timeOfDay": "day"
+    },
+    {
+      "kind": "diorama",
+      "camera": "static",
+      "kicker": "1676 & 1698",
+      "caption": "Fires burned Jamestown in 1676 and its statehouse in 1698.",
+      "setting": "city",
+      "weather": "smoke",
+      "duration": 6,
+      "elements": [
+        {
+          "role": "subject",
+          "color": "#333333",
+          "count": 1,
+          "model": "burning_statehouse_ruin",
+          "scale": 1.2,
+          "facing": "camera",
+          "motion": "burn",
+          "position": "center",
+          "formation": "single"
+        },
+        {
+          "role": "background",
+          "color": "#444444",
+          "count": 2,
+          "model": "jamestown_fort_module",
+          "scale": 1,
+          "facing": "right",
+          "motion": "collapse",
+          "position": "left",
+          "formation": "scatter"
+        }
+      ],
+      "timeOfDay": "night"
+    },
+    {
+      "map": {
+        "lat": 37.211,
+        "lon": -76.776,
+        "zoom": "local",
+        "label": "Jamestown to Williamsburg",
+        "route": [
+          { "lat": 37.211, "lon": -76.776 },
+          { "lat": 37.27, "lon": -76.707 }
+        ]
+      },
+      "kind": "map",
+      "camera": "flyover",
+      "kicker": "1699",
+      "caption": "Williamsburg replaced Jamestown as Virginia's capital after devastating fires.",
+      "setting": "plains",
+      "weather": "clear",
+      "duration": 6,
+      "elements": [],
+      "timeOfDay": "day"
+    },
+    {
+      "kind": "diorama",
+      "camera": "pull_out",
+      "kicker": "Legacy",
+      "caption": "Jamestown's ruins offer crucial archaeological insight into early colonial America.",
+      "setting": "coast",
+      "weather": "clear",
+      "duration": 6,
+      "elements": [
+        {
+          "role": "subject",
+          "color": "#696969",
+          "count": 2,
+          "model": "jamestown_fort_module",
+          "scale": 1,
+          "facing": "away",
+          "motion": "idle",
+          "position": "center",
+          "formation": "scatter"
+        }
+      ],
+      "timeOfDay": "dusk"
+    }
+  ],
+  "palette": { "accent": "#cd5c5c", "primary": "#4a5d23", "secondary": "#8b5a2b" },
+  "version": 2,
+  "factions": [{ "name": "English Settlers", "color": "#8b5a2b" }],
+  "location": "Jamestown, Virginia",
+  "subtitle": "The survival and eventual abandonment of America's first permanent English settlement.",
+  "dateLabel": "1607 - 1699",
+  "coordinates": { "lat": 37.211, "lon": -76.776 },
+  "presentation": "immersive",
+  "totalDuration": 40
+}

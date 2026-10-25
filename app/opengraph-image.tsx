@@ -2,7 +2,7 @@ import { ImageResponse } from "next/og";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
-export const alt = "Polyhistor — a little curiosity, a window into history";
+export const alt = "PolyChronicle — a little curiosity, a window into history";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -44,7 +44,7 @@ export default async function OpenGraphImage() {
           <polygon points="50,8 50,60 8,80" fill="#c99a3c" />
           <polygon points="8,80 50,60 92,80" fill="#246d62" />
         </svg>
-        <span style={{ fontFamily: "Facet", fontSize: 40, letterSpacing: 2 }}>POLYHISTOR</span>
+        <span style={{ fontFamily: "Facet", fontSize: 40, letterSpacing: 2 }}>POLYCHRONICLE</span>
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         <span style={{ fontSize: 46, color: "#3f5652" }}>A little curiosity.</span>

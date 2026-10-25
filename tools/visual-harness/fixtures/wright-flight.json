@@ -1,0 +1,796 @@
+{
+  "version": 2,
+  "presentation": "immersive",
+  "title": "First Flight at Kitty Hawk",
+  "subtitle": "The invention of controlled, powered, heavier-than-air flight.",
+  "dateLabel": "December 17, 1903",
+  "location": "Kill Devil Hills, North Carolina",
+  "coordinates": { "lat": 36.0152, "lon": -75.6672 },
+  "totalDuration": 20,
+  "seed": 1020173157,
+  "palette": { "primary": "#d2b48c", "secondary": "#5a4d41", "accent": "#993300" },
+  "factions": [{ "name": "Wright Brothers", "color": "#333333" }],
+  "models": [
+    {
+      "id": "wright_flyer_1903",
+      "name": "Wright Flyer 1903",
+      "category": "aircraft",
+      "placement": "air",
+      "scale": 1,
+      "materials": [
+        { "id": "canvas", "color": "#e3dac9", "finish": "cloth" },
+        { "id": "wood_struts", "color": "#b58a55", "finish": "matte" },
+        { "id": "engine_metal", "color": "#555555", "finish": "metal" },
+        { "id": "propeller_wood", "color": "#8b5a2b", "finish": "satin" },
+        { "id": "suit_fabric", "color": "#2f3542", "finish": "cloth" },
+        { "id": "skin", "color": "#ffd3b6", "finish": "matte" }
+      ],
+      "parts": [
+        { "id": "lower_wing", "shape": "box", "material": "canvas", "size": [1.5, 0.05, 10], "position": [0, 0.8, 0] },
+        { "id": "upper_wing", "shape": "box", "material": "canvas", "size": [1.5, 0.05, 10], "position": [0, 2.3, 0] },
+        {
+          "id": "wing_struts",
+          "shape": "cylinder",
+          "material": "wood_struts",
+          "size": [0.04, 1.5, 0.04],
+          "position": [0, 1.55, 0],
+          "repeat": { "mode": "linear", "count": 8, "step": [0, 0, 1.3] }
+        },
+        {
+          "id": "wing_struts_left",
+          "shape": "cylinder",
+          "material": "wood_struts",
+          "size": [0.04, 1.5, 0.04],
+          "position": [0, 1.55, -4.5],
+          "repeat": { "mode": "linear", "count": 4, "step": [0, 0, 1.3] }
+        },
+        {
+          "id": "engine_block",
+          "shape": "box",
+          "material": "engine_metal",
+          "size": [0.6, 0.4, 0.4],
+          "position": [-0.1, 0.95, 0.35]
+        },
+        {
+          "id": "pilot_cradle",
+          "shape": "box",
+          "material": "wood_struts",
+          "size": [0.4, 0.1, 0.5],
+          "position": [0, 0.85, -0.3]
+        },
+        {
+          "id": "pilot_torso",
+          "shape": "capsule",
+          "material": "suit_fabric",
+          "size": [0.25, 0.7, 0.25],
+          "position": [-0.1, 0.95, -0.3],
+          "rotation": [0, 0, 85]
+        },
+        {
+          "id": "pilot_head",
+          "shape": "sphere",
+          "material": "skin",
+          "size": [0.2, 0.2, 0.2],
+          "position": [0.3, 1, -0.3]
+        },
+        {
+          "id": "canard_structure",
+          "shape": "box",
+          "material": "wood_struts",
+          "size": [1.5, 0.04, 0.1],
+          "position": [1.2, 1.05, 0],
+          "rotation": [0, 0, 15]
+        },
+        {
+          "id": "canard_elevator_lower",
+          "shape": "box",
+          "material": "canvas",
+          "size": [0.8, 0.02, 2.2],
+          "position": [2, 1.1, 0],
+          "animation": [
+            { "property": "rotation", "axis": "z", "wave": "sine", "amplitude": 12, "frequency": 0.5, "when": "always" }
+          ]
+        },
+        {
+          "id": "canard_elevator_upper",
+          "shape": "box",
+          "material": "canvas",
+          "size": [0.8, 0.02, 2.2],
+          "position": [2, 1.7, 0],
+          "animation": [
+            { "property": "rotation", "axis": "z", "wave": "sine", "amplitude": 12, "frequency": 0.5, "when": "always" }
+          ]
+        },
+        {
+          "id": "rudder_frame_top",
+          "shape": "box",
+          "material": "wood_struts",
+          "size": [1.8, 0.04, 0.04],
+          "position": [-1, 1.8, 0],
+          "rotation": [0, 0, -15]
+        },
+        {
+          "id": "rudder_frame_bottom",
+          "shape": "box",
+          "material": "wood_struts",
+          "size": [1.8, 0.04, 0.04],
+          "position": [-1, 1, 0],
+          "rotation": [0, 0, 15]
+        },
+        {
+          "id": "rear_rudder_left",
+          "shape": "box",
+          "material": "canvas",
+          "size": [0.4, 1.2, 0.02],
+          "position": [-2, 1.4, -0.3],
+          "animation": [
+            { "property": "rotation", "axis": "y", "wave": "sine", "amplitude": 15, "frequency": 0.5, "when": "always" }
+          ]
+        },
+        {
+          "id": "rear_rudder_right",
+          "shape": "box",
+          "material": "canvas",
+          "size": [0.4, 1.2, 0.02],
+          "position": [-2, 1.4, 0.3],
+          "animation": [
+            { "property": "rotation", "axis": "y", "wave": "sine", "amplitude": 15, "frequency": 0.5, "when": "always" }
+          ]
+        },
+        {
+          "id": "propeller_shaft_left",
+          "shape": "cylinder",
+          "material": "engine_metal",
+          "size": [0.06, 0.8, 0.06],
+          "position": [-0.6, 1.35, -1],
+          "rotation": [90, 0, 0]
+        },
+        {
+          "id": "propeller_left",
+          "shape": "box",
+          "material": "propeller_wood",
+          "size": [0.1, 1.3, 0.04],
+          "position": [-1, 1.35, -1],
+          "rotation": [0, 0, 0],
+          "segments": 3,
+          "taper": 0.5
+        },
+        {
+          "id": "propeller_shaft_right",
+          "shape": "cylinder",
+          "material": "engine_metal",
+          "size": [0.06, 0.8, 0.06],
+          "position": [-0.6, 1.35, 1],
+          "rotation": [90, 0, 0]
+        },
+        {
+          "id": "propeller_right",
+          "shape": "box",
+          "material": "propeller_wood",
+          "size": [0.1, 1.3, 0.04],
+          "position": [-1, 1.35, 1],
+          "rotation": [0, 0, 0],
+          "segments": 3,
+          "taper": 0.5
+        },
+        {
+          "id": "drive_chain_left",
+          "shape": "torus",
+          "material": "engine_metal",
+          "size": [0.6, 0.02, 0.6],
+          "position": [-0.4, 1.15, -0.5],
+          "rotation": [0, 90, 15]
+        },
+        {
+          "id": "drive_chain_right",
+          "shape": "torus",
+          "material": "engine_metal",
+          "size": [0.6, 0.02, 0.6],
+          "position": [-0.4, 1.15, 0.5],
+          "rotation": [0, 90, -15]
+        },
+        {
+          "id": "skid_runners",
+          "shape": "box",
+          "material": "wood_struts",
+          "size": [2.5, 0.04, 0.06],
+          "position": [0.5, 0.4, -0.6],
+          "mirror": "z"
+        }
+      ],
+      "notes": "Wright Flyer 1903 model featuring fabric double wings, rear rudders, and oscillating front canards powered by simulated spinning chains."
+    },
+    {
+      "id": "wooden_launch_rail",
+      "name": "Junction Launch Monorail and Dolly",
+      "category": "structure",
+      "placement": "ground",
+      "materials": [
+        { "id": "weathered_pine", "color": "#c2b090", "finish": "matte" },
+        { "id": "sand", "color": "#dfcdad", "finish": "matte" },
+        { "id": "iron", "color": "#4e4d4a", "finish": "metal" },
+        { "id": "brass", "color": "#c4a24d", "finish": "metal" }
+      ],
+      "parts": [
+        {
+          "id": "sand_base",
+          "shape": "box",
+          "material": "sand",
+          "size": [18.3, 0.04, 1.2],
+          "position": [0, 0.02, 0],
+          "anchor": "center"
+        },
+        {
+          "id": "wooden_rail",
+          "shape": "box",
+          "material": "weathered_pine",
+          "size": [18.3, 0.08, 0.1],
+          "position": [0, 0.04, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "cross_ties",
+          "shape": "box",
+          "material": "weathered_pine",
+          "size": [0.08, 0.02, 0.8],
+          "position": [-9, 0.04, 0],
+          "anchor": "bottom",
+          "repeat": { "mode": "linear", "count": 13, "step": [1.5, 0, 0] }
+        },
+        {
+          "id": "iron_strip",
+          "shape": "box",
+          "material": "iron",
+          "size": [18.3, 0.01, 0.04],
+          "position": [0, 0.12, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "dolly_group",
+          "shape": "group",
+          "size": [0.6, 0.3, 0.9],
+          "position": [-5, 0.13, 0],
+          "animation": [{ "property": "position", "axis": "x", "wave": "sine", "amplitude": 3, "frequency": 0.2 }]
+        },
+        {
+          "id": "dolly_axle",
+          "shape": "cylinder",
+          "material": "iron",
+          "size": [0.05, 0.85, 0.05],
+          "position": [0, 0.02, 0],
+          "rotation": [90, 0, 0],
+          "segments": 6,
+          "taper": 1
+        },
+        {
+          "id": "dolly_wheel",
+          "shape": "cylinder",
+          "material": "iron",
+          "size": [0.18, 0.04, 0.18],
+          "position": [0, 0.02, 0],
+          "rotation": [90, 0, 0],
+          "segments": 8,
+          "taper": 1
+        },
+        {
+          "id": "cross_beam",
+          "shape": "box",
+          "material": "weathered_pine",
+          "size": [0.12, 0.04, 0.9],
+          "position": [0, 0.05, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "skid_cradles",
+          "shape": "box",
+          "material": "weathered_pine",
+          "size": [0.15, 0.08, 0.1],
+          "position": [0, 0.09, 0.35],
+          "anchor": "bottom",
+          "mirror": "z"
+        },
+        {
+          "id": "cradle_brackets",
+          "shape": "box",
+          "material": "iron",
+          "size": [0.02, 0.08, 0.12],
+          "position": [0, 0.09, 0.35],
+          "anchor": "bottom",
+          "mirror": "z"
+        }
+      ],
+      "notes": "Low-poly 1903 Wright brothers launch monorail and takeoff dolly. Sand foundation, weathered pine rails with iron tracking, and a rolling dual-sided skid cradle."
+    },
+    {
+      "id": "wilbur_wright_figure",
+      "name": "Wilbur Wright Figure",
+      "category": "figure",
+      "placement": "ground",
+      "scale": 1,
+      "materials": [
+        { "id": "suit_dark", "color": "#33383e", "finish": "cloth" },
+        { "id": "shirt_white", "color": "#eeeeee", "finish": "cloth" },
+        { "id": "skin", "color": "#ebbc9a", "finish": "matte" },
+        { "id": "leather_boots", "color": "#42281d", "finish": "satin" },
+        { "id": "cap_wool", "color": "#2c2e30", "finish": "cloth" }
+      ],
+      "parts": [
+        {
+          "id": "pelvis",
+          "shape": "box",
+          "material": "suit_dark",
+          "size": [0.25, 0.15, 0.28],
+          "position": [0, 0.85, 0],
+          "anchor": "center",
+          "animation": [
+            {
+              "property": "position",
+              "axis": "y",
+              "wave": "bounce",
+              "amplitude": 0.05,
+              "frequency": 2,
+              "when": "always"
+            }
+          ]
+        },
+        {
+          "id": "torso",
+          "parent": "pelvis",
+          "shape": "cylinder",
+          "material": "suit_dark",
+          "size": [0.28, 0.48, 0.24],
+          "position": [0, 0.075, 0],
+          "anchor": "bottom",
+          "taper": 0.75
+        },
+        {
+          "id": "collar",
+          "parent": "torso",
+          "shape": "cylinder",
+          "material": "shirt_white",
+          "size": [0.12, 0.04, 0.12],
+          "position": [0, 0.48, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "head",
+          "parent": "collar",
+          "shape": "sphere",
+          "material": "skin",
+          "size": [0.17, 0.21, 0.17],
+          "position": [0, 0.04, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "cap",
+          "parent": "head",
+          "shape": "dome",
+          "material": "cap_wool",
+          "size": [0.19, 0.08, 0.19],
+          "position": [0, 0.15, 0],
+          "rotation": [5, 0, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "cap_visor",
+          "parent": "head",
+          "shape": "wedge",
+          "material": "cap_wool",
+          "size": [0.08, 0.01, 0.14],
+          "position": [0.09, 0.14, 0],
+          "rotation": [0, 0, -10],
+          "anchor": "back"
+        },
+        {
+          "id": "shoulder_pivot",
+          "parent": "torso",
+          "shape": "group",
+          "size": [0.1, 0.1, 0.1],
+          "position": [0.05, 0.42, 0.15],
+          "rotation": [15, 0, 20],
+          "segments": 4,
+          "taper": 1,
+          "mirror": "z"
+        },
+        {
+          "id": "arm_upper",
+          "parent": "shoulder_pivot",
+          "shape": "capsule",
+          "material": "suit_dark",
+          "size": [0.1, 0.32, 0.1],
+          "position": [0, 0, 0],
+          "anchor": "top"
+        },
+        {
+          "id": "elbow_pivot",
+          "parent": "arm_upper",
+          "shape": "group",
+          "size": [0.08, 0.08, 0.08],
+          "position": [0, -0.3, 0],
+          "rotation": [0, 0, -25]
+        },
+        {
+          "id": "arm_fore",
+          "parent": "elbow_pivot",
+          "shape": "capsule",
+          "material": "suit_dark",
+          "size": [0.08, 0.3, 0.08],
+          "position": [0, 0, 0],
+          "anchor": "top"
+        },
+        {
+          "id": "hip_pivot",
+          "parent": "pelvis",
+          "shape": "group",
+          "size": [0.1, 0.1, 0.1],
+          "position": [0, -0.05, 0.11],
+          "rotation": [0, 0, 0],
+          "segments": 4,
+          "taper": 1,
+          "mirror": "z"
+        },
+        {
+          "id": "leg_upper",
+          "parent": "hip_pivot",
+          "shape": "capsule",
+          "material": "suit_dark",
+          "size": [0.13, 0.42, 0.13],
+          "position": [0, 0, 0],
+          "rotation": [25, 0, 0],
+          "anchor": "top",
+          "segments": 6,
+          "taper": 1
+        },
+        {
+          "id": "knee_pivot",
+          "parent": "leg_upper",
+          "shape": "group",
+          "size": [0.1, 0.1, 0.1],
+          "position": [0, -0.4, 0],
+          "rotation": [-45, 0, 0]
+        },
+        {
+          "id": "leg_lower",
+          "parent": "knee_pivot",
+          "shape": "capsule",
+          "material": "suit_dark",
+          "size": [0.11, 0.4, 0.11],
+          "position": [0, 0, 0],
+          "anchor": "top",
+          "segments": 6,
+          "taper": 1
+        },
+        {
+          "id": "foot",
+          "parent": "leg_lower",
+          "shape": "box",
+          "material": "leather_boots",
+          "size": [0.23, 0.08, 0.09],
+          "position": [0.06, -0.38, 0],
+          "rotation": [10, 0, 0],
+          "anchor": "center"
+        }
+      ],
+      "notes": "Wilbur Wright running at the right wingtip, captured in his iconic 1903 pose. Fully articulated running animation legs and steadying arms."
+    },
+    {
+      "id": "kitty_hawk_dune_backdrop",
+      "name": "Kill Devil Hills Sand Dune",
+      "category": "nature",
+      "placement": "ground",
+      "materials": [
+        { "id": "dune_sand", "color": "#e2ce9d", "finish": "matte" },
+        { "id": "dune_shadow", "color": "#c8b380", "finish": "matte" },
+        { "id": "beach_grass", "color": "#9ca477", "finish": "matte" }
+      ],
+      "parts": [
+        {
+          "id": "main_dune_base",
+          "shape": "box",
+          "material": "dune_sand",
+          "size": [24, 1.5, 12],
+          "position": [0, 0, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "dune_slope_east",
+          "shape": "wedge",
+          "material": "dune_sand",
+          "size": [16, 4.5, 8],
+          "position": [-3, 1.5, 1],
+          "rotation": [0, -10, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "dune_slope_west",
+          "shape": "wedge",
+          "material": "dune_sand",
+          "size": [18, 3.5, 7],
+          "position": [3, 1.5, -1.5],
+          "rotation": [0, 170, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "dune_crest",
+          "shape": "ico",
+          "material": "dune_sand",
+          "size": [12, 7, 7],
+          "position": [-1, 1.5, -0.5],
+          "anchor": "bottom",
+          "detail": 1
+        },
+        {
+          "id": "dune_crest_top",
+          "shape": "ico",
+          "material": "dune_sand",
+          "size": [8, 5, 5],
+          "position": [-1.5, 5.5, -0.5],
+          "anchor": "bottom",
+          "detail": 1
+        },
+        {
+          "id": "dune_shoulder_left",
+          "shape": "ico",
+          "material": "dune_shadow",
+          "size": [10, 5, 6],
+          "position": [-7, 1, 2],
+          "anchor": "bottom",
+          "detail": 1
+        },
+        {
+          "id": "dune_shoulder_right",
+          "shape": "ico",
+          "material": "dune_shadow",
+          "size": [9, 4, 5],
+          "position": [6.5, 1, -2.5],
+          "anchor": "bottom",
+          "detail": 1
+        },
+        {
+          "id": "wind_ripple_1",
+          "shape": "box",
+          "material": "dune_shadow",
+          "size": [8, 0.2, 1.5],
+          "position": [-2, 3, 2.5],
+          "rotation": [5, 12, -5],
+          "anchor": "bottom"
+        },
+        {
+          "id": "wind_ripple_2",
+          "shape": "box",
+          "material": "dune_shadow",
+          "size": [6, 0.2, 1.2],
+          "position": [4, 2.5, 1.5],
+          "rotation": [-4, -15, 8],
+          "anchor": "bottom"
+        },
+        {
+          "id": "grass_clump_main",
+          "shape": "cone",
+          "material": "beach_grass",
+          "size": [0.6, 1.5, 0.6],
+          "position": [-2, 6.5, -0.5],
+          "anchor": "bottom",
+          "segments": 4,
+          "taper": 0.25
+        },
+        {
+          "id": "grass_clump_sprouts",
+          "shape": "cone",
+          "material": "beach_grass",
+          "size": [0.4, 1.2, 0.4],
+          "position": [-2.2, 6.5, -0.3],
+          "rotation": [15, 0, -10],
+          "anchor": "bottom",
+          "segments": 3,
+          "taper": 0
+        },
+        {
+          "id": "grass_patch_left",
+          "shape": "cone",
+          "material": "beach_grass",
+          "size": [0.7, 1.4, 0.7],
+          "position": [-6.5, 3.2, 1.8],
+          "rotation": [-10, 45, 5],
+          "anchor": "bottom",
+          "segments": 4,
+          "taper": 0.25
+        },
+        {
+          "id": "grass_patch_right",
+          "shape": "cone",
+          "material": "beach_grass",
+          "size": [0.5, 1.1, 0.5],
+          "position": [5, 2.8, -1],
+          "rotation": [8, -30, -12],
+          "anchor": "bottom",
+          "segments": 4,
+          "taper": 0.25
+        },
+        {
+          "id": "grass_scatter",
+          "shape": "cone",
+          "material": "beach_grass",
+          "size": [0.4, 1, 0.4],
+          "position": [-11, 1.2, 3.5],
+          "rotation": [-5, 15, 20],
+          "anchor": "bottom",
+          "segments": 3,
+          "taper": 0
+        },
+        {
+          "id": "grass_scatter_2",
+          "shape": "cone",
+          "material": "beach_grass",
+          "size": [0.35, 0.9, 0.35],
+          "position": [9, 1.1, -3],
+          "rotation": [12, -10, -15],
+          "anchor": "bottom",
+          "segments": 3,
+          "taper": 0
+        }
+      ],
+      "notes": "Spacious, wind-swept sand dune background with organic soft-sloped ridges, contrasting ripples and sparse beach grass. Perfect backdrop for the flight path."
+    }
+  ],
+  "scenes": [
+    {
+      "kind": "diorama",
+      "duration": 5,
+      "kicker": "10:35 AM",
+      "caption": "A new flying machine rests on a monorail.",
+      "setting": "coast",
+      "timeOfDay": "day",
+      "weather": "clear",
+      "camera": "orbit",
+      "elements": [
+        {
+          "model": "kitty_hawk_dune_backdrop",
+          "count": 3,
+          "formation": "scatter",
+          "position": "back",
+          "motion": "idle",
+          "role": "background",
+          "facing": "camera",
+          "scale": 1.5
+        },
+        {
+          "model": "wooden_launch_rail",
+          "count": 1,
+          "formation": "single",
+          "position": "center",
+          "motion": "idle",
+          "role": "foreground",
+          "facing": "right",
+          "scale": 1
+        },
+        {
+          "model": "wright_flyer_1903",
+          "count": 1,
+          "formation": "single",
+          "position": "center",
+          "motion": "idle",
+          "role": "subject",
+          "facing": "right",
+          "scale": 1
+        }
+      ]
+    },
+    {
+      "kind": "diorama",
+      "duration": 5,
+      "kicker": "The Mechanism",
+      "caption": "A lightweight engine drives twin counter-rotating propellers.",
+      "setting": "coast",
+      "timeOfDay": "day",
+      "weather": "clear",
+      "camera": "push_in",
+      "elements": [
+        {
+          "model": "kitty_hawk_dune_backdrop",
+          "count": 1,
+          "formation": "single",
+          "position": "back",
+          "motion": "idle",
+          "role": "background",
+          "facing": "camera",
+          "scale": 1.5
+        },
+        {
+          "model": "wright_flyer_1903",
+          "count": 1,
+          "formation": "single",
+          "position": "center",
+          "motion": "idle",
+          "role": "subject",
+          "facing": "right",
+          "scale": 1
+        }
+      ]
+    },
+    {
+      "kind": "diorama",
+      "duration": 5,
+      "kicker": "Takeoff Run",
+      "caption": "Wilbur steadies the wing as Orville takes off.",
+      "setting": "coast",
+      "timeOfDay": "day",
+      "weather": "clear",
+      "camera": "tracking",
+      "elements": [
+        {
+          "model": "wooden_launch_rail",
+          "count": 1,
+          "formation": "single",
+          "position": "center",
+          "motion": "idle",
+          "role": "background",
+          "facing": "right",
+          "scale": 1
+        },
+        {
+          "model": "wright_flyer_1903",
+          "count": 1,
+          "formation": "single",
+          "position": "center",
+          "motion": "launch",
+          "role": "subject",
+          "facing": "right",
+          "scale": 1
+        },
+        {
+          "model": "wilbur_wright_figure",
+          "count": 1,
+          "formation": "single",
+          "position": "center",
+          "motion": "march",
+          "role": "subject",
+          "facing": "right",
+          "scale": 1
+        }
+      ]
+    },
+    {
+      "kind": "diorama",
+      "duration": 5,
+      "kicker": "12 Seconds to Change the World",
+      "caption": "The Wright brothers achieve the first powered flight.",
+      "setting": "coast",
+      "timeOfDay": "day",
+      "weather": "clear",
+      "camera": "tracking",
+      "elements": [
+        {
+          "model": "kitty_hawk_dune_backdrop",
+          "count": 2,
+          "formation": "line",
+          "position": "back",
+          "motion": "idle",
+          "role": "background",
+          "facing": "camera",
+          "scale": 1.5
+        },
+        {
+          "model": "wilbur_wright_figure",
+          "count": 1,
+          "formation": "single",
+          "position": "left",
+          "motion": "idle",
+          "role": "foreground",
+          "facing": "right",
+          "scale": 1
+        },
+        {
+          "model": "wright_flyer_1903",
+          "count": 1,
+          "formation": "single",
+          "position": "center",
+          "motion": "fly",
+          "role": "subject",
+          "facing": "right",
+          "scale": 1
+        }
+      ]
+    }
+  ]
+}

@@ -7,9 +7,9 @@ export const metadata: Metadata = { title: "Terms of Service" };
 
 const SECTIONS = [
   { id: "agreement", title: "1. Agreement" },
-  { id: "eligibility", title: "2. Who can use Polyhistor" },
+  { id: "eligibility", title: "2. Who can use PolyChronicle" },
   { id: "accounts", title: "3. Your account" },
-  { id: "service", title: "4. What Polyhistor does" },
+  { id: "service", title: "4. What PolyChronicle does" },
   { id: "accuracy", title: "5. Accuracy and educational use" },
   { id: "acceptable-use", title: "6. Acceptable use" },
   { id: "your-content", title: "7. Your questions and videos" },
@@ -38,8 +38,8 @@ export default function TermsPage() {
           <strong>The short version</strong>
           <ul style={{ margin: 0 }}>
             <li>
-              Polyhistor makes short educational animations about real historical events. Use it for learning, teaching
-              and sharing.
+              PolyChronicle makes short educational animations about real historical events. Use it for learning,
+              teaching and sharing.
             </li>
             <li>
               Videos are researched with AI assistance and simplified. They can contain mistakes — always check the
@@ -63,14 +63,15 @@ export default function TermsPage() {
     >
       <h2 id="agreement">1. Agreement</h2>
       <p>
-        These Terms of Service (“Terms”) are an agreement between you and {SITE.legalEntity} (“Polyhistor”, “we”, “us”)
-        about your use of the Polyhistor website, applications and related services (the “Service”). By creating an
-        account or using the Service you agree to these Terms, our <Link href="/privacy">Privacy Policy</Link> and our{" "}
+        These Terms of Service (“Terms”) are an agreement between you and {SITE.legalEntity} (“PolyChronicle”, “we”,
+        “us”) about your use of the PolyChronicle website, applications and related services (the “Service”). By
+        creating an account or using the Service you agree to these Terms, our{" "}
+        <Link href="/privacy">Privacy Policy</Link> and our{" "}
         <Link href="/content-policy">Content &amp; Safety Policy</Link>, which form part of these Terms. If you do not
         agree, please don’t use the Service.
       </p>
 
-      <h2 id="eligibility">2. Who can use Polyhistor</h2>
+      <h2 id="eligibility">2. Who can use PolyChronicle</h2>
       <p>
         You must be at least 13 years old, and old enough to agree to these Terms where you live, to create an account.
         If you use the Service on behalf of a school, company or other organisation, you confirm you are authorised to
@@ -92,12 +93,12 @@ export default function TermsPage() {
         <li>One person per account. Don’t sell, share or transfer accounts, or create accounts by automated means.</li>
       </ul>
 
-      <h2 id="service">4. What Polyhistor does</h2>
+      <h2 id="service">4. What PolyChronicle does</h2>
       <p>
         When you ask about a historical event, the Service checks the request, researches the topic using AI models and
         web search provided by Google, writes a short storyboard, designs simple three-dimensional models for the
         people, places and objects involved, and animates the result in your web browser. The finished animation is
-        saved to your library as an animated GIF together with a still image, your question, the research notes, the
+        saved to your library as an animated video together with a still image, your question, the research notes, the
         storyboard and the list of sources. We describe this processing in more detail in our{" "}
         <Link href="/privacy">Privacy Policy</Link>.
       </p>
@@ -159,7 +160,7 @@ export default function TermsPage() {
         As between you and us, and to the extent we have rights in them, we assign to you our rights in the videos
         generated for you, and you may use, download and share them for any lawful purpose. Because videos are generated
         automatically, similar requests may produce similar results for other people, and some jurisdictions may not
-        grant copyright in AI-assisted output. Please attribute “Made with Polyhistor” where practical and keep the
+        grant copyright in AI-assisted output. Please attribute “Made with PolyChronicle” where practical and keep the
         source list with the video when you share it for educational purposes.
       </p>
       <h3>Responsibility</h3>

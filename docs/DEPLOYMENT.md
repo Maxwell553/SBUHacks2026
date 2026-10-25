@@ -12,6 +12,8 @@ Copy `.env.example` to `.env.local` for development. Set the same values in your
 | `GEMINI_PROVIDER`           | no              | `vertex` (default) or `developer` for Google AI Studio keys.                                                 |
 | `GEMINI_CREATIVE_MODEL`     | no              | Model for model planning, geometry and storyboards. Default `gemini-3.1-pro-preview`.                        |
 | `GEMINI_FAST_MODEL`         | no              | Model for research, moderation and caption repairs. Default `gemini-3.8-flash`.                              |
+| `GEMINI_PLANNER_MODEL`      | no              | Model for the model plan. Defaults to `GEMINI_CREATIVE_MODEL`.                                               |
+| `GEMINI_BUILDER_MODEL`      | no              | Model that builds each 3D geometry definition. See [the builder benchmark](BUILDER_BENCHMARK.md).            |
 | `GEMINI_MODEL`              | no              | Fallback for either of the above when unset.                                                                 |
 | `DATABASE_URL`              | yes             | PostgreSQL URL for the **runtime** role (DML only). `sslmode` flags are stripped; TLS is configured in code. |
 | `DATABASE_CA_CERT`          | for TigerData   | Pinned CA certificate as one line with literal `\n` separators. Certificate verification stays on.           |
@@ -77,7 +79,7 @@ Storing media chunks in PostgreSQL suits a demo or hackathon. Before public scal
 ## Troubleshooting
 
 - **Stale pages in `next dev` after many edits.** Turbopack's persistent cache can keep old server modules. Stop the dev server, delete `.next/`, and restart.
-- **Verifying a build while `next start` is running.** Build into a separate folder with `NEXT_DIST_DIR=.next-verify npm run build`, then serve it with `NEXT_DIST_DIR=.next-verify npx next start -p 3100`.
+- **Verifying a build while `next start` is running.** Build into a separate folder with `NEXT_DIST_DIR=.builds/verify npm run build`, then serve it with `NEXT_DIST_DIR=.builds/verify npx next start -p 3100`.
 - **`422` on every generation.** Check the moderation records with `npm run db:inspect -- audit`. The `reason` field explains classifier decisions.
 - **`502` during generation.** A provider step failed or hit a deadline. The video is marked `failed` and can be retried. Server logs redact the API key.
 

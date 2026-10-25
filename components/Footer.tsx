@@ -8,9 +8,9 @@ export function Footer() {
       <div className="container">
         <div className="footer-grid">
           <div className="stack" style={{ gap: 14 }}>
-            <Link href="/" className="brand" aria-label="Polyhistor home">
+            <Link href="/" className="brand" aria-label="PolyChronicle home">
               <Logo size={28} />
-              <span>POLYHISTOR</span>
+              <span>POLYCHRONICLE</span>
             </Link>
             <p className="muted" style={{ maxWidth: 360, fontSize: 16 }}>
               Short animated films that explain moments in history — researched from public sources, with every source
@@ -18,7 +18,7 @@ export function Footer() {
             </p>
           </div>
           <div>
-            <h4>Explore</h4>
+            <h2>Explore</h2>
             <ul>
               <li>
                 <Link href="/studio">Create a video</Link>
@@ -35,7 +35,7 @@ export function Footer() {
             </ul>
           </div>
           <div>
-            <h4>Policies</h4>
+            <h2>Policies</h2>
             <ul>
               <li>
                 <Link href="/terms">Terms of Service</Link>
@@ -52,7 +52,7 @@ export function Footer() {
             </ul>
           </div>
           <div>
-            <h4>Account</h4>
+            <h2>Account</h2>
             <ul>
               <li>
                 <Link href="/signup">Create an account</Link>
@@ -70,7 +70,7 @@ export function Footer() {
           </div>
         </div>
         <div className="footer-base">
-          <span>© 2026 Polyhistor. The Facet and Tessera typefaces were designed for this site.</span>
+          <span>© 2026 PolyChronicle.</span>
           <span>
             <Link href="/terms">Terms</Link> · <Link href="/privacy">Privacy</Link> ·{" "}
             <Link href="/content-policy">Safety</Link>

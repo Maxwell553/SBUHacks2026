@@ -1,4 +1,4 @@
-import { ModelTurntable } from "@/components/three/ModelTurntable";
+import { ModelTurntable } from "@/components/DeferredVisual";
 import { EXAMPLE_STONE_KEEP } from "@/lib/content/model-examples";
 
 export function AuthShell({ children, quote }: { children: React.ReactNode; quote: React.ReactNode }) {

@@ -1,0 +1,817 @@
+{
+  "seed": 1926323826,
+  "title": "The Crossing of 1492",
+  "models": [
+    {
+      "id": "santa_maria_carrack",
+      "name": "The Santa Maria Flagship",
+      "notes": "Late 15th-century Spanish carrack with deep round hull, forecastle, high aftcastles, square sails showing the Cross of Burgundy, and organic rolling pitch movement.",
+      "parts": [
+        {
+          "id": "hull",
+          "size": [10, 3.2, 4],
+          "shape": "hull",
+          "taper": 1,
+          "anchor": "bottom",
+          "material": "hull_wood",
+          "position": [0, -0.6, 0],
+          "rotation": [0, 0, 0],
+          "segments": 6,
+          "animation": [
+            {
+              "axis": "z",
+              "wave": "sine",
+              "when": "always",
+              "property": "rotation",
+              "amplitude": 2.5,
+              "frequency": 0.25
+            },
+            {
+              "axis": "x",
+              "wave": "sine",
+              "when": "always",
+              "phase": 0.25,
+              "property": "rotation",
+              "amplitude": 1.5,
+              "frequency": 0.35
+            },
+            {
+              "axis": "y",
+              "wave": "sine",
+              "when": "always",
+              "property": "position",
+              "amplitude": 0.1,
+              "frequency": 0.5
+            }
+          ]
+        },
+        {
+          "id": "deck",
+          "size": [9.6, 0.2, 3.8],
+          "shape": "box",
+          "taper": 1,
+          "anchor": "bottom",
+          "parent": "hull",
+          "material": "hull_wood",
+          "position": [0.1, 2.8, 0],
+          "rotation": [0, 0, 0],
+          "segments": 3
+        },
+        {
+          "id": "forecastle",
+          "size": [3, 1.2, 3],
+          "shape": "box",
+          "taper": 1,
+          "anchor": "bottom",
+          "parent": "deck",
+          "material": "hull_wood",
+          "position": [3.2, 0.2, 0],
+          "rotation": [0, 0, -5],
+          "segments": 3
+        },
+        {
+          "id": "aftcastle_lower",
+          "size": [3.5, 1.4, 3.6],
+          "shape": "box",
+          "taper": 1,
+          "anchor": "bottom",
+          "parent": "deck",
+          "material": "hull_wood",
+          "position": [-3, 0.2, 0],
+          "rotation": [0, 0, 5],
+          "segments": 3
+        },
+        {
+          "id": "aftcastle_upper",
+          "size": [2.5, 1, 3],
+          "shape": "box",
+          "taper": 1,
+          "anchor": "bottom",
+          "parent": "aftcastle_lower",
+          "material": "hull_wood",
+          "position": [-0.3, 1.4, 0],
+          "rotation": [0, 0, 2],
+          "segments": 3
+        },
+        {
+          "id": "rudder",
+          "size": [0.5, 2.5, 0.15],
+          "shape": "box",
+          "taper": 1,
+          "anchor": "top",
+          "parent": "hull",
+          "material": "hull_wood",
+          "position": [-5.1, 2, 0],
+          "rotation": [0, 0, 15],
+          "segments": 3,
+          "animation": [
+            { "axis": "y", "wave": "sine", "when": "always", "property": "rotation", "amplitude": 8, "frequency": 0.2 }
+          ]
+        },
+        {
+          "id": "main_mast",
+          "size": [0.3, 8, 0.3],
+          "shape": "cylinder",
+          "taper": 0.5,
+          "anchor": "bottom",
+          "parent": "deck",
+          "material": "hull_wood",
+          "position": [0.5, 0.1, 0],
+          "rotation": [0, 0, -2],
+          "segments": 5
+        },
+        {
+          "id": "main_sail",
+          "size": [0.1, 5, 5.5],
+          "shape": "box",
+          "taper": 1,
+          "anchor": "center",
+          "parent": "main_mast",
+          "material": "hull_wood",
+          "position": [0.5, 4, 0],
+          "rotation": [0, 0, 0],
+          "segments": 3,
+          "animation": [
+            { "axis": "y", "wave": "sine", "when": "always", "property": "rotation", "amplitude": 3, "frequency": 0.3 }
+          ]
+        },
+        {
+          "id": "main_cross_h",
+          "size": [0.12, 0.6, 4.2],
+          "shape": "box",
+          "taper": 1,
+          "anchor": "center",
+          "parent": "main_sail",
+          "material": "hull_wood",
+          "position": [0.01, 0, 0],
+          "rotation": [0, 0, 0],
+          "segments": 3
+        },
+        {
+          "id": "main_cross_v",
+          "size": [0.12, 3.8, 0.6],
+          "shape": "box",
+          "taper": 1,
+          "anchor": "center",
+          "parent": "main_sail",
+          "material": "hull_wood",
+          "position": [0.01, 0, 0],
+          "rotation": [0, 0, 0],
+          "segments": 3
+        },
+        {
+          "id": "fore_mast",
+          "size": [0.24, 6, 0.24],
+          "shape": "cylinder",
+          "taper": 0.5,
+          "anchor": "bottom",
+          "parent": "forecastle",
+          "material": "hull_wood",
+          "position": [0.5, 1.2, 0],
+          "rotation": [0, 0, -6],
+          "segments": 5
+        },
+        {
+          "id": "fore_sail",
+          "size": [0.1, 3.5, 3.2],
+          "shape": "box",
+          "taper": 1,
+          "anchor": "center",
+          "parent": "fore_mast",
+          "material": "hull_wood",
+          "position": [0.4, 3, 0],
+          "rotation": [0, 0, 0],
+          "segments": 3
+        },
+        {
+          "id": "mizzen_mast",
+          "size": [0.2, 4.5, 0.2],
+          "shape": "cylinder",
+          "taper": 0.5,
+          "anchor": "bottom",
+          "parent": "aftcastle_upper",
+          "material": "hull_wood",
+          "position": [-0.6, 1, 0],
+          "rotation": [0, 0, 3],
+          "segments": 5
+        },
+        {
+          "id": "mizzen_yard",
+          "size": [0.12, 5, 0.12],
+          "shape": "cylinder",
+          "taper": 0.6,
+          "anchor": "center",
+          "parent": "mizzen_mast",
+          "material": "hull_wood",
+          "position": [0, 2.5, 0],
+          "rotation": [45, 0, 30],
+          "segments": 4
+        },
+        {
+          "id": "bowsprit",
+          "size": [0.22, 5, 0.22],
+          "shape": "cylinder",
+          "taper": 0.5,
+          "anchor": "bottom",
+          "parent": "forecastle",
+          "material": "hull_wood",
+          "position": [1.4, 1, 0],
+          "rotation": [0, 0, 65],
+          "segments": 5
+        },
+        {
+          "id": "movement_group",
+          "size": [1, 1, 1],
+          "shape": "group",
+          "taper": 1,
+          "parent": "hull",
+          "position": [0, 1.5, 0],
+          "rotation": [0, 0, 0],
+          "segments": 3
+        },
+        {
+          "id": "water_sway",
+          "size": [1, 1, 1],
+          "shape": "group",
+          "taper": 1,
+          "anchor": "center",
+          "parent": "movement_group",
+          "position": [0, 0, 0],
+          "rotation": [0, 0, 0],
+          "segments": 3
+        },
+        {
+          "id": "flag_mast",
+          "size": [2.2, 1.2, 0.05],
+          "shape": "flag",
+          "taper": 1,
+          "anchor": "top",
+          "parent": "main_mast",
+          "material": "hull_wood",
+          "position": [0, 8.1, 0],
+          "rotation": [0, 0, -90],
+          "segments": 3
+        }
+      ],
+      "scale": 1,
+      "category": "watercraft",
+      "materials": [
+        { "id": "hull_wood", "color": "#4a2d1a", "finish": "matte" },
+        { "id": "deck_wood", "color": "#8c6239", "finish": "matte" },
+        { "id": "sail_cloth", "color": "#ebdcb9", "finish": "cloth" },
+        { "id": "cross_red", "tint": true, "color": "#a81d1d", "finish": "cloth" },
+        { "id": "iron", "color": "#2c2c2c", "finish": "metal" }
+      ],
+      "placement": "water"
+    },
+    {
+      "id": "columbus_navigator",
+      "name": "Christopher Columbus",
+      "parts": [
+        {
+          "id": "pelvis",
+          "size": [0.3, 0.2, 0.25],
+          "shape": "cylinder",
+          "taper": 0.95,
+          "material": "wool_crimson",
+          "position": [0, 0.95, 0],
+          "rotation": [0, 0, 0],
+          "segments": 5
+        },
+        {
+          "id": "doublet_torso",
+          "size": [0.36, 0.55, 0.28],
+          "shape": "cylinder",
+          "taper": 0.85,
+          "parent": "pelvis",
+          "material": "wool_crimson",
+          "position": [0, 0.25, 0],
+          "segments": 5
+        },
+        {
+          "id": "neck",
+          "size": [0.1, 0.12, 0.1],
+          "shape": "cylinder",
+          "parent": "doublet_torso",
+          "material": "wool_crimson",
+          "position": [0, 0.3, 0],
+          "segments": 4
+        },
+        {
+          "id": "head",
+          "size": [0.24, 0.26, 0.24],
+          "shape": "ico",
+          "parent": "neck",
+          "material": "wool_crimson",
+          "position": [0, 0.14, 0],
+          "segments": 3,
+          "animation": [
+            {
+              "axis": "y",
+              "wave": "sine",
+              "when": "always",
+              "phase": 0,
+              "property": "rotation",
+              "alternate": false,
+              "amplitude": 15,
+              "frequency": 0.15
+            }
+          ]
+        },
+        {
+          "id": "flat_cap",
+          "size": [0.28, 0.07, 0.28],
+          "shape": "cylinder",
+          "taper": 1.2,
+          "parent": "head",
+          "material": "wool_crimson",
+          "position": [0, 0.12, -0.02],
+          "rotation": [5, 0, 0],
+          "segments": 6
+        },
+        {
+          "id": "arm_pivot_left",
+          "size": [0.1, 0.1, 0.1],
+          "shape": "group",
+          "parent": "doublet_torso",
+          "position": [0, 0.2, 0.18],
+          "rotation": [0, 0, 0],
+          "animation": [
+            {
+              "axis": "x",
+              "wave": "sine",
+              "when": "always",
+              "phase": 0.5,
+              "property": "rotation",
+              "alternate": false,
+              "amplitude": 12,
+              "frequency": 0.3
+            }
+          ]
+        },
+        {
+          "id": "upper_arm_left",
+          "size": [0.11, 0.32, 0.11],
+          "shape": "capsule",
+          "anchor": "top",
+          "parent": "arm_pivot_left",
+          "material": "wool_crimson",
+          "position": [0, 0, 0]
+        },
+        {
+          "id": "lower_arm_left",
+          "size": [0.09, 0.28, 0.09],
+          "shape": "capsule",
+          "anchor": "top",
+          "parent": "upper_arm_left",
+          "material": "wool_crimson",
+          "position": [0, -0.28, 0],
+          "rotation": [-45, 0, 0]
+        },
+        {
+          "id": "astrolabe",
+          "size": [0.18, 0.02, 0.18],
+          "shape": "cylinder",
+          "parent": "lower_arm_left",
+          "material": "wool_crimson",
+          "position": [0, -0.26, 0],
+          "rotation": [90, 0, 0]
+        },
+        {
+          "id": "arm_pivot_right",
+          "size": [0.1, 0.1, 0.1],
+          "shape": "group",
+          "parent": "doublet_torso",
+          "position": [0.05, 0.2, -0.18],
+          "rotation": [0, 0, 0],
+          "animation": [
+            {
+              "axis": "x",
+              "wave": "sine",
+              "when": "always",
+              "phase": 0,
+              "property": "rotation",
+              "alternate": false,
+              "amplitude": 15,
+              "frequency": 0.25
+            },
+            {
+              "axis": "y",
+              "wave": "sine",
+              "when": "always",
+              "phase": 0.25,
+              "property": "rotation",
+              "alternate": false,
+              "amplitude": 10,
+              "frequency": 0.25
+            }
+          ]
+        },
+        {
+          "id": "upper_arm_right",
+          "size": [0.11, 0.32, 0.11],
+          "shape": "capsule",
+          "anchor": "top",
+          "parent": "arm_pivot_right",
+          "material": "wool_crimson",
+          "position": [0, 0, 0],
+          "rotation": [40, -25, -30]
+        },
+        {
+          "id": "lower_arm_right",
+          "size": [0.09, 0.28, 0.09],
+          "shape": "capsule",
+          "anchor": "top",
+          "parent": "upper_arm_right",
+          "material": "wool_crimson",
+          "position": [0, -0.28, 0],
+          "rotation": [-70, 0, 10]
+        },
+        {
+          "id": "cross_staff",
+          "size": [0.02, 0.7, 0.02],
+          "shape": "cylinder",
+          "parent": "lower_arm_right",
+          "material": "wool_crimson",
+          "position": [0.1, -0.2, -0.05],
+          "rotation": [0, 90, 0],
+          "segments": 4
+        }
+      ],
+      "category": "figure",
+      "materials": [
+        { "id": "wool_crimson", "tint": true, "color": "#801818", "finish": "cloth" },
+        { "id": "wool_dark", "color": "#2c2421", "finish": "cloth" },
+        { "id": "skin", "color": "#eac0a2", "finish": "matte" },
+        { "id": "brass", "color": "#d4af37", "finish": "metal" },
+        { "id": "leather_brown", "color": "#5c4033", "finish": "matte" }
+      ],
+      "placement": "ground"
+    },
+    {
+      "id": "bahamas_beachfall",
+      "name": "San Salvador Shoreline",
+      "notes": "San Salvador landing site featuring a realistic bending palm tree, low coastal shrubs, and the Spanish royal standard planted in the sand waving dynamically.",
+      "parts": [
+        {
+          "id": "sandy_base",
+          "size": [5, 0.4, 5],
+          "shape": "box",
+          "taper": 2,
+          "anchor": "bottom",
+          "material": "sand",
+          "position": [0, 0, 0],
+          "rotation": [0, 0, 0]
+        },
+        {
+          "id": "water_fringe",
+          "size": [1.2, 0.1, 5.2],
+          "shape": "box",
+          "taper": 2,
+          "anchor": "bottom",
+          "material": "sand",
+          "position": [2, -0.05, 0],
+          "rotation": [0, 0, 0]
+        },
+        {
+          "id": "palm_trunk_base",
+          "size": [0.3, 1.8, 0.3],
+          "shape": "cylinder",
+          "taper": 0.8,
+          "anchor": "bottom",
+          "material": "sand",
+          "position": [-1.4, 0.3, -1.2],
+          "rotation": [0, 0, 12]
+        },
+        {
+          "id": "palm_trunk_mid",
+          "size": [0.24, 1.8, 0.24],
+          "shape": "cylinder",
+          "taper": 0.85,
+          "anchor": "bottom",
+          "parent": "palm_trunk_base",
+          "material": "sand",
+          "position": [0, 1.7, 0],
+          "rotation": [0, 0, 8],
+          "animation": [
+            {
+              "axis": "z",
+              "wave": "sine",
+              "when": "always",
+              "phase": 0,
+              "property": "rotation",
+              "alternate": true,
+              "amplitude": 3,
+              "frequency": 0.25
+            },
+            {
+              "axis": "x",
+              "wave": "sine",
+              "when": "always",
+              "phase": 0.5,
+              "property": "rotation",
+              "alternate": true,
+              "amplitude": 1.5,
+              "frequency": 0.35
+            }
+          ]
+        },
+        {
+          "id": "palm_crown",
+          "size": [0.1, 0.1, 0.1],
+          "shape": "group",
+          "parent": "palm_trunk_mid",
+          "position": [0, 1.7, 0]
+        },
+        {
+          "id": "palm_frond",
+          "size": [1.8, 0.15, 0.4],
+          "shape": "wedge",
+          "taper": 2,
+          "anchor": "back",
+          "parent": "palm_crown",
+          "material": "sand",
+          "position": [0, 0, 0],
+          "rotation": [0, 45, -20],
+          "animation": [
+            {
+              "axis": "z",
+              "wave": "sine",
+              "when": "always",
+              "phase": 0.1,
+              "property": "rotation",
+              "alternate": true,
+              "amplitude": 5,
+              "frequency": 0.45
+            }
+          ]
+        },
+        {
+          "id": "shrub_cluster",
+          "size": [1.1, 0.9, 1.1],
+          "shape": "ico",
+          "taper": 2,
+          "anchor": "bottom",
+          "material": "sand",
+          "position": [-1.5, 0.35, 1.2],
+          "rotation": [0, 45, 0]
+        },
+        {
+          "id": "grape_shrub_1",
+          "size": [0.7, 0.6, 0.7],
+          "shape": "ico",
+          "taper": 2,
+          "anchor": "bottom",
+          "material": "sand",
+          "position": [-0.4, 0.3, 1.5],
+          "rotation": [10, 0, 0]
+        },
+        {
+          "id": "grape_shrub_2",
+          "size": [0.8, 0.7, 0.8],
+          "shape": "ico",
+          "taper": 2,
+          "anchor": "bottom",
+          "material": "sand",
+          "position": [-1.8, 0.3, -0.2],
+          "rotation": [0, -30, 0]
+        },
+        {
+          "id": "flagpole",
+          "size": [0.06, 2.2, 0.06],
+          "shape": "cylinder",
+          "taper": 0.8,
+          "anchor": "bottom",
+          "material": "sand",
+          "position": [0.5, 0.3, 0],
+          "rotation": [2, 0, -3]
+        },
+        {
+          "id": "royal_standard",
+          "size": [0.9, 0.6, 0.02],
+          "shape": "flag",
+          "taper": 2,
+          "anchor": "left",
+          "parent": "flagpole",
+          "material": "sand",
+          "position": [0, 1.9, 0],
+          "rotation": [0, 0, 0],
+          "animation": [
+            {
+              "axis": "y",
+              "wave": "sine",
+              "when": "always",
+              "phase": 0,
+              "property": "rotation",
+              "alternate": true,
+              "amplitude": 12,
+              "frequency": 0.65
+            },
+            {
+              "axis": "z",
+              "wave": "sine",
+              "when": "always",
+              "phase": 0.25,
+              "property": "rotation",
+              "alternate": true,
+              "amplitude": 4,
+              "frequency": 0.5
+            }
+          ]
+        },
+        {
+          "id": "finial",
+          "size": [0.12, 0.12, 0.12],
+          "shape": "sphere",
+          "taper": 2,
+          "anchor": "center",
+          "parent": "flagpole",
+          "material": "sand",
+          "position": [0, 2.2, 0],
+          "rotation": [0, 0, 0]
+        }
+      ],
+      "scale": 1,
+      "category": "nature",
+      "materials": [
+        { "id": "sand", "color": "#e2cfa7", "finish": "matte" },
+        { "id": "water", "color": "#30b1ba", "finish": "glass" },
+        { "id": "wood", "color": "#7a583a", "finish": "matte" },
+        { "id": "leaves", "color": "#2d7a42", "finish": "matte" },
+        { "id": "flag_white", "tint": true, "color": "#eeeeee", "finish": "cloth" },
+        { "id": "gold_yellow", "color": "#d4af37", "finish": "metal" }
+      ],
+      "placement": "ground"
+    }
+  ],
+  "scenes": [
+    {
+      "kind": "diorama",
+      "camera": "push_in",
+      "kicker": "August 3, 1492",
+      "caption": "Columbus proposed sailing west to reach Asia.",
+      "setting": "city",
+      "weather": "clear",
+      "duration": 6,
+      "elements": [
+        {
+          "color": "#c1272d",
+          "count": 1,
+          "model": "columbus_navigator",
+          "scale": 1,
+          "facing": "camera",
+          "motion": "idle",
+          "position": "center",
+          "formation": "single"
+        }
+      ],
+      "timeOfDay": "day"
+    },
+    {
+      "map": {
+        "lat": 28.11,
+        "lon": -40,
+        "zoom": "region",
+        "label": "Atlantic Route",
+        "route": [
+          { "lat": 37.22, "lon": -6.93 },
+          { "lat": 28.11, "lon": -15.41 },
+          { "lat": 24.03, "lon": -74.52 }
+        ]
+      },
+      "kind": "map",
+      "camera": "flyover",
+      "kicker": "The Route",
+      "caption": "Funded by Spanish monarchs, Columbus sets sail from Spain.",
+      "setting": "ocean",
+      "weather": "clear",
+      "duration": 6,
+      "elements": [
+        {
+          "color": "#e5c158",
+          "count": 1,
+          "model": "santa_maria_carrack",
+          "motion": "sail",
+          "position": "center",
+          "formation": "single"
+        }
+      ],
+      "timeOfDay": "day"
+    },
+    {
+      "kind": "diorama",
+      "camera": "orbit",
+      "kicker": "Atlantic Crossing",
+      "caption": "Three ships sailed further west for five weeks than any prior European fleet.",
+      "setting": "ocean",
+      "weather": "storm",
+      "duration": 8,
+      "elements": [
+        {
+          "color": "#c1272d",
+          "count": 3,
+          "model": "santa_maria_carrack",
+          "scale": 1,
+          "facing": "left",
+          "motion": "sail",
+          "position": "center",
+          "formation": "column"
+        }
+      ],
+      "timeOfDay": "day"
+    },
+    {
+      "kind": "diorama",
+      "camera": "low_angle",
+      "kicker": "October 12, 1492",
+      "caption": "Lookouts finally sight land. Columbus anchors his fleet in the pristine waters of the Bahamas.",
+      "setting": "coast",
+      "weather": "fog",
+      "duration": 7,
+      "elements": [
+        {
+          "count": 1,
+          "model": "bahamas_beachfall",
+          "scale": 1,
+          "motion": "sway",
+          "position": "right",
+          "formation": "single"
+        },
+        {
+          "color": "#c1272d",
+          "count": 1,
+          "model": "santa_maria_carrack",
+          "scale": 0.8,
+          "facing": "right",
+          "motion": "sail",
+          "position": "back_left",
+          "formation": "single"
+        }
+      ],
+      "timeOfDay": "dawn"
+    },
+    {
+      "kind": "diorama",
+      "camera": "static",
+      "kicker": "San Salvador Landing",
+      "caption": "Columbus claims the island, mistakenly calling the native Taíno people Indians.",
+      "setting": "coast",
+      "weather": "clear",
+      "duration": 7,
+      "elements": [
+        {
+          "count": 1,
+          "model": "bahamas_beachfall",
+          "scale": 1.2,
+          "motion": "wave",
+          "position": "center",
+          "formation": "single"
+        },
+        {
+          "color": "#c1272d",
+          "count": 1,
+          "model": "columbus_navigator",
+          "scale": 1,
+          "facing": "center",
+          "motion": "wave",
+          "position": "front_left",
+          "formation": "single"
+        }
+      ],
+      "timeOfDay": "day"
+    },
+    {
+      "kind": "diorama",
+      "camera": "pull_out",
+      "kicker": "A Changed World",
+      "caption": "The voyage connected hemispheres, initiating the Columbian Exchange.",
+      "setting": "ocean",
+      "weather": "cloudy",
+      "duration": 6,
+      "elements": [
+        {
+          "color": "#e5c158",
+          "count": 1,
+          "model": "santa_maria_carrack",
+          "scale": 0.9,
+          "facing": "away",
+          "motion": "sail",
+          "position": "center",
+          "formation": "single"
+        }
+      ],
+      "timeOfDay": "dusk"
+    }
+  ],
+  "palette": { "accent": "#31a354", "primary": "#c1272d", "secondary": "#e5c158" },
+  "version": 2,
+  "factions": [
+    { "name": "Spanish Crown", "color": "#c1272d" },
+    { "name": "Taino People", "color": "#31a354" }
+  ],
+  "location": "The Bahamas",
+  "subtitle": "The Transatlantic Crossing of 1492",
+  "dateLabel": "August – October 1492",
+  "coordinates": { "lat": 24.0292, "lon": -74.5244 },
+  "totalDuration": 40
+}

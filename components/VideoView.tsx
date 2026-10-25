@@ -1,9 +1,8 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { ApiError, videos, type Video } from "@/lib/client/api";
-import { saveRender, type SaveProgress } from "@/lib/client/save";
 import { Player } from "@/components/Player";
 import { VideoDetails } from "@/components/VideoDetails";
 import { STATUS_LABEL, niceDate } from "@/components/Library";
@@ -13,10 +12,7 @@ export function VideoView({ id }: { id: string }) {
   const [video, setVideo] = useState<Video | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<"watch" | "gif">("watch");
-  const [save, setSave] = useState<SaveProgress | null>(null);
-  const [saveError, setSaveError] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
-  const abortRef = useRef<AbortController | null>(null);
   const [shownId, setShownId] = useState(id);
   if (shownId !== id) {
     setShownId(id);
@@ -53,23 +49,8 @@ export function VideoView({ id }: { id: string }) {
     return () => {
       alive = false;
       clearTimeout(timer);
-      abortRef.current?.abort();
     };
   }, [id, router]);
-
-  const runSave = async () => {
-    if (!video) return;
-    setSaveError(null);
-    const ac = new AbortController();
-    abortRef.current = ac;
-    try {
-      setVideo(await saveRender(video, setSave, ac.signal));
-    } catch (e) {
-      if ((e as Error).name !== "AbortError") setSaveError(e instanceof Error ? e.message : "Saving didn’t finish.");
-    } finally {
-      setSave(null);
-    }
-  };
 
   const remove = async () => {
     if (!video) return;
@@ -98,12 +79,24 @@ export function VideoView({ id }: { id: string }) {
       </p>
     );
 
+  if (video.status !== "rendered")
+    return (
+      <div className="card soft empty" style={{ margin: "48px 0" }}>
+        <h1 style={{ fontSize: 28 }}>Only finished stories belong here</h1>
+        <p className="muted">
+          This attempt isn’t a saved video. Keep Create open while a film is being made, or start a new one.
+        </p>
+        <Link className="btn" href="/studio">
+          Back to Create
+        </Link>
+      </div>
+    );
+
   const st = STATUS_LABEL[video.status] ?? { text: video.status, cls: "" };
   const portrait = video.aspect === "portrait";
-  const pct = save ? Math.round(save.fraction * 100) : 0;
 
   return (
-    <div className="stack" style={{ gap: 28, padding: "40px 0 96px" }}>
+    <div className="stack" style={{ gap: 28, padding: "28px 0 48px" }}>
       <div className="spread" style={{ alignItems: "flex-end" }}>
         <div className="stack" style={{ gap: 8 }}>
           <Link href="/library" style={{ fontSize: 15 }}>
@@ -126,13 +119,13 @@ export function VideoView({ id }: { id: string }) {
           </div>
         </div>
         <div className="row">
-          {video.gifUrl ? (
+          {video.movieUrl || video.gifUrl ? (
             <a
               className="btn"
-              href={video.gifUrl}
-              download={`${(video.title ?? "polyhistor").replace(/[^\w-]+/g, "-")}.gif`}
+              href={video.movieUrl || video.gifUrl!}
+              download={`${(video.title ?? "polychronicle").replace(/[^\w-]+/g, "-")}.${video.movieUrl ? (video.movieMime === "video/webm" ? "webm" : "mp4") : "gif"}`}
             >
-              Download GIF
+              Download {video.movieUrl ? "HD video" : "GIF"}
             </a>
           ) : null}
           {confirming ? (
@@ -152,27 +145,30 @@ export function VideoView({ id }: { id: string }) {
         </div>
       </div>
 
-      {video.status === "failed" || video.status === "rejected" ? (
-        <div className={`notice ${video.status === "rejected" ? "info" : "error"}`}>
-          <strong>{video.status === "rejected" ? "We couldn’t make this video." : "This video didn’t finish."}</strong>{" "}
-          {video.error ?? ""} <Link href={`/studio?q=${encodeURIComponent(video.prompt)}`}>Try again in Create</Link>
-        </div>
-      ) : null}
-
       {video.script ? (
         <div className={`split video-layout${portrait ? " portrait" : ""}`}>
           <div className="stack" style={{ gap: 14 }}>
-            {video.gifUrl ? (
+            {video.movieUrl || video.gifUrl ? (
               <div className="seg" role="group" aria-label="View">
                 <button aria-pressed={tab === "watch"} onClick={() => setTab("watch")}>
                   Watch
                 </button>
                 <button aria-pressed={tab === "gif"} onClick={() => setTab("gif")}>
-                  Saved GIF
+                  Saved video
                 </button>
               </div>
             ) : null}
-            {tab === "gif" && video.gifUrl ? (
+            {tab === "gif" && video.movieUrl ? (
+              <video
+                controls
+                playsInline
+                preload="metadata"
+                src={video.movieUrl}
+                poster={video.posterUrl ?? undefined}
+                aria-label="Saved historical film"
+                style={{ width: "100%", aspectRatio: portrait ? "9 / 16" : "16 / 9" }}
+              />
+            ) : tab === "gif" && video.gifUrl ? (
               <div className="player" style={{ aspectRatio: portrait ? "9 / 16" : "16 / 9" }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
@@ -184,35 +180,9 @@ export function VideoView({ id }: { id: string }) {
             ) : (
               <Player script={video.script} aspect={portrait ? "portrait" : "landscape"} autoPlay loop />
             )}
-            {video.status === "ready" ? (
-              <div className="card teal stack" style={{ gap: 12 }}>
-                <strong>This video isn’t saved as a GIF yet.</strong>
-                <p className="muted" style={{ fontSize: 16 }}>
-                  Save it to keep a downloadable copy in your library. GIF downloads are silent; “Read aloud” works in
-                  the browser.
-                </p>
-                {save ? (
-                  <>
-                    <div className="bar-track">
-                      <div className="bar-fill" style={{ width: `${pct}%` }} />
-                    </div>
-                    <span className="hint">
-                      {save.stage === "animating" ? "Animating" : "Saving"}… {pct}%
-                    </span>
-                  </>
-                ) : (
-                  <button className="btn small" onClick={runSave} style={{ justifySelf: "start" }}>
-                    Save as GIF
-                  </button>
-                )}
-                {saveError ? <div className="notice error">{saveError}</div> : null}
-              </div>
-            ) : null}
           </div>
           <VideoDetails video={video} />
         </div>
-      ) : video.status === "researching" || video.status === "scripting" ? (
-        <div className="notice info">This video is still being made. Check back in a minute or two.</div>
       ) : null}
     </div>
   );

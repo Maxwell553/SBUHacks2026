@@ -23,14 +23,14 @@ Every endpoint lives under `/api`, returns JSON (except media), and is served by
 
 ## Videos
 
-| Method   | Path              | Body                                                                      | Success                                                              |
-| -------- | ----------------- | ------------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| `GET`    | `/api/videos`     | none                                                                      | `200 { videos: Video[] }` (newest first, max 100; no script)         |
-| `POST`   | `/api/videos`     | `{ prompt (8–2000), duration: 20–60, aspect: "landscape" \| "portrait" }` | `201 { video }` once the script is ready (synchronous, up to ~260 s) |
-| `GET`    | `/api/videos/:id` | none                                                                      | `200 { video }` including `script` and `assets`                      |
-| `DELETE` | `/api/videos/:id` | none                                                                      | `200 { ok: true }`                                                   |
+| Method   | Path              | Body                                                                      | Success                                                                       |
+| -------- | ----------------- | ------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `GET`    | `/api/videos`     | none                                                                      | `200 { videos: Video[] }` (completed films, newest first, max 100; no script) |
+| `POST`   | `/api/videos`     | `{ prompt (8–2000), duration: 20–60, aspect: "landscape" \| "portrait" }` | `201 { video }` once the script is ready (synchronous, up to ~260 s)          |
+| `GET`    | `/api/videos/:id` | none                                                                      | `200 { video }` including `script` and `assets`                               |
+| `DELETE` | `/api/videos/:id` | none                                                                      | `200 { ok: true }`                                                            |
 
-`POST /api/videos` returns **409** when another video is still being researched or the library is full (100), **422** when the request is declined by moderation, and **502** when a provider step fails. The video row records the outcome either way (`rejected` or `failed`, with a user-safe `error`).
+`POST /api/videos` returns **409** when another video is still being researched or the library is full (100), **422** when the request is declined by moderation, and **502** when a provider step fails. Failed and declined attempts are deleted; the moderation audit is retained. New attempts remain `pending` until input moderation approves them, then become `researching`.
 
 ### Video object
 
@@ -41,7 +41,7 @@ Every endpoint lives under `/api`, returns JSON (except media), and is served by
   title: string | null;
   duration: number;                       // requested seconds
   aspect: "landscape" | "portrait";
-  status: "researching" | "scripting" | "ready" | "rendered" | "failed" | "rejected";
+  status: "pending" | "researching" | "scripting" | "ready" | "rendered" | "failed" | "rejected";
   script: VideoScript | null;             // lib/schema/video.ts (also returned as `plan`)
   research: string | null;
   sources: { title: string; url: string }[];
@@ -55,7 +55,7 @@ Every endpoint lives under `/api`, returns JSON (except media), and is served by
 }
 ```
 
-`ready` means the script is saved and waiting for the browser to render it. `rendered` means a GIF is stored.
+`ready` means the script is temporarily stored and waiting for the browser to render it. `rendered` means a movie or legacy GIF is stored. Only `rendered` films appear in the library.
 
 ## Media upload (browser renders)
 
@@ -74,3 +74,9 @@ Limits: 32 MiB per file, 96 MiB per account, and a global reservation that leave
 ## Health
 
 `GET /api/health` returns `200 { ok: true }` when the database answers and Gemini is configured, and `503 { ok: false }` otherwise.
+
+## Incomplete attempts
+
+`GET /api/videos?active=1` includes temporary in-progress rows for the studio's status polling. The default list contains completed films only. Listing also deletes legacy failed/rejected rows and non-rendered rows last updated over 30 minutes ago.
+
+`DELETE /api/videos/:id?incomplete=1` discards a temporary attempt and its uploaded chunks, but preserves a row that has already become `rendered`. The studio uses this on failure, navigation away, and page exit. Abrupt browser termination may prevent immediate cleanup; the stale-record sweep handles that on the next list request.

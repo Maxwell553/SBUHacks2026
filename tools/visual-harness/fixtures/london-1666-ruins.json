@@ -1,0 +1,1164 @@
+{
+  "seed": 1585617136,
+  "title": "The Great Fire of London",
+  "models": [
+    {
+      "id": "london_timber_house",
+      "name": "17th Century Timber-Framed House",
+      "notes": "17th-century London timber townhouse with jettying construction, detailed storefront, and a steeply pitched tiled roof. Perfect representation of Tudor-Stuart London prior to the Great Fire.",
+      "parts": [
+        {
+          "id": "ground_floor",
+          "size": [5.6, 2.5, 3.8],
+          "shape": "box",
+          "anchor": "bottom",
+          "material": "plaster",
+          "position": [0, 0, 0]
+        },
+        {
+          "id": "shop_front",
+          "size": [0.1, 2.3, 3.6],
+          "shape": "box",
+          "anchor": "bottom",
+          "parent": "ground_floor",
+          "material": "shop_wood",
+          "position": [2.76, 0.1, 0]
+        },
+        {
+          "id": "shop_door_l",
+          "size": [0.05, 1.9, 0.7],
+          "shape": "box",
+          "anchor": "bottom",
+          "parent": "shop_front",
+          "material": "dark_wood",
+          "position": [0.05, 0, -0.4],
+          "rotation": [0, 45, 0]
+        },
+        {
+          "id": "shop_door_r",
+          "size": [0.05, 1.9, 0.7],
+          "shape": "box",
+          "anchor": "bottom",
+          "parent": "shop_front",
+          "material": "dark_wood",
+          "position": [0.05, 0, 0.4],
+          "rotation": [0, -45, 0]
+        },
+        {
+          "id": "shop_window",
+          "size": [0.05, 1.1, 1],
+          "shape": "box",
+          "anchor": "bottom",
+          "parent": "shop_front",
+          "material": "lead_glass",
+          "position": [0.05, 0.8, -1.1]
+        },
+        {
+          "id": "shop_window_r",
+          "size": [0.05, 1.1, 1],
+          "shape": "box",
+          "anchor": "bottom",
+          "parent": "shop_front",
+          "material": "lead_glass",
+          "position": [0.05, 0.8, 1.1]
+        },
+        {
+          "id": "first_floor",
+          "size": [6, 2.3, 4],
+          "shape": "box",
+          "anchor": "bottom",
+          "parent": "ground_floor",
+          "material": "plaster",
+          "position": [0, 2.5, 0]
+        },
+        {
+          "id": "first_jetty_beams",
+          "size": [0.4, 0.25, 4.1],
+          "shape": "box",
+          "anchor": "bottom",
+          "parent": "first_floor",
+          "material": "dark_wood",
+          "position": [2.8, -0.1, 0]
+        },
+        {
+          "id": "second_floor",
+          "size": [6.4, 2.3, 4.2],
+          "shape": "box",
+          "anchor": "bottom",
+          "parent": "first_floor",
+          "material": "plaster",
+          "position": [0, 2.3, 0]
+        },
+        {
+          "id": "second_jetty_beams",
+          "size": [0.4, 0.25, 4.3],
+          "shape": "box",
+          "anchor": "bottom",
+          "parent": "second_floor",
+          "material": "dark_wood",
+          "position": [3, -0.1, 0]
+        },
+        {
+          "id": "front_timber_vertical",
+          "size": [0.08, 2.3, 0.12],
+          "shape": "box",
+          "anchor": "bottom",
+          "parent": "first_floor",
+          "repeat": { "mode": "linear", "step": [0, 0, 0.95], "count": 5 },
+          "material": "dark_wood",
+          "position": [3.01, 0, -1.9]
+        },
+        {
+          "id": "front_timber_horizontal",
+          "size": [0.08, 0.12, 4],
+          "shape": "box",
+          "anchor": "bottom",
+          "parent": "first_floor",
+          "material": "dark_wood",
+          "position": [3.01, 1.1, 0]
+        },
+        {
+          "id": "front_timber_vertical_2",
+          "size": [0.08, 2.3, 0.12],
+          "shape": "box",
+          "anchor": "bottom",
+          "parent": "second_floor",
+          "repeat": { "mode": "linear", "step": [0, 0, 1], "count": 5 },
+          "material": "dark_wood",
+          "position": [3.21, 0, -2]
+        },
+        {
+          "id": "front_timber_horizontal_2",
+          "size": [0.08, 0.12, 4.2],
+          "shape": "box",
+          "anchor": "bottom",
+          "parent": "second_floor",
+          "material": "dark_wood",
+          "position": [3.21, 1.1, 0]
+        },
+        {
+          "id": "first_floor_windows",
+          "size": [0.04, 1, 0.6],
+          "shape": "box",
+          "anchor": "bottom",
+          "parent": "first_floor",
+          "repeat": { "mode": "linear", "step": [0, 0, 0.95], "count": 3 },
+          "material": "lead_glass",
+          "position": [3.02, 0.8, -0.95]
+        },
+        {
+          "id": "second_floor_windows",
+          "size": [0.04, 1, 0.6],
+          "shape": "box",
+          "anchor": "bottom",
+          "parent": "second_floor",
+          "repeat": { "mode": "linear", "step": [0, 0, 1], "count": 3 },
+          "material": "lead_glass",
+          "position": [3.22, 0.8, -1]
+        },
+        {
+          "id": "roof_base",
+          "size": [6.6, 2.2, 4.4],
+          "shape": "wedge",
+          "anchor": "bottom",
+          "parent": "second_floor",
+          "material": "roof_tile",
+          "position": [0, 2.3, 0],
+          "rotation": [0, 0, 0]
+        },
+        {
+          "id": "roof_gable_front",
+          "size": [1.2, 2.1, 4.3],
+          "shape": "wedge",
+          "anchor": "bottom",
+          "parent": "roof_base",
+          "material": "plaster",
+          "position": [2.6, 0.05, 0],
+          "rotation": [0, 90, 0]
+        },
+        {
+          "id": "roof_gable_timber",
+          "size": [0.08, 2.1, 0.08],
+          "shape": "box",
+          "taper": 0,
+          "anchor": "bottom",
+          "parent": "roof_gable_front",
+          "material": "dark_wood",
+          "position": [0, 0, 0.59],
+          "rotation": [0, 0, 30],
+          "segments": 3
+        },
+        {
+          "id": "roof_gable_timber_mirror",
+          "size": [0.08, 2.1, 0.08],
+          "shape": "box",
+          "taper": 0,
+          "anchor": "bottom",
+          "parent": "roof_gable_front",
+          "material": "dark_wood",
+          "position": [0, 0, 0.59],
+          "rotation": [0, 0, -30],
+          "segments": 3
+        },
+        {
+          "id": "chimney_stack",
+          "size": [0.8, 2.5, 0.8],
+          "shape": "box",
+          "anchor": "bottom",
+          "parent": "roof_base",
+          "material": "roof_tile",
+          "position": [-1.5, 1, 1]
+        },
+        {
+          "id": "chimney_pot",
+          "size": [0.3, 0.6, 0.3],
+          "shape": "cylinder",
+          "anchor": "bottom",
+          "parent": "chimney_stack",
+          "material": "dark_wood",
+          "position": [0, 2.5, 0]
+        }
+      ],
+      "scale": 1,
+      "category": "building",
+      "materials": [
+        { "id": "dark_wood", "color": "#332211", "finish": "matte" },
+        { "id": "plaster", "color": "#f1eae0", "finish": "matte" },
+        { "id": "roof_tile", "color": "#8b4513", "finish": "matte" },
+        { "id": "lead_glass", "color": "#4e5960", "finish": "glass" },
+        { "id": "shop_wood", "color": "#5c4033", "finish": "satin" }
+      ],
+      "placement": "ground"
+    },
+    {
+      "id": "fire_evacuation_cart",
+      "name": "Evacuation Handcart with Belongings",
+      "notes": "1666 London evacuation scene cart containing a dresser, mattress, and pot, pulled by a straining citizen figure.",
+      "parts": [
+        {
+          "id": "cart_axle",
+          "size": [0.08, 1.4, 0.08],
+          "shape": "cylinder",
+          "material": "rough_wood",
+          "position": [0, 0.35, 0],
+          "rotation": [90, 0, 0],
+          "segments": 6
+        },
+        {
+          "id": "wheel_left",
+          "size": [0.7, 0.06, 0.7],
+          "shape": "cylinder",
+          "taper": 1,
+          "parent": "cart_axle",
+          "material": "light_wood",
+          "position": [0, 0.65, 0],
+          "rotation": [90, 0, 0],
+          "segments": 12
+        },
+        {
+          "id": "wheel_rim_l",
+          "size": [0.7, 0.04, 0.7],
+          "shape": "torus",
+          "parent": "wheel_left",
+          "material": "iron",
+          "position": [0, 0, 0],
+          "rotation": [90, 0, 0]
+        },
+        {
+          "id": "wheel_right",
+          "size": [0.7, 0.06, 0.7],
+          "shape": "cylinder",
+          "taper": 1,
+          "parent": "cart_axle",
+          "material": "light_wood",
+          "position": [0, -0.65, 0],
+          "rotation": [90, 0, 0],
+          "segments": 12
+        },
+        {
+          "id": "wheel_rim_r",
+          "size": [0.7, 0.04, 0.7],
+          "shape": "torus",
+          "parent": "wheel_right",
+          "material": "iron",
+          "position": [0, 0, 0],
+          "rotation": [90, 0, 0]
+        },
+        {
+          "id": "cart_frame",
+          "size": [1.4, 0.08, 0.9],
+          "shape": "box",
+          "parent": "cart_axle",
+          "material": "rough_wood",
+          "position": [0, 0, 0.06],
+          "rotation": [-90, 0, 0]
+        },
+        {
+          "id": "cart_shaft_left",
+          "size": [1.1, 0.05, 0.05],
+          "shape": "box",
+          "parent": "cart_frame",
+          "material": "rough_wood",
+          "position": [1.1, 0, -0.42]
+        },
+        {
+          "id": "cart_shaft_right",
+          "size": [1.1, 0.05, 0.05],
+          "shape": "box",
+          "parent": "cart_frame",
+          "material": "rough_wood",
+          "position": [1.1, 0, 0.42]
+        },
+        {
+          "id": "handle_bar",
+          "size": [0.04, 0.94, 0.04],
+          "shape": "cylinder",
+          "parent": "cart_shaft_left",
+          "material": "rough_wood",
+          "position": [0.55, 0, 0.42],
+          "rotation": [90, 0, 0],
+          "segments": 6
+        },
+        {
+          "id": "chest_of_drawers",
+          "size": [0.5, 0.6, 0.7],
+          "shape": "box",
+          "parent": "cart_frame",
+          "material": "rough_wood",
+          "position": [-0.1, 0.34, 0]
+        },
+        {
+          "id": "chest_drawer_1",
+          "size": [0.44, 0.15, 0.66],
+          "shape": "box",
+          "parent": "chest_of_drawers",
+          "material": "light_wood",
+          "position": [0.05, 0.18, 0]
+        },
+        {
+          "id": "chest_drawer_2",
+          "size": [0.44, 0.15, 0.66],
+          "shape": "box",
+          "parent": "chest_of_drawers",
+          "material": "light_wood",
+          "position": [0.05, -0.15, 0]
+        },
+        {
+          "id": "rolled_mattress",
+          "size": [0.35, 0.8, 0.35],
+          "shape": "cylinder",
+          "parent": "cart_frame",
+          "material": "mattress_fabric",
+          "position": [0.35, 0.2, 0.15],
+          "rotation": [10, 5, 85],
+          "segments": 8
+        },
+        {
+          "id": "cooking_pot",
+          "size": [0.25, 0.2, 0.25],
+          "shape": "cylinder",
+          "taper": 1,
+          "parent": "cart_frame",
+          "material": "iron",
+          "position": [0.4, 0.15, -0.25],
+          "rotation": [0, 45, -20],
+          "segments": 8
+        },
+        {
+          "id": "pulling_citizen",
+          "size": [1, 1, 1],
+          "shape": "group",
+          "position": [1.5, 0, 0],
+          "animation": [
+            {
+              "axis": "y",
+              "wave": "bounce",
+              "when": "always",
+              "property": "position",
+              "amplitude": 0.04,
+              "frequency": 1.8
+            }
+          ]
+        },
+        {
+          "id": "citizen_torso",
+          "size": [0.3, 0.6, 0.35],
+          "shape": "capsule",
+          "parent": "pulling_citizen",
+          "material": "citizen_clothes",
+          "position": [0, 0.9, 0],
+          "rotation": [0, 0, 25]
+        },
+        {
+          "id": "citizen_head",
+          "size": [0.22, 0.25, 0.22],
+          "shape": "sphere",
+          "parent": "citizen_torso",
+          "material": "citizen_skin",
+          "position": [0, 0.35, 0],
+          "rotation": [0, 0, -10]
+        },
+        {
+          "id": "citizen_hat",
+          "size": [0.24, 0.15, 0.24],
+          "shape": "cone",
+          "parent": "citizen_head",
+          "material": "citizen_clothes",
+          "position": [0, 0.13, 0],
+          "segments": 6
+        },
+        {
+          "id": "citizen_leg_l",
+          "size": [0.12, 0.5, 0.12],
+          "shape": "capsule",
+          "taper": 0.75,
+          "parent": "pulling_citizen",
+          "material": "citizen_clothes",
+          "position": [-0.1, 0.5, -0.12],
+          "rotation": [0, 0, -35],
+          "segments": 6
+        },
+        {
+          "id": "citizen_leg_r",
+          "size": [0.12, 0.5, 0.12],
+          "shape": "capsule",
+          "taper": 0.75,
+          "parent": "pulling_citizen",
+          "material": "citizen_clothes",
+          "position": [0.1, 0.5, 0.12],
+          "rotation": [0, 0, 40],
+          "segments": 6
+        },
+        {
+          "id": "citizen_arm_l",
+          "size": [0.1, 0.45, 0.1],
+          "shape": "capsule",
+          "parent": "citizen_torso",
+          "material": "citizen_clothes",
+          "position": [-0.15, 0.1, -0.2],
+          "rotation": [0, -15, -75],
+          "segments": 5
+        },
+        {
+          "id": "citizen_arm_r",
+          "size": [0.1, 0.45, 0.1],
+          "shape": "capsule",
+          "parent": "citizen_torso",
+          "material": "citizen_clothes",
+          "position": [-0.15, 0.1, 0.2],
+          "rotation": [0, 15, -75],
+          "segments": 5
+        }
+      ],
+      "scale": 1,
+      "category": "vehicle",
+      "materials": [
+        { "id": "rough_wood", "color": "#8c6c50", "finish": "matte" },
+        { "id": "light_wood", "color": "#d9b38c", "finish": "matte" },
+        { "id": "iron", "color": "#4a4a4a", "finish": "metal" },
+        { "id": "mattress_fabric", "color": "#d5ceb8", "finish": "cloth" },
+        { "id": "citizen_skin", "color": "#e8bfa0", "finish": "matte" },
+        { "id": "citizen_clothes", "tint": true, "color": "#514339", "finish": "cloth" }
+      ],
+      "placement": "ground"
+    },
+    {
+      "id": "firefighting_demolition_rig",
+      "name": "Demolition Hook and Gunpowder Barrel",
+      "notes": "A 17th-century firefighting demolition rig featuring a 4m iron-tipped pulling hook and a gunpowder barrel with a burning fuse, animated to simulate high-stakes tension.",
+      "parts": [
+        {
+          "id": "base_pivot",
+          "size": [0.1, 0.1, 0.1],
+          "shape": "group",
+          "position": [0, 0, 0],
+          "animation": [
+            {
+              "axis": "z",
+              "wave": "sine",
+              "when": "always",
+              "property": "rotation",
+              "amplitude": 15,
+              "frequency": 0.55
+            }
+          ]
+        },
+        {
+          "id": "wooden_pole",
+          "size": [0.06, 4, 0.06],
+          "shape": "cylinder",
+          "taper": 1,
+          "parent": "base_pivot",
+          "material": "pole_wood",
+          "position": [0, 2, 0]
+        },
+        {
+          "id": "iron_collar",
+          "size": [0.08, 0.25, 0.08],
+          "shape": "cylinder",
+          "taper": 1,
+          "parent": "wooden_pole",
+          "material": "iron_dark",
+          "position": [0, 1.8, 0]
+        },
+        {
+          "id": "hook_prong",
+          "size": [0.4, 0.3, 0.08],
+          "shape": "wedge",
+          "parent": "iron_collar",
+          "material": "iron_dark",
+          "position": [0.15, 0.1, 0],
+          "rotation": [0, 0, 180]
+        },
+        {
+          "id": "hook_tip",
+          "size": [0.08, 0.4, 0.08],
+          "shape": "cone",
+          "parent": "iron_collar",
+          "material": "iron_dark",
+          "position": [0, 0.15, 0]
+        },
+        {
+          "id": "rope_binding",
+          "size": [0.08, 0.15, 0.08],
+          "shape": "cylinder",
+          "taper": 1,
+          "parent": "wooden_pole",
+          "material": "rope_coir",
+          "position": [0, 0.5, 0]
+        },
+        {
+          "id": "rope_loose",
+          "size": [0.03, 1.2, 0.03],
+          "shape": "cylinder",
+          "taper": 1,
+          "parent": "rope_binding",
+          "material": "rope_coir",
+          "position": [0.1, -0.5, 0],
+          "rotation": [0, 0, -15]
+        },
+        {
+          "id": "barrel_body",
+          "size": [0.6, 0.8, 0.6],
+          "shape": "cylinder",
+          "taper": 1.25,
+          "parent": "base_pivot",
+          "material": "barrel_wood",
+          "position": [-0.6, 0.4, 0.5]
+        },
+        {
+          "id": "barrel_lid",
+          "size": [0.54, 0.04, 0.54],
+          "shape": "cylinder",
+          "taper": 1,
+          "parent": "barrel_body",
+          "material": "barrel_wood",
+          "position": [0, 0.4, 0]
+        },
+        {
+          "id": "barrel_hoop_top",
+          "size": [0.58, 0.03, 0.58],
+          "shape": "torus",
+          "parent": "barrel_body",
+          "material": "iron_dark",
+          "position": [0, 0.3, 0]
+        },
+        {
+          "id": "barrel_hoop_bottom",
+          "size": [0.58, 0.03, 0.58],
+          "shape": "torus",
+          "parent": "barrel_body",
+          "material": "iron_dark",
+          "position": [0, -0.3, 0]
+        },
+        {
+          "id": "fuse_cord",
+          "size": [0.02, 0.3, 0.02],
+          "shape": "cylinder",
+          "taper": 1,
+          "parent": "barrel_lid",
+          "material": "rope_coir",
+          "position": [0, 0.1, 0],
+          "rotation": [15, 0, -15]
+        },
+        {
+          "id": "fuse_spark",
+          "size": [0.06, 0.06, 0.06],
+          "shape": "sphere",
+          "parent": "fuse_cord",
+          "material": "fuse_lit",
+          "position": [0, 0.15, 0],
+          "animation": [
+            { "axis": "y", "wave": "pulse", "when": "always", "property": "scale", "amplitude": 0.5, "frequency": 5 }
+          ]
+        },
+        {
+          "id": "fuse_spark_outer",
+          "size": [0.15, 0.15, 0.15],
+          "shape": "fire",
+          "parent": "fuse_spark",
+          "material": "spark_fire",
+          "position": [0, 0, 0]
+        }
+      ],
+      "category": "prop",
+      "materials": [
+        { "id": "pole_wood", "color": "#8a6543", "finish": "matte" },
+        { "id": "iron_dark", "color": "#3c3f41", "finish": "metal" },
+        { "id": "rope_coir", "color": "#b59c77", "finish": "matte" },
+        { "id": "barrel_wood", "color": "#6e4a2d", "finish": "matte" },
+        { "id": "fuse_lit", "color": "#ffdd88", "finish": "emissive" },
+        { "id": "spark_fire", "color": "#ff4500", "finish": "emissive" }
+      ],
+      "placement": "ground"
+    },
+    {
+      "id": "ruined_cathedral_backdrop",
+      "name": "Ruined Gothic Cathedral Archway",
+      "notes": "Crumbling Old St. Paul's backdrop after the 1666 Great Fire. Features a charred gothic stone archway, shattered circular tracery, debris, and rising smoke.",
+      "parts": [
+        {
+          "id": "base_rubble_left",
+          "size": [2.5, 0.8, 2],
+          "shape": "box",
+          "anchor": "bottom",
+          "material": "ash_grey_stone",
+          "position": [0, 0, -3.5]
+        },
+        {
+          "id": "base_rubble_right",
+          "size": [2, 1.2, 2.5],
+          "shape": "box",
+          "anchor": "bottom",
+          "material": "charred_stone",
+          "position": [0.2, 0, 3.2]
+        },
+        {
+          "id": "left_pillar",
+          "size": [1.2, 6, 1.2],
+          "shape": "cylinder",
+          "taper": 0.75,
+          "anchor": "bottom",
+          "material": "charred_stone",
+          "position": [0, 0, -2.5]
+        },
+        {
+          "id": "right_pillar",
+          "size": [1.2, 6, 1.2],
+          "shape": "cylinder",
+          "taper": 0.75,
+          "anchor": "bottom",
+          "material": "ash_grey_stone",
+          "position": [0, 0, 2.5]
+        },
+        {
+          "id": "arch_spandrel_left",
+          "size": [1, 3, 3.2],
+          "shape": "wedge",
+          "anchor": "bottom",
+          "material": "charred_stone",
+          "position": [0, 6, -1.5],
+          "rotation": [0, 90, 0]
+        },
+        {
+          "id": "arch_spandrel_right",
+          "size": [1, 3, 3.2],
+          "shape": "wedge",
+          "anchor": "bottom",
+          "material": "ash_grey_stone",
+          "position": [0, 6, 1.5],
+          "rotation": [180, 90, 0]
+        },
+        {
+          "id": "crumbling_outer_wall_left",
+          "size": [1, 7.5, 2],
+          "shape": "box",
+          "anchor": "bottom",
+          "material": "charred_stone",
+          "position": [-0.2, 0, -4.1]
+        },
+        {
+          "id": "crumbling_outer_wall_right",
+          "size": [1, 4.5, 1.8],
+          "shape": "box",
+          "anchor": "bottom",
+          "material": "soot_black",
+          "position": [-0.1, 0, 4]
+        },
+        {
+          "id": "cap_stone_left",
+          "size": [1, 1.2, 2],
+          "shape": "wedge",
+          "anchor": "bottom",
+          "parent": "crumbling_outer_wall_left",
+          "material": "ash_grey_stone",
+          "position": [0, 7.5, 0],
+          "rotation": [0, 0, -15]
+        },
+        {
+          "id": "sub_arch_left",
+          "size": [0.3, 3.2, 0.3],
+          "shape": "cylinder",
+          "anchor": "bottom",
+          "material": "soot_black",
+          "position": [0, 3, -1.2],
+          "rotation": [0, 0, 25]
+        },
+        {
+          "id": "sub_arch_right",
+          "size": [0.3, 3.2, 0.3],
+          "shape": "cylinder",
+          "anchor": "bottom",
+          "material": "soot_black",
+          "position": [0, 3, 1.2],
+          "rotation": [0, 0, -25]
+        },
+        {
+          "id": "broken_tracery_loop",
+          "size": [2.2, 0.25, 2.2],
+          "shape": "torus",
+          "material": "ash_grey_stone",
+          "position": [0, 6.2, 0],
+          "rotation": [0, 0, 35]
+        },
+        {
+          "id": "fallen_column_segment_1",
+          "size": [0.8, 1.8, 0.8],
+          "shape": "cylinder",
+          "parent": "base_rubble_right",
+          "material": "soot_black",
+          "position": [0.4, 0.5, -0.4],
+          "rotation": [75, 25, 10]
+        },
+        {
+          "id": "fallen_column_segment_2",
+          "size": [0.7, 1.4, 0.7],
+          "shape": "cylinder",
+          "parent": "base_rubble_left",
+          "material": "ash_grey_stone",
+          "position": [-0.3, 0.4, 0.5],
+          "rotation": [-30, 45, 80]
+        },
+        {
+          "id": "buttress_support",
+          "size": [1.5, 5, 0.8],
+          "shape": "wedge",
+          "anchor": "bottom",
+          "parent": "crumbling_outer_wall_left",
+          "material": "charred_stone",
+          "position": [-1.2, 0, -0.2],
+          "rotation": [0, 0, 90]
+        },
+        {
+          "id": "scattered_block_1",
+          "size": [0.9, 0.6, 0.7],
+          "shape": "box",
+          "anchor": "bottom",
+          "material": "ash_grey_stone",
+          "position": [1.5, 0, -1.5],
+          "rotation": [0, 35, 0]
+        },
+        {
+          "id": "scattered_block_2",
+          "size": [1.1, 0.5, 0.6],
+          "shape": "box",
+          "anchor": "bottom",
+          "material": "soot_black",
+          "position": [1.9, 0, 1],
+          "rotation": [0, -20, 0]
+        },
+        {
+          "id": "hot_ember_pile",
+          "size": [1.8, 0.25, 1.8],
+          "shape": "box",
+          "anchor": "bottom",
+          "material": "ember_glow",
+          "position": [0.4, 0, 0]
+        },
+        {
+          "id": "ash_mound",
+          "size": [2.2, 0.4, 2.2],
+          "shape": "dome",
+          "anchor": "bottom",
+          "parent": "hot_ember_pile",
+          "material": "charred_stone",
+          "position": [0, 0.1, 0]
+        },
+        {
+          "id": "rising_smoke",
+          "size": [1.2, 4, 0.01],
+          "shape": "smoke",
+          "parent": "hot_ember_pile",
+          "material": "smoke_cloud",
+          "position": [0, 0.4, 0]
+        }
+      ],
+      "scale": 1,
+      "category": "building",
+      "materials": [
+        { "id": "charred_stone", "color": "#4a4d4a", "finish": "matte" },
+        { "id": "ash_grey_stone", "color": "#8c8e87", "finish": "matte" },
+        { "id": "soot_black", "color": "#1c1c1b", "finish": "matte" },
+        { "id": "ember_glow", "color": "#f23f04", "finish": "emissive" },
+        { "id": "smoke_cloud", "color": "#333333", "finish": "matte" }
+      ],
+      "placement": "ground"
+    }
+  ],
+  "scenes": [
+    {
+      "kind": "diorama",
+      "camera": "tracking",
+      "kicker": "Late Summer, 1666",
+      "layout": "street",
+      "caption": "A long drought left London's timber houses vulnerable.",
+      "setting": "city",
+      "weather": "clear",
+      "duration": 5,
+      "elements": [
+        {
+          "role": "background",
+          "color": "#947f67",
+          "count": 12,
+          "model": "london_timber_house",
+          "scale": 1,
+          "facing": "right",
+          "motion": "idle",
+          "position": "left",
+          "formation": "line"
+        },
+        {
+          "role": "background",
+          "color": "#8c765f",
+          "count": 12,
+          "model": "london_timber_house",
+          "scale": 1,
+          "facing": "left",
+          "motion": "idle",
+          "position": "right",
+          "formation": "line"
+        },
+        {
+          "role": "subject",
+          "color": "#6e5d4d",
+          "count": 1,
+          "model": "fire_evacuation_cart",
+          "scale": 1,
+          "facing": "camera",
+          "motion": "idle",
+          "position": "center",
+          "formation": "single"
+        }
+      ],
+      "shotSize": "medium",
+      "timeOfDay": "day",
+      "structureState": "intact"
+    },
+    {
+      "kind": "diorama",
+      "camera": "push_in",
+      "kicker": "Sept 2 · Pudding Lane",
+      "layout": "street",
+      "caption": "A bakery fire quickly spreads through narrow streets.",
+      "setting": "city",
+      "weather": "clear",
+      "duration": 6,
+      "elements": [
+        {
+          "role": "subject",
+          "color": "#d94c26",
+          "count": 1,
+          "model": "london_timber_house",
+          "scale": 1,
+          "facing": "camera",
+          "motion": "burn",
+          "position": "center",
+          "formation": "single"
+        },
+        {
+          "role": "background",
+          "color": "#3a383b",
+          "count": 6,
+          "model": "london_timber_house",
+          "scale": 1,
+          "facing": "camera",
+          "motion": "idle",
+          "position": "back",
+          "formation": "line"
+        }
+      ],
+      "shotSize": "close",
+      "timeOfDay": "night",
+      "structureState": "intact"
+    },
+    {
+      "kind": "diorama",
+      "camera": "pan_right",
+      "kicker": "Sept 2-3",
+      "layout": "street",
+      "caption": "Strong easterly winds drive the fire toward oil and tallow warehouses.",
+      "setting": "city",
+      "weather": "smoke",
+      "duration": 7,
+      "elements": [
+        {
+          "role": "subject",
+          "color": "#d94c26",
+          "count": 16,
+          "model": "london_timber_house",
+          "scale": 1,
+          "facing": "away",
+          "motion": "burn",
+          "position": "center",
+          "formation": "block"
+        }
+      ],
+      "shotSize": "wide",
+      "timeOfDay": "night",
+      "structureState": "intact"
+    },
+    {
+      "kind": "diorama",
+      "camera": "eye_level",
+      "kicker": "Fleeing the City",
+      "layout": "street",
+      "caption": "Terrified citizens desperately drag their belongings down clogged alleyways to escape the advancing fire.",
+      "setting": "city",
+      "weather": "smoke",
+      "duration": 6.5,
+      "elements": [
+        {
+          "role": "subject",
+          "color": "#947f67",
+          "count": 4,
+          "model": "fire_evacuation_cart",
+          "scale": 1,
+          "facing": "camera",
+          "motion": "march",
+          "position": "center",
+          "formation": "scatter"
+        },
+        {
+          "role": "background",
+          "color": "#3a383b",
+          "count": 10,
+          "model": "london_timber_house",
+          "scale": 1,
+          "facing": "right",
+          "motion": "burn",
+          "position": "left",
+          "formation": "line"
+        }
+      ],
+      "shotSize": "medium",
+      "timeOfDay": "dawn",
+      "structureState": "intact"
+    },
+    {
+      "kind": "diorama",
+      "camera": "tracking",
+      "kicker": "Desperate Measures",
+      "layout": "street",
+      "caption": "Forces use gunpowder and hooks to halt the spreading fire.",
+      "setting": "city",
+      "weather": "smoke",
+      "duration": 6.5,
+      "elements": [
+        {
+          "role": "subject",
+          "color": "#ff9a00",
+          "count": 2,
+          "model": "firefighting_demolition_rig",
+          "scale": 1,
+          "facing": "away",
+          "motion": "explode",
+          "position": "center",
+          "formation": "scatter"
+        },
+        {
+          "role": "background",
+          "color": "#3a383b",
+          "count": 3,
+          "model": "london_timber_house",
+          "scale": 1,
+          "facing": "camera",
+          "motion": "collapse",
+          "position": "back",
+          "formation": "line"
+        }
+      ],
+      "shotSize": "medium",
+      "timeOfDay": "day",
+      "structureState": "intact"
+    },
+    {
+      "kind": "diorama",
+      "camera": "orbit",
+      "kicker": "Sept 4 · Firebreaks",
+      "layout": "street",
+      "caption": "Demolishing entire blocks creates rubble barriers to prevent flames from spreading.",
+      "setting": "city",
+      "weather": "smoke",
+      "duration": 7,
+      "elements": [
+        {
+          "role": "subject",
+          "color": "#6e5d4d",
+          "count": 1,
+          "model": "firefighting_demolition_rig",
+          "scale": 1,
+          "facing": "camera",
+          "motion": "idle",
+          "position": "center",
+          "formation": "single"
+        },
+        {
+          "role": "background",
+          "color": "#3a383b",
+          "count": 8,
+          "model": "london_timber_house",
+          "scale": 1,
+          "facing": "camera",
+          "motion": "burn",
+          "position": "back",
+          "formation": "scatter"
+        }
+      ],
+      "shotSize": "close",
+      "timeOfDay": "dusk",
+      "structureState": "ruined"
+    },
+    {
+      "kind": "diorama",
+      "camera": "pull_out",
+      "kicker": "Sept 6, 1666",
+      "layout": "open",
+      "caption": "Winds die down, allowing control after over 80% destruction.",
+      "setting": "city",
+      "weather": "smoke",
+      "duration": 6.5,
+      "elements": [
+        {
+          "role": "subject",
+          "color": "#6e6e6e",
+          "count": 1,
+          "model": "ruined_cathedral_backdrop",
+          "scale": 1,
+          "facing": "camera",
+          "motion": "idle",
+          "position": "center",
+          "formation": "single"
+        },
+        {
+          "role": "background",
+          "color": "#3a383b",
+          "count": 20,
+          "model": "london_timber_house",
+          "scale": 1,
+          "facing": "camera",
+          "motion": "idle",
+          "position": "back",
+          "formation": "scatter"
+        }
+      ],
+      "shotSize": "wide",
+      "timeOfDay": "day",
+      "structureState": "ruined"
+    },
+    {
+      "kind": "diorama",
+      "camera": "low_angle",
+      "kicker": "St. Paul's Cathedral",
+      "layout": "open",
+      "caption": "Old St. Paul's Cathedral stands ruined amid ash.",
+      "setting": "city",
+      "weather": "clear",
+      "duration": 5.5,
+      "elements": [
+        {
+          "role": "subject",
+          "color": "#6e6e6e",
+          "count": 1,
+          "model": "ruined_cathedral_backdrop",
+          "scale": 1,
+          "facing": "camera",
+          "motion": "idle",
+          "position": "center",
+          "formation": "single"
+        }
+      ],
+      "shotSize": "medium",
+      "timeOfDay": "day",
+      "structureState": "ruined"
+    },
+    {
+      "kind": "diorama",
+      "camera": "static",
+      "kicker": "Aftermath",
+      "layout": "open",
+      "caption": "Devastation prompts a massive redesign of the capital.",
+      "setting": "city",
+      "weather": "clear",
+      "duration": 5,
+      "elements": [
+        {
+          "role": "subject",
+          "color": "#947f67",
+          "count": 2,
+          "model": "fire_evacuation_cart",
+          "scale": 1,
+          "facing": "away",
+          "motion": "idle",
+          "position": "front",
+          "formation": "scatter"
+        },
+        {
+          "role": "background",
+          "color": "#6e6e6e",
+          "count": 1,
+          "model": "ruined_cathedral_backdrop",
+          "scale": 1,
+          "facing": "camera",
+          "motion": "idle",
+          "position": "back",
+          "formation": "single"
+        }
+      ],
+      "shotSize": "wide",
+      "timeOfDay": "dusk",
+      "structureState": "ruined"
+    },
+    {
+      "kind": "diorama",
+      "camera": "crane_up",
+      "kicker": "A New City",
+      "layout": "open",
+      "caption": "London will rebuild in brick and stone.",
+      "setting": "city",
+      "weather": "clear",
+      "duration": 5,
+      "elements": [
+        {
+          "role": "subject",
+          "color": "#6e6e6e",
+          "count": 1,
+          "model": "ruined_cathedral_backdrop",
+          "scale": 1,
+          "facing": "camera",
+          "motion": "idle",
+          "position": "center",
+          "formation": "single"
+        }
+      ],
+      "shotSize": "wide",
+      "timeOfDay": "dawn",
+      "structureState": "ruined"
+    }
+  ],
+  "palette": { "accent": "#ff9a00", "primary": "#d94c26", "secondary": "#3a383b" },
+  "version": 2,
+  "location": "London, England",
+  "dateLabel": "September 2-6, 1666",
+  "presentation": "immersive",
+  "totalDuration": 60
+}

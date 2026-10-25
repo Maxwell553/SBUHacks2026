@@ -1,0 +1,716 @@
+{
+  "seed": 395343117,
+  "title": "First Flight at Kitty Hawk",
+  "models": [
+    {
+      "id": "wright_flyer_1903",
+      "name": "Wright Flyer 1903",
+      "notes": "Wright Flyer 1903 biplane featuring a dynamic front elevator structure and dual counter-rotating pusher propellers driven with high-speed rotation.",
+      "parts": [
+        { "id": "lower_wing", "size": [1.4, 0.04, 3.8], "shape": "box", "material": "muslin", "position": [0, 0, 0] },
+        { "id": "upper_wing", "size": [1.4, 0.04, 3.8], "shape": "box", "material": "muslin", "position": [0, 1.3, 0] },
+        {
+          "id": "wing_struts",
+          "size": [0.03, 1.3, 0.03],
+          "shape": "cylinder",
+          "repeat": { "mode": "linear", "step": [0, 0, 0.65], "count": 6 },
+          "material": "wood_spruce",
+          "position": [0, 0.65, 0]
+        },
+        {
+          "id": "wing_struts_back",
+          "size": [0.03, 1.3, 0.03],
+          "shape": "cylinder",
+          "repeat": { "mode": "linear", "step": [0, 0, 0.65], "count": 6 },
+          "material": "wood_spruce",
+          "position": [-0.5, 0.65, 0]
+        },
+        {
+          "id": "engine_block",
+          "size": [0.4, 0.3, 0.35],
+          "shape": "box",
+          "material": "metal_engine",
+          "position": [-0.1, 0.15, 0.25]
+        },
+        {
+          "id": "prop_shaft_left",
+          "size": [0.03, 0.45, 0.03],
+          "shape": "cylinder",
+          "material": "metal_engine",
+          "position": [-0.8, 0.65, -0.7],
+          "rotation": [90, 0, 0]
+        },
+        {
+          "id": "prop_left",
+          "size": [0.08, 0.9, 0.02],
+          "shape": "box",
+          "taper": 0.5,
+          "material": "wood_spruce",
+          "position": [-1, 0.65, -0.7],
+          "rotation": [90, 0, 0]
+        },
+        {
+          "id": "prop_shaft_right",
+          "size": [0.03, 0.45, 0.03],
+          "shape": "cylinder",
+          "material": "metal_engine",
+          "position": [-0.8, 0.65, 0.7],
+          "rotation": [90, 0, 0]
+        },
+        {
+          "id": "prop_right",
+          "size": [0.08, 0.9, 0.02],
+          "shape": "box",
+          "taper": 0.5,
+          "material": "wood_spruce",
+          "position": [-1, 0.65, 0.7],
+          "rotation": [-90, 0, 0]
+        },
+        {
+          "id": "skid_left",
+          "size": [1.9, 0.03, 0.04],
+          "shape": "box",
+          "material": "wood_spruce",
+          "position": [0.4, -0.15, -0.4]
+        },
+        {
+          "id": "skid_right",
+          "size": [1.9, 0.03, 0.04],
+          "shape": "box",
+          "material": "wood_spruce",
+          "position": [0.4, -0.15, 0.4]
+        },
+        {
+          "id": "canard_structure",
+          "size": [0.1, 0.1, 0.1],
+          "shape": "group",
+          "position": [1.3, 0.3, 0],
+          "animation": [
+            { "axis": "z", "wave": "sine", "when": "always", "property": "rotation", "amplitude": 12, "frequency": 0.5 }
+          ]
+        },
+        {
+          "id": "canard_frame_upper",
+          "size": [0.02, 1.2, 0.02],
+          "shape": "cylinder",
+          "taper": 1,
+          "material": "wood_spruce",
+          "position": [0, 0, 0],
+          "rotation": [0, 0, -45]
+        },
+        {
+          "id": "canard_elevator_upper",
+          "size": [0.4, 0.02, 1.2],
+          "shape": "box",
+          "parent": "canard_structure",
+          "material": "muslin",
+          "position": [0.4, 0.4, 0]
+        },
+        {
+          "id": "canard_elevator_lower",
+          "size": [0.4, 0.02, 1.2],
+          "shape": "box",
+          "parent": "canard_structure",
+          "material": "muslin",
+          "position": [0.4, -0.1, 0]
+        },
+        {
+          "id": "rudder_structure",
+          "size": [0.1, 0.1, 0.1],
+          "shape": "group",
+          "position": [-1.2, 0.4, 0],
+          "animation": [
+            { "axis": "y", "wave": "sine", "when": "always", "property": "rotation", "amplitude": 15, "frequency": 0.3 }
+          ]
+        },
+        {
+          "id": "rudder_struts",
+          "size": [1.2, 0.02, 0.02],
+          "shape": "box",
+          "mirror": "z",
+          "material": "wood_spruce",
+          "position": [-0.6, 0.2, 0]
+        },
+        {
+          "id": "rudder_left_v",
+          "size": [0.3, 0.8, 0.02],
+          "shape": "box",
+          "parent": "rudder_structure",
+          "material": "muslin",
+          "position": [0, 0.2, -0.18]
+        },
+        {
+          "id": "rudder_right_v",
+          "size": [0.3, 0.8, 0.02],
+          "shape": "box",
+          "parent": "rudder_structure",
+          "material": "muslin",
+          "position": [0, 0.2, 0.18]
+        },
+        {
+          "id": "prop_left_spinner",
+          "size": [0.1, 0.1, 0.1],
+          "shape": "group",
+          "position": [-1, 0.65, -0.7],
+          "animation": [
+            { "axis": "x", "wave": "spin", "when": "always", "property": "rotation", "amplitude": 950, "frequency": 1 }
+          ]
+        },
+        {
+          "id": "prop_blade_l1",
+          "size": [0.03, 0.8, 0.08],
+          "shape": "box",
+          "parent": "prop_left_spinner",
+          "material": "wood_spruce",
+          "position": [0, 0, 0]
+        },
+        {
+          "id": "prop_right_spinner",
+          "size": [0.1, 0.1, 0.1],
+          "shape": "group",
+          "position": [-1, 0.65, 0.7],
+          "animation": [
+            { "axis": "x", "wave": "spin", "when": "always", "property": "rotation", "amplitude": -950, "frequency": 1 }
+          ]
+        },
+        {
+          "id": "prop_blade_r1",
+          "size": [0.03, 0.8, 0.08],
+          "shape": "box",
+          "parent": "prop_right_spinner",
+          "material": "wood_spruce",
+          "position": [0, 0, 0]
+        },
+        {
+          "id": "pilot_body",
+          "size": [0.18, 0.65, 0.18],
+          "shape": "capsule",
+          "material": "pilot_suit",
+          "position": [0.1, 0.1, -0.25],
+          "rotation": [0, 90, 90]
+        },
+        {
+          "id": "pilot_head",
+          "size": [0.15, 0.15, 0.15],
+          "shape": "sphere",
+          "material": "pilot_skin",
+          "position": [0.45, 0.15, -0.25]
+        },
+        {
+          "id": "pilot_cap",
+          "size": [0.16, 0.07, 0.16],
+          "shape": "dome",
+          "material": "pilot_suit",
+          "position": [0.45, 0.21, -0.25]
+        }
+      ],
+      "scale": 1,
+      "category": "aircraft",
+      "materials": [
+        { "id": "muslin", "color": "#f0ede0", "finish": "cloth" },
+        { "id": "wood_spruce", "color": "#cbb28d", "finish": "matte" },
+        { "id": "metal_engine", "color": "#5c5d64", "finish": "metal" },
+        { "id": "pilot_suit", "color": "#304050", "finish": "cloth" },
+        { "id": "pilot_skin", "color": "#e0a980", "finish": "matte" }
+      ],
+      "placement": "air"
+    },
+    {
+      "id": "launch_rail_and_dolly",
+      "name": "Takeoff Launch Rail and Dolly",
+      "notes": "1903 Kitty Hawk launch rail system. Features 18-meter wooden monorail with metal strap, ground ties, and translating dual-wheel takeoff dolly.",
+      "parts": [
+        {
+          "id": "rail_base",
+          "size": [18, 0.08, 0.3],
+          "shape": "box",
+          "anchor": "bottom",
+          "material": "wood",
+          "position": [0, 0.04, 0]
+        },
+        {
+          "id": "metal_strap",
+          "size": [18, 0.02, 0.08],
+          "shape": "box",
+          "parent": "rail_base",
+          "material": "iron_strap",
+          "position": [0, 0.13, 0],
+          "rotation": [0, 0, 0],
+          "segments": 3
+        },
+        {
+          "id": "wood_ties",
+          "size": [0.15, 0.04, 0.9],
+          "shape": "box",
+          "parent": "rail_base",
+          "repeat": { "mode": "linear", "step": [1.41, 0, 0], "count": 13 },
+          "material": "wood",
+          "position": [-8.5, -0.04, 0]
+        },
+        {
+          "id": "dolly_body",
+          "size": [0.4, 0.06, 0.6],
+          "shape": "box",
+          "anchor": "center",
+          "material": "wood",
+          "position": [1, 0.22, 0],
+          "animation": [{ "axis": "x", "wave": "sine", "property": "position", "amplitude": 4.5, "frequency": 0.15 }]
+        },
+        {
+          "id": "dolly_axle",
+          "size": [0.04, 0.72, 0.04],
+          "shape": "cylinder",
+          "taper": 1,
+          "parent": "dolly_body",
+          "material": "wood",
+          "position": [0, -0.05, 0],
+          "rotation": [90, 0, 0]
+        },
+        {
+          "id": "dolly_wheel",
+          "size": [0.18, 0.03, 0.18],
+          "shape": "torus",
+          "taper": 1,
+          "parent": "dolly_axle",
+          "material": "wheel_metal",
+          "position": [0, 0, -0.36],
+          "rotation": [0, 90, 0],
+          "segments": 8
+        },
+        {
+          "id": "dolly_wheel_right",
+          "size": [0.18, 0.03, 0.18],
+          "shape": "torus",
+          "taper": 1,
+          "parent": "dolly_axle",
+          "material": "wheel_metal",
+          "position": [0, 0, 0.36],
+          "rotation": [0, 90, 0],
+          "segments": 8
+        },
+        {
+          "id": "cradle_saddle",
+          "size": [0.1, 0.08, 0.55],
+          "shape": "wedge",
+          "parent": "dolly_body",
+          "material": "wood",
+          "position": [0, 0.07, 0],
+          "rotation": [0, 0, 0]
+        },
+        {
+          "id": "dolly_guide_roller",
+          "size": [0.06, 0.08, 0.06],
+          "shape": "cylinder",
+          "taper": 1,
+          "parent": "dolly_body",
+          "material": "wheel_metal",
+          "position": [0, -0.09, 0],
+          "rotation": [0, 0, 0]
+        },
+        {
+          "id": "soil_base",
+          "size": [19, 0.01, 1.5],
+          "shape": "box",
+          "anchor": "bottom",
+          "material": "sand_dust",
+          "position": [0, 0, 0]
+        }
+      ],
+      "category": "structure",
+      "materials": [
+        { "id": "wood", "color": "#b08d57", "finish": "matte" },
+        { "id": "iron_strap", "color": "#555555", "finish": "metal" },
+        { "id": "sand_dust", "color": "#dfc49c", "finish": "matte" },
+        { "id": "wheel_metal", "color": "#2f3032", "finish": "metal" }
+      ],
+      "placement": "ground"
+    },
+    {
+      "id": "kill_devil_hill_dune",
+      "name": "Kill Devil Hills Sand Dune",
+      "notes": "Low-poly wind-swept Kill Devil Hills sand dune setup with Kitty Hawk topography, featuring Orville & Wilbur's wooden launching rail and patches of beach grass.",
+      "parts": [
+        {
+          "id": "dune_base",
+          "size": [6, 0.4, 5],
+          "shape": "box",
+          "anchor": "bottom",
+          "material": "sand_shadow",
+          "position": [0, 0.2, 0]
+        },
+        {
+          "id": "dune_crest",
+          "size": [5, 1.2, 3.2],
+          "shape": "wedge",
+          "taper": 1,
+          "material": "sand_light",
+          "position": [-0.5, 0.4, -0.4],
+          "rotation": [0, 5, 0]
+        },
+        {
+          "id": "dune_slope_east",
+          "size": [4.5, 0.7, 2.5],
+          "shape": "wedge",
+          "taper": 1,
+          "material": "sand_light",
+          "position": [0.8, 0.4, 1.2],
+          "rotation": [0, -15, 0]
+        },
+        {
+          "id": "sand_drift_a",
+          "size": [2.5, 0.6, 1.8],
+          "shape": "sphere",
+          "material": "sand_light",
+          "position": [1.5, 0.3, -1.2],
+          "rotation": [5, 10, 0]
+        },
+        {
+          "id": "sand_drift_b",
+          "size": [2.8, 0.8, 2],
+          "shape": "sphere",
+          "material": "sand_shadow",
+          "position": [-1.8, 0.4, 0.8],
+          "rotation": [-5, -20, 0]
+        },
+        {
+          "id": "launch_rail_wood",
+          "size": [4.8, 0.08, 0.16],
+          "shape": "box",
+          "material": "wooden_rail",
+          "position": [0.2, 0.52, 0.5],
+          "rotation": [2, -12, 1]
+        },
+        {
+          "id": "launch_rail_iron",
+          "size": [4.8, 0.02, 0.04],
+          "shape": "box",
+          "parent": "launch_rail_wood",
+          "material": "rail_iron",
+          "position": [0, 0.05, 0]
+        },
+        {
+          "id": "rail_ties",
+          "size": [0.06, 0.04, 0.4],
+          "shape": "box",
+          "parent": "launch_rail_wood",
+          "repeat": { "mode": "linear", "step": [0.65, 0, 0], "count": 7 },
+          "material": "wooden_rail",
+          "position": [-2, -0.04, 0]
+        },
+        {
+          "id": "grass_cluster_high",
+          "size": [0.15, 0.6, 0.15],
+          "shape": "cone",
+          "taper": 0,
+          "material": "beach_grass",
+          "position": [-0.6, 1.4, -0.8],
+          "rotation": [15, 10, -5],
+          "segments": 3
+        },
+        {
+          "id": "grass_cluster_high_b",
+          "size": [0.12, 0.5, 0.12],
+          "shape": "cone",
+          "taper": 0,
+          "material": "beach_grass",
+          "position": [-0.7, 1.35, -0.65],
+          "rotation": [5, -25, 15],
+          "segments": 3
+        },
+        {
+          "id": "grass_cluster_mid",
+          "size": [0.14, 0.45, 0.14],
+          "shape": "cone",
+          "taper": 0,
+          "material": "beach_grass",
+          "position": [1.4, 0.7, 1.5],
+          "rotation": [-10, 45, 12],
+          "segments": 3
+        },
+        {
+          "id": "grass_cluster_mid_b",
+          "size": [0.1, 0.35, 0.1],
+          "shape": "cone",
+          "taper": 0,
+          "material": "beach_grass",
+          "position": [1.5, 0.68, 1.6],
+          "rotation": [12, 15, -8],
+          "segments": 3
+        },
+        {
+          "id": "grass_patch_scatter",
+          "size": [0.12, 0.4, 0.12],
+          "shape": "cone",
+          "taper": 0,
+          "material": "beach_grass",
+          "position": [-2.2, 0.75, 0.2],
+          "rotation": [-5, 5, -18],
+          "segments": 3
+        }
+      ],
+      "category": "nature",
+      "materials": [
+        { "id": "sand_light", "color": "#e2cfa2", "finish": "matte" },
+        { "id": "sand_shadow", "color": "#c6b386", "finish": "matte" },
+        { "id": "beach_grass", "color": "#819865", "finish": "matte" },
+        { "id": "wooden_rail", "color": "#8a7355", "finish": "matte" },
+        { "id": "rail_iron", "color": "#5c5c5c", "finish": "metal" }
+      ],
+      "placement": "ground"
+    },
+    {
+      "id": "wilbur_wright_observer",
+      "name": "Wilbur Wright Observer",
+      "notes": "Wilbur Wright running in wool suit and flat cap, holding the wingtip during the kitty hawk takeoff. Left leg lunges forward while right arm is raised high to balance.",
+      "parts": [
+        {
+          "id": "root_pivot",
+          "size": [0.5, 1.7, 0.5],
+          "shape": "group",
+          "position": [0, 0, 0],
+          "animation": [
+            {
+              "axis": "y",
+              "wave": "bounce",
+              "when": "always",
+              "property": "position",
+              "amplitude": 0.08,
+              "frequency": 1.6
+            }
+          ]
+        },
+        {
+          "id": "pelvis",
+          "size": [0.24, 0.15, 0.28],
+          "shape": "box",
+          "parent": "root_pivot",
+          "material": "dark_wool",
+          "position": [0, 0.8, 0]
+        },
+        {
+          "id": "torso",
+          "size": [0.25, 0.45, 0.3],
+          "shape": "box",
+          "anchor": "bottom",
+          "parent": "pelvis",
+          "material": "dark_wool",
+          "position": [0.02, 0.075, 0],
+          "rotation": [5, 0, 0]
+        },
+        {
+          "id": "collar",
+          "size": [0.13, 0.05, 0.13],
+          "shape": "cylinder",
+          "anchor": "bottom",
+          "parent": "torso",
+          "material": "shirt_collar",
+          "position": [0, 0.45, 0]
+        },
+        {
+          "id": "head",
+          "size": [0.18, 0.2, 0.17],
+          "shape": "sphere",
+          "anchor": "bottom",
+          "parent": "collar",
+          "material": "skin",
+          "position": [0, 0.05, 0],
+          "rotation": [2, 0, 0]
+        },
+        {
+          "id": "mustache",
+          "size": [0.03, 0.02, 0.08],
+          "shape": "box",
+          "parent": "head",
+          "material": "cap",
+          "position": [0.09, 0.08, 0]
+        },
+        {
+          "id": "cap_base",
+          "size": [0.19, 0.05, 0.19],
+          "shape": "cylinder",
+          "parent": "head",
+          "material": "cap",
+          "position": [0, 0.18, 0],
+          "rotation": [-5, 0, 0]
+        }
+      ],
+      "scale": 1,
+      "category": "figure",
+      "materials": [
+        { "id": "dark_wool", "color": "#2c2d30", "finish": "cloth" },
+        { "id": "skin", "color": "#f1c27d", "finish": "matte" },
+        { "id": "shirt_collar", "color": "#fbfbfb", "finish": "cloth" },
+        { "id": "leather_boots", "color": "#3d2314", "finish": "satin" },
+        { "id": "cap", "color": "#42372c", "finish": "cloth" }
+      ],
+      "placement": "ground"
+    }
+  ],
+  "scenes": [
+    {
+      "kind": "diorama",
+      "camera": "eye_level",
+      "kicker": "Dec 17, 1903 · Morning",
+      "caption": "The Wright brothers prepared to make history.",
+      "setting": "desert",
+      "weather": "clear",
+      "duration": 5,
+      "elements": [
+        {
+          "role": "subject",
+          "count": 1,
+          "model": "wright_flyer_1903",
+          "scale": 1,
+          "facing": "right",
+          "motion": "idle",
+          "position": "center",
+          "formation": "single"
+        },
+        {
+          "role": "foreground",
+          "count": 1,
+          "model": "launch_rail_and_dolly",
+          "scale": 1,
+          "facing": "right",
+          "motion": "idle",
+          "position": "center",
+          "formation": "single"
+        },
+        {
+          "role": "background",
+          "count": 8,
+          "model": "kill_devil_hill_dune",
+          "scale": 1.5,
+          "facing": "camera",
+          "motion": "idle",
+          "position": "back",
+          "formation": "scatter"
+        }
+      ],
+      "timeOfDay": "dawn"
+    },
+    {
+      "kind": "diorama",
+      "camera": "push_in",
+      "kicker": "12-Horsepower Engine",
+      "caption": "A custom engine and twin propellers drove their biplane.",
+      "setting": "desert",
+      "weather": "clear",
+      "duration": 5,
+      "elements": [
+        {
+          "role": "subject",
+          "count": 1,
+          "model": "wright_flyer_1903",
+          "scale": 1.5,
+          "facing": "away",
+          "motion": "idle",
+          "position": "center",
+          "formation": "single"
+        },
+        {
+          "role": "background",
+          "count": 8,
+          "model": "kill_devil_hill_dune",
+          "scale": 1.5,
+          "facing": "camera",
+          "motion": "idle",
+          "position": "back",
+          "formation": "scatter"
+        }
+      ],
+      "timeOfDay": "dawn"
+    },
+    {
+      "kind": "diorama",
+      "camera": "tracking",
+      "kicker": "The Launch",
+      "caption": "The Wright brothers launched their historic Flyer.",
+      "setting": "desert",
+      "weather": "clear",
+      "duration": 5,
+      "elements": [
+        {
+          "role": "subject",
+          "count": 1,
+          "model": "wright_flyer_1903",
+          "scale": 1,
+          "facing": "right",
+          "motion": "launch",
+          "position": "center",
+          "formation": "single"
+        },
+        {
+          "role": "subject",
+          "count": 1,
+          "model": "wilbur_wright_observer",
+          "scale": 1,
+          "facing": "right",
+          "motion": "march",
+          "offset": { "x": 2, "z": 1.5 },
+          "position": "center",
+          "formation": "single"
+        },
+        {
+          "role": "foreground",
+          "count": 1,
+          "model": "launch_rail_and_dolly",
+          "scale": 1,
+          "facing": "right",
+          "motion": "idle",
+          "position": "center",
+          "formation": "single"
+        },
+        {
+          "role": "background",
+          "count": 8,
+          "model": "kill_devil_hill_dune",
+          "scale": 1.5,
+          "facing": "camera",
+          "motion": "idle",
+          "position": "back",
+          "formation": "scatter"
+        }
+      ],
+      "timeOfDay": "dawn"
+    },
+    {
+      "kind": "diorama",
+      "camera": "tracking",
+      "kicker": "First Flight",
+      "caption": "Orville Wright made the first controlled, powered flight.",
+      "setting": "desert",
+      "weather": "clear",
+      "duration": 5,
+      "elements": [
+        {
+          "role": "subject",
+          "count": 1,
+          "model": "wright_flyer_1903",
+          "scale": 1,
+          "facing": "right",
+          "motion": "fly",
+          "position": "center",
+          "formation": "single"
+        },
+        {
+          "role": "background",
+          "count": 8,
+          "model": "kill_devil_hill_dune",
+          "scale": 1.5,
+          "facing": "camera",
+          "motion": "idle",
+          "position": "back",
+          "formation": "scatter"
+        }
+      ],
+      "timeOfDay": "dawn"
+    }
+  ],
+  "palette": { "accent": "#f4a460", "primary": "#d2b48c", "secondary": "#2f4f4f" },
+  "version": 2,
+  "location": "Kill Devil Hills, North Carolina",
+  "dateLabel": "December 17, 1903",
+  "presentation": "immersive",
+  "totalDuration": 20
+}

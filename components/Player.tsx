@@ -29,18 +29,14 @@ export function Player({
   const timeRef = useRef(0);
   const playingRef = useRef(autoPlay);
   const visibleRef = useRef(true);
-  const narrateRef = useRef(false);
   const ambienceRef = useRef<Ambience | null>(null);
-  const ambientEnabled = useRef(false);
-  const [ambient, setAmbient] = useState(false);
+  const ambientEnabled = useRef(true);
+  const [ambient, setAmbient] = useState(true);
   const [audioError, setAudioError] = useState<string | null>(null);
-  const lastSceneRef = useRef(-1);
   const [playing, setPlaying] = useState(autoPlay);
   const [time, setTime] = useState(0);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [narrate, setNarrate] = useState(false);
-  const [supportsSpeech, setSupportsSpeech] = useState(false);
   const [shownScript, setShownScript] = useState(script);
   const [shownAspect, setShownAspect] = useState(aspect);
   if (shownScript !== script || shownAspect !== aspect) {
@@ -49,14 +45,11 @@ export function Player({
     setReady(false);
     setError(null);
     setTime(0);
-    setAmbient(false);
-    setNarrate(false);
+    setAmbient(true);
   }
 
   useEffect(() => {
-    ambientEnabled.current = false;
-    narrateRef.current = false;
-    lastSceneRef.current = -1;
+    ambientEnabled.current = true;
     let disposed = false;
     let raf = 0;
     let last = performance.now();
@@ -71,7 +64,6 @@ export function Player({
         const { PolyEngine } = await import("@/lib/lowpoly/engine");
         await PolyEngine.loadFonts();
         if (disposed) return;
-        setSupportsSpeech("speechSynthesis" in window);
         const w = Math.max(160, wrap.clientWidth);
         const h = Math.round(aspect === "portrait" ? (w * 16) / 9 : (w * 9) / 16);
         const pr = Math.min(window.devicePixelRatio || 1, maxPixelRatio);
@@ -94,8 +86,6 @@ export function Player({
         io = new IntersectionObserver(
           ([e]) => {
             visibleRef.current = e.isIntersecting;
-            if (!e.isIntersecting && narrateRef.current && "speechSynthesis" in window) window.speechSynthesis.cancel();
-            lastSceneRef.current = -1;
           },
           { threshold: 0.05 },
         );
@@ -106,12 +96,7 @@ export function Player({
           last = now;
           const audioScene = engine.sceneAt(timeRef.current).index;
           const active = playingRef.current && visibleRef.current && !document.hidden;
-          ambienceRef.current?.update(
-            script.scenes[audioScene],
-            timeRef.current,
-            active && ambientEnabled.current,
-            narrateRef.current,
-          );
+          ambienceRef.current?.update(script.scenes[audioScene], timeRef.current, active && ambientEnabled.current);
           if (!active) return;
           let t = timeRef.current + dt;
           if (t >= engine.duration) {
@@ -124,15 +109,6 @@ export function Player({
           }
           timeRef.current = t;
           const { index, local } = engine.sceneAt(t);
-          if (index !== lastSceneRef.current) {
-            lastSceneRef.current = index;
-            if (narrateRef.current && "speechSynthesis" in window) {
-              window.speechSynthesis.cancel();
-              const u = new SpeechSynthesisUtterance(script.scenes[index].caption);
-              u.rate = 1.05;
-              window.speechSynthesis.speak(u);
-            }
-          }
           if (local > script.scenes[index].duration * 0.6) engine.prepare(index + 1);
           engine.renderAt(t);
           if (++uiTick % 6 === 0) setTime(t);
@@ -143,15 +119,26 @@ export function Player({
       }
     })();
 
+    // Browsers require a gesture for sound; the preference is on from first load.
+    const unlockAudio = () => {
+      if (!showControls || !visibleRef.current || !ambientEnabled.current) return;
+      try {
+        ambienceRef.current ??= new Ambience();
+        void ambienceRef.current.resume().catch(() => setAudioError("Tap Ambience to enable sound."));
+      } catch {
+        setAudioError("Ambient audio is unavailable in this browser.");
+      }
+    };
+    document.addEventListener("pointerdown", unlockAudio);
+    document.addEventListener("keydown", unlockAudio);
     const visibility = () => {
-      if (document.hidden) {
-        if ("speechSynthesis" in window) window.speechSynthesis.cancel();
-        ambienceRef.current?.update(script.scenes[0], 0, false, false);
-      } else lastSceneRef.current = -1;
+      if (document.hidden) ambienceRef.current?.update(script.scenes[0], 0, false);
     };
     document.addEventListener("visibilitychange", visibility);
     return () => {
       document.removeEventListener("visibilitychange", visibility);
+      document.removeEventListener("pointerdown", unlockAudio);
+      document.removeEventListener("keydown", unlockAudio);
       ambienceRef.current?.dispose();
       ambienceRef.current = null;
       disposed = true;
@@ -160,9 +147,8 @@ export function Player({
       io?.disconnect();
       engineRef.current?.dispose();
       engineRef.current = null;
-      if (typeof window !== "undefined" && "speechSynthesis" in window) window.speechSynthesis.cancel();
     };
-  }, [script, aspect, loop, maxPixelRatio]);
+  }, [script, aspect, loop, maxPixelRatio, showControls]);
 
   const toggle = () => {
     const engine = engineRef.current;
@@ -170,27 +156,12 @@ export function Player({
     if (!playingRef.current && timeRef.current >= engine.duration - 0.01) timeRef.current = 0;
     playingRef.current = !playingRef.current;
     setPlaying(playingRef.current);
-    if (playingRef.current) lastSceneRef.current = -1;
-    if (!playingRef.current && "speechSynthesis" in window) window.speechSynthesis.cancel();
   };
 
   const seek = (t: number) => {
-    if ("speechSynthesis" in window) window.speechSynthesis.cancel();
     timeRef.current = t;
     setTime(t);
-    lastSceneRef.current = -1;
     engineRef.current?.renderAt(t);
-  };
-
-  const toggleNarration = () => {
-    narrateRef.current = !narrateRef.current;
-    setNarrate(narrateRef.current);
-    lastSceneRef.current = -1;
-    if (!narrateRef.current && "speechSynthesis" in window) window.speechSynthesis.cancel();
-    if (narrateRef.current) {
-      playingRef.current = true;
-      setPlaying(true);
-    }
   };
 
   const toggleAmbience = async () => {
@@ -207,7 +178,6 @@ export function Player({
         ambienceRef.current.update(
           script.scenes[engineRef.current?.sceneAt(timeRef.current).index ?? 0],
           timeRef.current,
-          false,
           false,
         );
     } catch {
@@ -258,25 +228,13 @@ export function Player({
           <span className="mono faint" style={{ fontSize: 12, minWidth: 84, textAlign: "right" }}>
             {fmt(time)} / {fmt(script.totalDuration)}
           </span>
-          {supportsSpeech ? (
-            <button
-              className={`chip ${narrate ? "teal" : ""}`}
-              onClick={toggleNarration}
-              role="switch"
-              aria-label="Voice"
-              aria-checked={narrate}
-              title="Browser speech; downloaded GIFs are silent"
-            >
-              {narrate ? "Voice on" : "Voice off"}
-            </button>
-          ) : null}
           <button
             className={`chip ${ambient ? "teal" : ""}`}
             role="switch"
             aria-label="Ambience"
             aria-checked={ambient}
             onClick={toggleAmbience}
-            title="Environmental sound in the player; GIF downloads are silent"
+            title="Environmental sound in the player; saved HD videos also include ambience"
           >
             {ambient ? "Ambience on" : "Ambience off"}
           </button>

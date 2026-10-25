@@ -52,6 +52,12 @@ export const SETTINGS = [
 ] as const;
 
 export const TIMES_OF_DAY = ["dawn", "day", "dusk", "night"] as const;
+export const SCENE_LAYOUTS = ["open", "street", "interior"] as const;
+export const SETTLEMENTS = ["wild", "village", "town", "city"] as const;
+export const BANKS = ["natural", "embankment"] as const;
+export const MIN_WATER_WIDTH = 4;
+export const MAX_WATER_WIDTH = 300;
+export const SHOT_SIZES = ["wide", "medium", "close"] as const;
 export const WEATHER = ["clear", "cloudy", "rain", "snow", "fog", "storm", "dust", "smoke"] as const;
 export const CAMERA_MOVES = [
   "eye_level",
@@ -100,6 +106,8 @@ export const MAP_ZOOMS = ["world", "region", "local"] as const;
 export const ASPECTS = ["landscape", "portrait"] as const;
 
 export type Setting = (typeof SETTINGS)[number];
+export type Settlement = (typeof SETTLEMENTS)[number];
+export type Banks = (typeof BANKS)[number];
 export type TimeOfDay = (typeof TIMES_OF_DAY)[number];
 export type Weather = (typeof WEATHER)[number];
 export type CameraMove = (typeof CAMERA_MOVES)[number];
@@ -143,6 +151,14 @@ export const sceneSchema = z.object({
   kicker: z.string().min(1).max(40),
   caption: z.string().min(1).max(160),
   setting: z.enum(SETTINGS),
+  layout: z.enum(SCENE_LAYOUTS).optional(),
+  /** How built-up the surroundings are; inferred from the scene's models when absent. */
+  settlement: z.enum(SETTLEMENTS).optional(),
+  /** River/canal channel width in metres. */
+  waterWidth: z.number().min(MIN_WATER_WIDTH).max(MAX_WATER_WIDTH).optional(),
+  banks: z.enum(BANKS).optional(),
+  shotSize: z.enum(SHOT_SIZES).optional(),
+  structureState: z.enum(["intact", "ruined"]).optional(),
   timeOfDay: z.enum(TIMES_OF_DAY),
   weather: z.enum(WEATHER),
   camera: z.enum(CAMERA_MOVES),
@@ -288,7 +304,10 @@ function normalizeElement(raw: unknown, models: ModelDefinition[]): SceneElement
   if (!model) return null;
   const out: SceneElement = {
     model,
-    count: Math.round(num(e.count, 1, MAX_COUNT_PER_ELEMENT, 1)),
+    count:
+      models.find((m) => m.id === model)?.instancePolicy === "unique"
+        ? 1
+        : Math.round(num(e.count, 1, MAX_COUNT_PER_ELEMENT, 1)),
     formation: pick(FORMATIONS, e.formation, "scatter"),
     position: pick(POSITIONS, e.position, "center"),
     motion: pick(MOTIONS, e.motion, "idle"),
@@ -356,9 +375,16 @@ export function normalizeVideoScript(raw: unknown, opts: { targetDuration?: numb
 
   let scenes = (Array.isArray(r.scenes) ? r.scenes : []).slice(0, MAX_SCENES).map((sr): Scene => {
     const s = obj(sr);
+    const seenUnique = new Set<string>();
     const elements = (Array.isArray(s.elements) ? s.elements : [])
       .map((e) => normalizeElement(e, models))
       .filter((e): e is SceneElement => !!e)
+      .filter((e) => {
+        if (models.find((m) => m.id === e.model)?.instancePolicy !== "unique") return true;
+        if (seenUnique.has(e.model)) return false;
+        seenUnique.add(e.model);
+        return true;
+      })
       .slice(0, MAX_ELEMENTS_PER_SCENE);
     const instances = elements.reduce((a, e) => a + e.count, 0);
     if (instances > MAX_INSTANCES_PER_SCENE) {
@@ -380,6 +406,20 @@ export function normalizeVideoScript(raw: unknown, opts: { targetDuration?: numb
       kicker: text(s.kicker, 40, "—"),
       caption: text(s.caption, 160, "…"),
       setting: pick(SETTINGS, s.setting, kind === "map" ? "ocean" : "plains"),
+      ...(SCENE_LAYOUTS.includes(s.layout as (typeof SCENE_LAYOUTS)[number])
+        ? { layout: s.layout as (typeof SCENE_LAYOUTS)[number] }
+        : {}),
+      ...(SETTLEMENTS.includes(s.settlement as (typeof SETTLEMENTS)[number])
+        ? { settlement: s.settlement as (typeof SETTLEMENTS)[number] }
+        : {}),
+      ...(typeof s.waterWidth === "number" && Number.isFinite(s.waterWidth)
+        ? { waterWidth: num(s.waterWidth, MIN_WATER_WIDTH, MAX_WATER_WIDTH, 12) }
+        : {}),
+      ...(BANKS.includes(s.banks as (typeof BANKS)[number]) ? { banks: s.banks as (typeof BANKS)[number] } : {}),
+      ...(SHOT_SIZES.includes(s.shotSize as (typeof SHOT_SIZES)[number])
+        ? { shotSize: s.shotSize as (typeof SHOT_SIZES)[number] }
+        : {}),
+      ...(s.structureState === "ruined" || s.structureState === "intact" ? { structureState: s.structureState } : {}),
       timeOfDay: pick(TIMES_OF_DAY, s.timeOfDay, "day"),
       weather: pick(WEATHER, s.weather, "clear"),
       camera: pick(CAMERA_MOVES, s.camera, kind === "map" ? "push_in" : "orbit"),
@@ -553,6 +593,33 @@ export function geminiVideoScriptJsonSchema(
             kicker: str("Tiny label above the caption: a date, time or place", 40),
             caption: str("Narration shown on screen; factual, vivid, <= 160 chars", 160),
             setting: en(SETTINGS, "Environment"),
+            shotSize: en(
+              SHOT_SIZES,
+              "wide = establish location; medium = frame main action; close = crop into the subject to show its mechanism or detail",
+            ),
+            layout: en(
+              SCENE_LAYOUTS,
+              "open = natural outdoor space; street = built streets; interior = inside a room, workshop or hall",
+            ),
+            settlement: en(
+              SETTLEMENTS,
+              "How built-up the surroundings are: wild = no buildings; village = sparse; town = continuous frontage; city = dense, paved. Urban waterfronts use layout=open with town or city.",
+            ),
+            waterWidth: {
+              type: "number",
+              minimum: MIN_WATER_WIDTH,
+              maximum: MAX_WATER_WIDTH,
+              description:
+                "River or canal width in metres; a bridge spanning it should be about 1.5x this. Keep it constant across shots of the same place.",
+            },
+            banks: en(
+              BANKS,
+              "Waterfront edge: natural sloped banks, or embankment = stone river walls with a paved quay",
+            ),
+            structureState: en(
+              ["intact", "ruined"],
+              "Physical state of buildings: ruined turns the generated architecture into broken wall stumps and fallen debris. Use for aftermath of documented destruction; omit for intact locations.",
+            ),
             timeOfDay: en(TIMES_OF_DAY, "Lighting"),
             weather: en(WEATHER, "Atmosphere"),
             camera: en(CAMERA_MOVES, "Camera move"),
@@ -647,7 +714,7 @@ Rules:
 - ${MIN_SCENES}-${MAX_SCENES} scenes. Scene durations (${MIN_SCENE_SECONDS}-${MAX_SCENE_SECONDS}s each) MUST sum exactly to totalDuration.
 - Open on a meaningful visual hook; use map.lat/lon or a route only when geography helps explain the event.
 - Set presentation=immersive. The internal diorama kind means a continuous 3D WORLD, never a tabletop or isolated object display.
-- Use 1–2 subject elements with role=subject plus 1–3 contextual elements with role=background or foreground. Background does not change camera framing. Use generated period architecture/vegetation to create a connected setting. Repeat reusable background definitions with modest counts (3–12).
+- Use 1–2 subject elements with role=subject plus 1–3 contextual elements with role=background or foreground. Background does not change camera framing. Use generated period architecture/vegetation to create a connected setting. Repeat reusable background definitions with 8–20 instances when a street, town, forest or fleet needs depth. Keep detail shots readable; use a few nearby context objects plus distant layers.
 - Prefer eye_level and tracking cameras to place the viewer inside the location. Use an occasional wider establishing shot. Keep consistent locations/offsets and lighting across consecutive shots. Offset x/z is absolute meters; leave the camera corridor at positive z clear.
 - Pick setting, timeOfDay and weather appropriate to the moment.
   Use element.color (faction colours) so sides are distinguishable; it recolours the model's tint:true materials.

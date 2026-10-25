@@ -1,0 +1,1163 @@
+{
+  "seed": 291458532,
+  "title": "Assembling the Eiffel Tower",
+  "models": [
+    {
+      "id": "eiffel_tower_complete",
+      "name": "Eiffel Tower",
+      "notes": "1889 Eiffel Tower in Paris. Accurate structure with open lattice trusses, distinct tiers, masonry foundations, and French flagpole on cupola.",
+      "parts": [
+        {
+          "id": "foundation",
+          "size": [10, 0.1, 10],
+          "shape": "group",
+          "anchor": "bottom",
+          "position": [0, 0, 0],
+          "geometryRotation": [0, 0, 0]
+        },
+        {
+          "id": "masonry_piers",
+          "size": [2, 0.8, 2],
+          "shape": "box",
+          "anchor": "bottom",
+          "parent": "foundation",
+          "repeat": { "axis": "y", "mode": "radial", "count": 4, "radius": 4.95, "startAngle": 45 },
+          "material": "masonry_pier",
+          "position": [3.5, 0, 3.5],
+          "geometryRotation": [0, 0, 0]
+        },
+        {
+          "id": "leg_diagonal_bottom",
+          "size": [1.4, 3.8, 1.4],
+          "shape": "truss",
+          "taper": 0.75,
+          "anchor": "bottom",
+          "parent": "foundation",
+          "material": "puddled_iron",
+          "position": [2.8, 0.8, 2.8],
+          "beamWidth": 0.08,
+          "geometryRotation": [22, 0, -22]
+        },
+        {
+          "id": "leg_diagonal_bottom_mirror",
+          "size": [1.4, 3.8, 1.4],
+          "shape": "truss",
+          "taper": 0.75,
+          "anchor": "bottom",
+          "parent": "foundation",
+          "material": "puddled_iron",
+          "position": [-2.8, 0.8, 2.8],
+          "beamWidth": 0.08,
+          "geometryRotation": [-22, 0, -22]
+        },
+        {
+          "id": "leg_diagonal_bottom_back",
+          "size": [1.4, 3.8, 1.4],
+          "shape": "truss",
+          "taper": 0.75,
+          "anchor": "bottom",
+          "parent": "foundation",
+          "material": "puddled_iron",
+          "position": [2.8, 0.8, -2.8],
+          "beamWidth": 0.08,
+          "geometryRotation": [22, 0, 22]
+        },
+        {
+          "id": "leg_diagonal_bottom_back_mirror",
+          "size": [1.4, 3.8, 1.4],
+          "shape": "truss",
+          "taper": 0.75,
+          "anchor": "bottom",
+          "parent": "foundation",
+          "material": "puddled_iron",
+          "position": [-2.8, 0.8, -2.8],
+          "beamWidth": 0.08,
+          "geometryRotation": [-22, 0, 22]
+        },
+        {
+          "id": "arch_support_x",
+          "size": [6.2, 0.25, 6.2],
+          "shape": "torus",
+          "anchor": "center",
+          "parent": "foundation",
+          "material": "puddled_iron",
+          "position": [0, 2, 0],
+          "geometryRotation": [90, 0, 0]
+        },
+        {
+          "id": "arch_support_z",
+          "size": [6.2, 0.25, 6.2],
+          "shape": "torus",
+          "anchor": "center",
+          "parent": "foundation",
+          "material": "puddled_iron",
+          "position": [0, 2, 0],
+          "geometryRotation": [0, 0, 90]
+        },
+        {
+          "id": "first_platform",
+          "size": [6, 0.3, 6],
+          "shape": "box",
+          "anchor": "bottom",
+          "parent": "foundation",
+          "material": "platform_floor",
+          "position": [0, 4.2, 0],
+          "geometryRotation": [0, 0, 0]
+        },
+        {
+          "id": "first_platform_railing",
+          "size": [6.1, 0.2, 6.1],
+          "shape": "box",
+          "anchor": "bottom",
+          "parent": "first_platform",
+          "material": "puddled_iron",
+          "position": [0, 0.3, 0],
+          "geometryRotation": [0, 0, 0]
+        },
+        {
+          "id": "middle_legs",
+          "size": [3.6, 3.5, 3.6],
+          "shape": "truss",
+          "taper": 0.75,
+          "anchor": "bottom",
+          "parent": "first_platform",
+          "material": "puddled_iron",
+          "position": [0, 0.3, 0],
+          "beamWidth": 0.12,
+          "geometryRotation": [0, 0, 0]
+        },
+        {
+          "id": "second_platform",
+          "size": [3.2, 0.25, 3.2],
+          "shape": "box",
+          "anchor": "bottom",
+          "parent": "first_platform",
+          "material": "platform_floor",
+          "position": [0, 3.8, 0],
+          "geometryRotation": [0, 0, 0]
+        },
+        {
+          "id": "second_platform_railing",
+          "size": [3.3, 0.18, 3.3],
+          "shape": "box",
+          "anchor": "bottom",
+          "parent": "second_platform",
+          "material": "puddled_iron",
+          "position": [0, 0.25, 0],
+          "geometryRotation": [0, 0, 0]
+        },
+        {
+          "id": "upper_spire",
+          "size": [2.1, 6.5, 2.1],
+          "shape": "truss",
+          "taper": 0.25,
+          "anchor": "bottom",
+          "parent": "second_platform",
+          "material": "puddled_iron",
+          "position": [0, 0.25, 0],
+          "beamWidth": 0.06,
+          "geometryRotation": [0, 0, 0]
+        },
+        {
+          "id": "third_platform",
+          "size": [0.9, 0.2, 0.9],
+          "shape": "cylinder",
+          "taper": 1,
+          "anchor": "bottom",
+          "parent": "upper_spire",
+          "material": "platform_floor",
+          "position": [0, 6.5, 0],
+          "geometryRotation": [0, 0, 0]
+        },
+        {
+          "id": "cupola_dome",
+          "size": [0.65, 0.5, 0.65],
+          "shape": "dome",
+          "anchor": "bottom",
+          "parent": "third_platform",
+          "material": "dome_top",
+          "position": [0, 0.2, 0],
+          "geometryRotation": [0, 0, 0]
+        },
+        {
+          "id": "spire_tip",
+          "size": [0.2, 0.8, 0.2],
+          "shape": "cone",
+          "anchor": "bottom",
+          "parent": "cupola_dome",
+          "material": "gold_trim",
+          "position": [0, 0.5, 0],
+          "geometryRotation": [0, 0, 0]
+        },
+        {
+          "id": "flagpole",
+          "size": [0.03, 0.6, 0.03],
+          "shape": "cylinder",
+          "taper": 1,
+          "anchor": "bottom",
+          "parent": "spire_tip",
+          "material": "gold_trim",
+          "position": [0, 0.8, 0],
+          "geometryRotation": [0, 0, 0]
+        },
+        {
+          "id": "french_tricolor",
+          "size": [0.4, 0.25, 0.01],
+          "shape": "flag",
+          "anchor": "top",
+          "parent": "flagpole",
+          "material": "french_flag",
+          "position": [0, 0.35, 0],
+          "geometryRotation": [0, 0, 0]
+        }
+      ],
+      "scale": 1,
+      "category": "structure",
+      "materials": [
+        { "id": "puddled_iron", "color": "#7a6b58", "finish": "metal" },
+        { "id": "masonry_pier", "color": "#c4bca2", "finish": "matte" },
+        { "id": "platform_floor", "color": "#4a453f", "finish": "matte" },
+        { "id": "dome_top", "color": "#a8b5a0", "finish": "matte" },
+        { "id": "gold_trim", "color": "#d4af37", "finish": "metal" },
+        { "id": "french_flag", "tint": true, "color": "#002395", "finish": "cloth" }
+      ],
+      "placement": "ground",
+      "instancePolicy": "unique"
+    },
+    {
+      "id": "paris_exposition_pavilion",
+      "name": "Exposition Pavilion",
+      "notes": "French beaux-arts style exposition pavilion with a grand stone portal, tall arched window panels, structural pilasters, a slate-toned mansard roof, and gold-tipped corner domes.",
+      "parts": [
+        {
+          "id": "foundation",
+          "size": [10.2, 0.8, 15.2],
+          "shape": "box",
+          "anchor": "bottom",
+          "material": "stone_base",
+          "position": [0, 0, 0],
+          "geometryRotation": [0, 0, 0]
+        },
+        {
+          "id": "front_steps",
+          "size": [1.5, 0.4, 6],
+          "shape": "box",
+          "anchor": "bottom",
+          "parent": "foundation",
+          "material": "stone_base",
+          "position": [5.1, 0, 0],
+          "geometryRotation": [0, 0, 0]
+        },
+        {
+          "id": "main_body",
+          "size": [10, 7.2, 15],
+          "shape": "box",
+          "anchor": "bottom",
+          "parent": "foundation",
+          "material": "cream_facade",
+          "position": [0, 0.8, 0],
+          "geometryRotation": [0, 0, 0]
+        },
+        {
+          "id": "grand_archway",
+          "size": [4, 1.2, 5],
+          "shape": "cylinder",
+          "anchor": "center",
+          "parent": "main_body",
+          "material": "stone_base",
+          "position": [5.01, 3.2, 0],
+          "geometryRotation": [0, 0, 90]
+        },
+        {
+          "id": "grand_doorway",
+          "size": [0.2, 3, 3.6],
+          "shape": "box",
+          "anchor": "center",
+          "parent": "grand_archway",
+          "material": "iron_cresting",
+          "position": [-0.5, 0, 0],
+          "geometryRotation": [0, 0, 0]
+        },
+        {
+          "id": "facade_pilasters",
+          "size": [0.3, 7.2, 0.6],
+          "shape": "box",
+          "anchor": "bottom",
+          "parent": "main_body",
+          "repeat": { "mode": "linear", "step": [0, 0, 3], "count": 4 },
+          "material": "stone_base",
+          "position": [5.05, 0, -4.5],
+          "geometryRotation": [0, 0, 0]
+        },
+        {
+          "id": "side_pilasters",
+          "size": [0.6, 7.2, 0.3],
+          "shape": "box",
+          "anchor": "bottom",
+          "mirror": "z",
+          "parent": "main_body",
+          "repeat": { "mode": "linear", "step": [3, 0, 0], "count": 3 },
+          "material": "stone_base",
+          "position": [-3, 0, 7.55],
+          "geometryRotation": [0, 0, 0]
+        },
+        {
+          "id": "front_windows",
+          "size": [0.1, 4.5, 1.5],
+          "shape": "box",
+          "anchor": "bottom",
+          "parent": "main_body",
+          "repeat": { "mode": "linear", "step": [0, 0, 3], "count": 4 },
+          "material": "arched_glass",
+          "position": [5.02, 1.5, -4.5],
+          "geometryRotation": [0, 0, 0]
+        },
+        {
+          "id": "side_windows",
+          "size": [1.5, 4.5, 0.1],
+          "shape": "box",
+          "anchor": "bottom",
+          "mirror": "z",
+          "parent": "main_body",
+          "repeat": { "mode": "linear", "step": [3, 0, 0], "count": 3 },
+          "material": "arched_glass",
+          "position": [-3, 1.5, 7.52],
+          "geometryRotation": [0, 0, 0]
+        },
+        {
+          "id": "cornice",
+          "size": [10.6, 0.4, 15.6],
+          "shape": "box",
+          "anchor": "bottom",
+          "parent": "main_body",
+          "material": "stone_base",
+          "position": [0, 7.2, 0],
+          "geometryRotation": [0, 0, 0]
+        },
+        {
+          "id": "mansard_roof_front",
+          "size": [10.2, 3, 2.5],
+          "shape": "wedge",
+          "anchor": "bottom",
+          "mirror": "z",
+          "parent": "cornice",
+          "material": "mansard_slate",
+          "position": [0, 0.4, 6.3],
+          "geometryRotation": [0, 0, 0]
+        },
+        {
+          "id": "mansard_roof_side",
+          "size": [15.2, 3, 2.5],
+          "shape": "wedge",
+          "anchor": "bottom",
+          "mirror": "x",
+          "parent": "cornice",
+          "material": "mansard_slate",
+          "position": [3.8, 0.4, 0],
+          "geometryRotation": [0, 90, 0]
+        },
+        {
+          "id": "roof_top_flat",
+          "size": [5.2, 0.1, 10.2],
+          "shape": "box",
+          "anchor": "bottom",
+          "parent": "cornice",
+          "material": "mansard_slate",
+          "position": [0, 3.4, 0],
+          "geometryRotation": [0, 0, 0]
+        },
+        {
+          "id": "iron_cresting_rail",
+          "size": [5, 0.5, 10],
+          "shape": "box",
+          "anchor": "bottom",
+          "parent": "roof_top_flat",
+          "material": "iron_cresting",
+          "position": [0, 0.1, 0],
+          "geometryRotation": [0, 0, 0]
+        },
+        {
+          "id": "corner_dome",
+          "size": [3.2, 2.2, 3.2],
+          "shape": "dome",
+          "anchor": "bottom",
+          "mirror": "z",
+          "parent": "cornice",
+          "repeat": { "mode": "linear", "step": [-7.2, 0, 0], "count": 2 },
+          "material": "mansard_slate",
+          "position": [3.6, 0.4, 6.1],
+          "geometryRotation": [0, 0, 0]
+        },
+        {
+          "id": "dome_spire",
+          "size": [0.6, 1.8, 0.6],
+          "shape": "cone",
+          "anchor": "bottom",
+          "parent": "corner_dome",
+          "material": "gold_trim",
+          "position": [0, 2.2, 0],
+          "geometryRotation": [0, 0, 0]
+        }
+      ],
+      "category": "building",
+      "materials": [
+        { "id": "stone_base", "color": "#9e9a8f", "finish": "matte" },
+        { "id": "cream_facade", "color": "#ded6c1", "finish": "matte" },
+        { "id": "mansard_slate", "color": "#393e46", "finish": "matte" },
+        { "id": "iron_cresting", "color": "#222831", "finish": "metal" },
+        { "id": "arched_glass", "color": "#a8d3e6", "finish": "glass" },
+        { "id": "gold_trim", "color": "#d4af37", "finish": "metal" }
+      ],
+      "placement": "ground",
+      "instancePolicy": "repeatable"
+    },
+    {
+      "id": "timber_scaffolding_jack",
+      "name": "Timber Scaffold with Jack",
+      "notes": "1889 Eiffel construction scaffold. Features broad timber base embedding a heavy animated hydraulic metal jack, structured wooden framing towers, and loose iron girders on the top platform.",
+      "parts": [
+        {
+          "id": "base_foundation",
+          "size": [4, 0.4, 4],
+          "shape": "box",
+          "anchor": "bottom",
+          "material": "weathered_wood",
+          "position": [0, 0, 0],
+          "geometryRotation": [0, 0, 0]
+        },
+        {
+          "id": "hydraulic_cylinder",
+          "size": [1.4, 0.9, 1.4],
+          "shape": "cylinder",
+          "anchor": "bottom",
+          "parent": "base_foundation",
+          "attachTo": "top",
+          "material": "hydraulic_steel",
+          "position": [0, 0, 0],
+          "geometryRotation": [0, 0, 0]
+        },
+        {
+          "id": "hydraulic_piston",
+          "size": [0.9, 0.7, 0.9],
+          "shape": "cylinder",
+          "anchor": "bottom",
+          "parent": "hydraulic_cylinder",
+          "attachTo": "top",
+          "material": "dirty_brass",
+          "position": [0, 0, 0],
+          "animation": [
+            {
+              "axis": "y",
+              "wave": "sine",
+              "when": "always",
+              "property": "position",
+              "amplitude": 0.15,
+              "frequency": 0.2
+            }
+          ],
+          "geometryRotation": [0, 0, 0]
+        },
+        {
+          "id": "piston_cap",
+          "size": [1.2, 0.2, 1.2],
+          "shape": "box",
+          "anchor": "bottom",
+          "parent": "hydraulic_piston",
+          "attachTo": "top",
+          "material": "hydraulic_steel",
+          "position": [0, 0, 0],
+          "geometryRotation": [0, 0, 0]
+        },
+        {
+          "id": "tower_leg_front_left",
+          "size": [1.2, 7.5, 1.2],
+          "shape": "truss",
+          "anchor": "bottom",
+          "parent": "base_foundation",
+          "attachTo": "top",
+          "material": "rough_wood",
+          "position": [-1.2, 0, -1.2],
+          "beamWidth": 0.12,
+          "geometryRotation": [0, 0, 0]
+        },
+        {
+          "id": "tower_leg_front_right",
+          "size": [1.2, 7.5, 1.2],
+          "shape": "truss",
+          "anchor": "bottom",
+          "parent": "base_foundation",
+          "attachTo": "top",
+          "material": "rough_wood",
+          "position": [1.2, 0, -1.2],
+          "beamWidth": 0.12,
+          "geometryRotation": [0, 0, 0]
+        },
+        {
+          "id": "tower_leg_back_left",
+          "size": [1.2, 7.5, 1.2],
+          "shape": "truss",
+          "anchor": "bottom",
+          "parent": "base_foundation",
+          "attachTo": "top",
+          "material": "rough_wood",
+          "position": [-1.2, 0, 1.2],
+          "beamWidth": 0.12,
+          "geometryRotation": [0, 0, 0]
+        },
+        {
+          "id": "tower_leg_back_right",
+          "size": [1.2, 7.5, 1.2],
+          "shape": "truss",
+          "anchor": "bottom",
+          "parent": "base_foundation",
+          "attachTo": "top",
+          "material": "rough_wood",
+          "position": [1.2, 0, 1.2],
+          "beamWidth": 0.12,
+          "geometryRotation": [0, 0, 0]
+        },
+        {
+          "id": "diagonal_brace_x",
+          "size": [0.1, 8.2, 0.25],
+          "shape": "box",
+          "anchor": "center",
+          "parent": "base_foundation",
+          "material": "weathered_wood",
+          "position": [0, 3.75, 1.2],
+          "geometryRotation": [0, 0, 17]
+        },
+        {
+          "id": "diagonal_brace_x_alt",
+          "size": [0.1, 8.2, 0.25],
+          "shape": "box",
+          "anchor": "center",
+          "parent": "base_foundation",
+          "material": "weathered_wood",
+          "position": [0, 3.75, 1.2],
+          "geometryRotation": [0, 0, -17]
+        },
+        {
+          "id": "diagonal_brace_z",
+          "size": [0.25, 8.2, 0.1],
+          "shape": "box",
+          "anchor": "center",
+          "parent": "base_foundation",
+          "material": "weathered_wood",
+          "position": [1.2, 3.75, 0],
+          "geometryRotation": [17, 0, 0]
+        },
+        {
+          "id": "diagonal_brace_z_alt",
+          "size": [0.25, 8.2, 0.1],
+          "shape": "box",
+          "anchor": "center",
+          "parent": "base_foundation",
+          "material": "weathered_wood",
+          "position": [1.2, 3.75, 0],
+          "geometryRotation": [-17, 0, 0]
+        },
+        {
+          "id": "horizontal_tier_beam",
+          "size": [3.6, 0.25, 3.6],
+          "shape": "box",
+          "anchor": "center",
+          "parent": "base_foundation",
+          "material": "weathered_wood",
+          "position": [0, 3.8, 0],
+          "geometryRotation": [0, 0, 0]
+        },
+        {
+          "id": "top_platform",
+          "size": [4.2, 0.3, 4.2],
+          "shape": "box",
+          "anchor": "bottom",
+          "parent": "base_foundation",
+          "material": "weathered_wood",
+          "position": [0, 7.5, 0],
+          "geometryRotation": [0, 0, 0]
+        },
+        {
+          "id": "safety_rail_post",
+          "size": [0.1, 1.1, 0.1],
+          "shape": "cylinder",
+          "anchor": "bottom",
+          "parent": "top_platform",
+          "repeat": { "axis": "y", "mode": "radial", "count": 4, "radius": 2.7, "startAngle": 45 },
+          "attachTo": "top",
+          "material": "rough_wood",
+          "position": [-1.9, 0, -1.9],
+          "geometryRotation": [0, 0, 0]
+        },
+        {
+          "id": "safety_rail_bar",
+          "size": [3.9, 0.08, 0.08],
+          "shape": "box",
+          "anchor": "center",
+          "parent": "top_platform",
+          "repeat": { "axis": "y", "mode": "radial", "count": 4, "radius": 1.9, "startAngle": 0 },
+          "material": "rough_wood",
+          "position": [0, 1, 1.9],
+          "geometryRotation": [0, 0, 0]
+        },
+        {
+          "id": "loose_iron_girder_1",
+          "size": [3.2, 0.22, 0.22],
+          "shape": "box",
+          "anchor": "bottom",
+          "parent": "top_platform",
+          "attachTo": "top",
+          "material": "puddled_iron",
+          "position": [-0.5, 0, 0.6],
+          "geometryRotation": [0, 12, 0]
+        },
+        {
+          "id": "loose_iron_girder_2",
+          "size": [2.8, 0.22, 0.22],
+          "shape": "box",
+          "anchor": "bottom",
+          "parent": "top_platform",
+          "attachTo": "top",
+          "material": "puddled_iron",
+          "position": [0.4, 0.22, 0.8],
+          "geometryRotation": [0, -25, 0]
+        },
+        {
+          "id": "crane_pulley_mount",
+          "size": [0.3, 1.5, 0.3],
+          "shape": "box",
+          "anchor": "bottom",
+          "parent": "top_platform",
+          "attachTo": "top",
+          "material": "weathered_wood",
+          "position": [-1.6, 0, -1.6],
+          "geometryRotation": [0, 45, 0]
+        },
+        {
+          "id": "crane_arm",
+          "size": [1.4, 0.2, 0.2],
+          "shape": "box",
+          "anchor": "left",
+          "parent": "crane_pulley_mount",
+          "material": "weathered_wood",
+          "position": [0.4, 1.3, 0],
+          "geometryRotation": [0, 0, 25]
+        },
+        {
+          "id": "pulley_wheel",
+          "size": [0.4, 0.08, 0.4],
+          "shape": "cylinder",
+          "anchor": "center",
+          "parent": "crane_arm",
+          "material": "hydraulic_steel",
+          "position": [1.3, -0.1, 0],
+          "geometryRotation": [90, 0, 0]
+        }
+      ],
+      "scale": 1,
+      "category": "structure",
+      "materials": [
+        { "id": "rough_wood", "color": "#8c7050", "finish": "matte" },
+        { "id": "weathered_wood", "color": "#6e5d4d", "finish": "matte" },
+        { "id": "hydraulic_steel", "color": "#4a5054", "finish": "metal" },
+        { "id": "dirty_brass", "color": "#94825a", "finish": "metal" },
+        { "id": "puddled_iron", "color": "#2c2f30", "finish": "metal" }
+      ],
+      "placement": "ground",
+      "instancePolicy": "repeatable"
+    },
+    {
+      "id": "riveter_worker",
+      "name": "Ironworker Riveter",
+      "notes": "1880s French Eiffel Tower construction worker in suspenders, flat cap, holding a heavy riveting hammer which swings in a realistic cyclical rhythm.",
+      "parts": [
+        {
+          "id": "pelvis",
+          "size": [0.28, 0.16, 0.22],
+          "shape": "box",
+          "anchor": "center",
+          "material": "trousers",
+          "position": [0, 0.8, 0],
+          "geometryRotation": [0, 0, 0]
+        },
+        {
+          "id": "torso",
+          "size": [0.35, 0.5, 0.26],
+          "shape": "lathe",
+          "anchor": "bottom",
+          "parent": "pelvis",
+          "profile": [
+            [0.7, 0],
+            [0.85, 0.3],
+            [0.9, 0.7],
+            [0.75, 1]
+          ],
+          "attachTo": "top",
+          "material": "shirt",
+          "position": [0, 0.08, 0],
+          "segments": 8,
+          "animation": [
+            {
+              "axis": "y",
+              "wave": "bounce",
+              "when": "moving",
+              "property": "position",
+              "amplitude": 0.04,
+              "frequency": 2.5
+            }
+          ],
+          "animationPivot": [0, 0, 0],
+          "geometryRotation": [0, 0, 0]
+        },
+        {
+          "id": "susp_strap",
+          "size": [0.03, 0.51, 0.18],
+          "shape": "box",
+          "anchor": "center",
+          "mirror": "z",
+          "parent": "torso",
+          "attachTo": "center",
+          "material": "suspenders",
+          "position": [0, 0, 0.08],
+          "geometryRotation": [0, 0, 0]
+        },
+        {
+          "id": "neck",
+          "size": [0.12, 0.08, 0.12],
+          "shape": "cylinder",
+          "anchor": "bottom",
+          "parent": "torso",
+          "attachTo": "top",
+          "material": "skin",
+          "position": [0, 0, 0],
+          "geometryRotation": [0, 0, 0]
+        },
+        {
+          "id": "head",
+          "size": [0.19, 0.21, 0.19],
+          "shape": "sphere",
+          "anchor": "bottom",
+          "parent": "neck",
+          "attachTo": "top",
+          "material": "skin",
+          "position": [0, 0, 0],
+          "geometryRotation": [0, 0, 0]
+        },
+        {
+          "id": "flat_cap",
+          "size": [0.23, 0.05, 0.23],
+          "shape": "cylinder",
+          "taper": 1.25,
+          "anchor": "bottom",
+          "parent": "head",
+          "attachTo": "top",
+          "material": "cap",
+          "position": [0, 0.09, 0],
+          "geometryRotation": [10, 0, 0]
+        },
+        {
+          "id": "cap_brim",
+          "size": [0.08, 0.02, 0.16],
+          "shape": "wedge",
+          "anchor": "center",
+          "parent": "flat_cap",
+          "attachTo": "front",
+          "material": "cap",
+          "position": [0.09, -0.02, 0],
+          "geometryRotation": [0, 0, 15]
+        },
+        {
+          "id": "mustache",
+          "size": [0.04, 0.04, 0.14],
+          "shape": "box",
+          "anchor": "center",
+          "parent": "head",
+          "material": "cap",
+          "position": [0.09, -0.03, 0],
+          "geometryRotation": [0, 0, -10]
+        },
+        {
+          "id": "thigh",
+          "size": [0.15, 0.45, 0.15],
+          "shape": "capsule",
+          "anchor": "top",
+          "mirror": "z",
+          "parent": "pelvis",
+          "attachTo": "bottom",
+          "material": "trousers",
+          "position": [0, -0.05, 0.08],
+          "rotation": [5, 0, 0],
+          "segments": 6,
+          "animation": [
+            {
+              "axis": "z",
+              "wave": "sine",
+              "when": "moving",
+              "property": "rotation",
+              "alternate": true,
+              "amplitude": 18,
+              "frequency": 1.25
+            }
+          ],
+          "animationPivot": [0, 0, 0],
+          "geometryRotation": [0, 0, 0]
+        },
+        {
+          "id": "shin",
+          "size": [0.13, 0.42, 0.13],
+          "shape": "capsule",
+          "anchor": "top",
+          "mirror": "z",
+          "parent": "thigh",
+          "attachTo": "bottom",
+          "material": "trousers",
+          "position": [0, 0, 0],
+          "rotation": [-8, 0, 0],
+          "segments": 6,
+          "animation": [
+            {
+              "axis": "z",
+              "wave": "sine",
+              "when": "moving",
+              "phase": 0.25,
+              "property": "rotation",
+              "alternate": true,
+              "amplitude": 12,
+              "frequency": 1.25
+            }
+          ],
+          "animationPivot": [0, 0, 0],
+          "geometryRotation": [0, 0, 0]
+        },
+        {
+          "id": "boot",
+          "size": [0.22, 0.12, 0.11],
+          "shape": "box",
+          "anchor": "top",
+          "mirror": "z",
+          "parent": "shin",
+          "attachTo": "bottom",
+          "material": "boots",
+          "position": [0.04, 0, 0],
+          "geometryRotation": [0, 0, 0]
+        },
+        {
+          "id": "shoulder_pivot",
+          "size": [0.1, 0.1, 0.1],
+          "shape": "group",
+          "taper": 1,
+          "anchor": "center",
+          "mirror": "z",
+          "parent": "torso",
+          "position": [0, 0.42, 0.16],
+          "rotation": [110, -10, 45],
+          "segments": 4,
+          "geometryRotation": [0, 0, 0]
+        },
+        {
+          "id": "upper_arm",
+          "size": [0.11, 0.35, 0.11],
+          "shape": "capsule",
+          "taper": 1,
+          "anchor": "top",
+          "mirror": "z",
+          "parent": "shoulder_pivot",
+          "material": "shirt",
+          "position": [0, 0, 0],
+          "rotation": [0, 0, 0],
+          "segments": 5,
+          "geometryRotation": [0, 0, 0]
+        },
+        {
+          "id": "elbow_pivot",
+          "size": [0.08, 0.08, 0.08],
+          "shape": "group",
+          "anchor": "center",
+          "mirror": "z",
+          "parent": "upper_arm",
+          "position": [0, -0.35, 0],
+          "rotation": [0, 0, -60],
+          "geometryRotation": [0, 0, 0]
+        },
+        {
+          "id": "forearm",
+          "size": [0.09, 0.32, 0.09],
+          "shape": "capsule",
+          "taper": 1,
+          "anchor": "top",
+          "mirror": "z",
+          "parent": "elbow_pivot",
+          "material": "skin",
+          "position": [0, 0, 0],
+          "rotation": [0, 0, 0],
+          "segments": 5,
+          "geometryRotation": [0, 0, 0]
+        },
+        {
+          "id": "hand",
+          "size": [0.09, 0.09, 0.09],
+          "shape": "sphere",
+          "anchor": "center",
+          "mirror": "z",
+          "parent": "forearm",
+          "material": "skin",
+          "position": [0, -0.3, 0],
+          "geometryRotation": [0, 0, 0]
+        },
+        {
+          "id": "hammer_swing_rig",
+          "size": [0.1, 0.1, 0.1],
+          "shape": "group",
+          "anchor": "center",
+          "parent": "torso",
+          "position": [0.25, 0.45, 0.1],
+          "animation": [
+            {
+              "axis": "z",
+              "wave": "sine",
+              "when": "always",
+              "property": "rotation",
+              "amplitude": -45,
+              "frequency": 1.2
+            }
+          ],
+          "geometryRotation": [0, 0, 0]
+        },
+        {
+          "id": "hammer_shaft",
+          "size": [0.03, 0.85, 0.03],
+          "shape": "cylinder",
+          "anchor": "center",
+          "parent": "hammer_swing_rig",
+          "material": "boots",
+          "position": [0, 0.1, 0],
+          "geometryRotation": [0, 0, 0]
+        },
+        {
+          "id": "hammer_head",
+          "size": [0.08, 0.22, 0.08],
+          "shape": "cylinder",
+          "taper": 1,
+          "anchor": "center",
+          "parent": "hammer_shaft",
+          "material": "iron",
+          "position": [0, 0.4, 0],
+          "geometryRotation": [90, 0, 0]
+        },
+        {
+          "id": "anvil_base",
+          "size": [0.35, 0.4, 0.35],
+          "shape": "cone",
+          "anchor": "bottom",
+          "material": "iron",
+          "position": [0.45, 0, 0],
+          "segments": 4,
+          "geometryRotation": [0, 0, 0]
+        },
+        {
+          "id": "iron_beam",
+          "size": [0.5, 0.18, 0.18],
+          "shape": "box",
+          "anchor": "bottom",
+          "parent": "anvil_base",
+          "attachTo": "top",
+          "material": "iron",
+          "position": [0, 0.4, 0],
+          "geometryRotation": [0, 10, 0]
+        },
+        {
+          "id": "hot_rivet",
+          "size": [0.03, 0.05, 0.03],
+          "shape": "cylinder",
+          "anchor": "bottom",
+          "parent": "iron_beam",
+          "attachTo": "top",
+          "material": "iron",
+          "position": [0.15, 0.09, 0.01],
+          "geometryRotation": [0, 0, 0]
+        },
+        {
+          "id": "spark_flicker",
+          "size": [0.1, 0.15, 0.1],
+          "shape": "fire",
+          "anchor": "bottom",
+          "parent": "hot_rivet",
+          "material": "iron",
+          "position": [0, 0.02, 0],
+          "animation": [
+            { "axis": "y", "wave": "pulse", "when": "always", "property": "scale", "amplitude": 0.4, "frequency": 6 }
+          ],
+          "geometryRotation": [0, 0, 0]
+        }
+      ],
+      "scale": 1,
+      "category": "figure",
+      "materials": [
+        { "id": "skin", "color": "#e0a184", "finish": "matte" },
+        { "id": "trousers", "color": "#4a536b", "finish": "cloth" },
+        { "id": "shirt", "color": "#f0ede6", "finish": "cloth" },
+        { "id": "boots", "color": "#382c26", "finish": "matte" },
+        { "id": "suspenders", "color": "#1c1816", "finish": "matte" },
+        { "id": "cap", "color": "#524f4e", "finish": "cloth" },
+        { "id": "iron", "color": "#636970", "finish": "metal" }
+      ],
+      "placement": "ground",
+      "instancePolicy": "repeatable"
+    }
+  ],
+  "scenes": [
+    {
+      "kind": "diorama",
+      "camera": "tracking",
+      "kicker": "January 1887",
+      "layout": "open",
+      "caption": "Eiffel's company begins assembling the Eiffel Tower.",
+      "setting": "city",
+      "weather": "clear",
+      "duration": 5,
+      "elements": [
+        {
+          "role": "subject",
+          "count": 4,
+          "model": "timber_scaffolding_jack",
+          "scale": 1.5,
+          "motion": "idle",
+          "position": "center",
+          "formation": "block"
+        },
+        {
+          "role": "background",
+          "color": "#d3d3d3",
+          "count": 12,
+          "model": "paris_exposition_pavilion",
+          "scale": 1,
+          "motion": "idle",
+          "position": "back",
+          "formation": "line"
+        }
+      ],
+      "shotSize": "medium",
+      "timeOfDay": "day",
+      "structureState": "intact"
+    },
+    {
+      "kind": "diorama",
+      "camera": "push_in",
+      "kicker": "Champ de Mars",
+      "layout": "open",
+      "caption": "Ironworkers secured the framework with millions of rivets.",
+      "setting": "city",
+      "weather": "clear",
+      "duration": 5,
+      "elements": [
+        {
+          "role": "subject",
+          "count": 3,
+          "model": "riveter_worker",
+          "scale": 1,
+          "motion": "idle",
+          "position": "center",
+          "formation": "scatter"
+        },
+        {
+          "role": "background",
+          "count": 2,
+          "model": "timber_scaffolding_jack",
+          "scale": 1.5,
+          "motion": "idle",
+          "position": "back",
+          "formation": "line"
+        }
+      ],
+      "shotSize": "close",
+      "timeOfDay": "day",
+      "structureState": "intact"
+    },
+    {
+      "kind": "diorama",
+      "camera": "orbit",
+      "kicker": "Hydraulic Precision",
+      "layout": "open",
+      "caption": "Iron legs are carefully leveled.",
+      "setting": "city",
+      "weather": "clear",
+      "duration": 4,
+      "elements": [
+        {
+          "role": "subject",
+          "count": 1,
+          "model": "timber_scaffolding_jack",
+          "scale": 2,
+          "motion": "idle",
+          "position": "center",
+          "formation": "single"
+        },
+        {
+          "role": "foreground",
+          "count": 2,
+          "model": "riveter_worker",
+          "scale": 1,
+          "motion": "idle",
+          "position": "front",
+          "formation": "scatter"
+        }
+      ],
+      "shotSize": "medium",
+      "timeOfDay": "dusk",
+      "structureState": "intact"
+    },
+    {
+      "kind": "diorama",
+      "camera": "low_angle",
+      "kicker": "March 31, 1889",
+      "layout": "street",
+      "caption": "The 300-meter tower opens as the world's tallest monument.",
+      "setting": "city",
+      "weather": "clear",
+      "duration": 6,
+      "elements": [
+        {
+          "role": "subject",
+          "color": "#8a7e71",
+          "count": 1,
+          "model": "eiffel_tower_complete",
+          "scale": 2.5,
+          "motion": "idle",
+          "position": "center",
+          "formation": "single"
+        },
+        {
+          "role": "background",
+          "color": "#f5f5dc",
+          "count": 8,
+          "model": "paris_exposition_pavilion",
+          "scale": 1,
+          "motion": "idle",
+          "position": "left",
+          "formation": "line"
+        },
+        {
+          "role": "background",
+          "color": "#f5f5dc",
+          "count": 8,
+          "model": "paris_exposition_pavilion",
+          "scale": 1,
+          "motion": "idle",
+          "position": "right",
+          "formation": "line"
+        }
+      ],
+      "shotSize": "wide",
+      "timeOfDay": "day",
+      "structureState": "intact"
+    }
+  ],
+  "palette": { "accent": "#cd5c5c", "primary": "#8a7e71", "secondary": "#b0c4de" },
+  "version": 2,
+  "factions": [{ "name": "Eiffel Company", "color": "#8a7e71" }],
+  "location": "Paris, France",
+  "subtitle": "Engineering the symbol of the industrial age.",
+  "dateLabel": "1887 - 1889",
+  "coordinates": { "lat": 48.8584, "lon": 2.2945 },
+  "presentation": "immersive",
+  "totalDuration": 20
+}

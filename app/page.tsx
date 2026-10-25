@@ -1,9 +1,6 @@
 import Link from "next/link";
 import { FacetText, Reveal } from "@/components/FacetText";
-import { HeroScene } from "@/components/three/HeroScene";
-import { GlyphScene } from "@/components/three/GlyphScene";
-import { ModelTurntable } from "@/components/three/ModelTurntable";
-import { Player } from "@/components/Player";
+import { HeroScene, ModelTurntable, DeferredPlayer as Player } from "@/components/DeferredVisual";
 import { SHOWCASE_SCRIPT } from "@/lib/content/showcase";
 import { EXAMPLE_BIPLANE, EXAMPLE_COG_SHIP, EXAMPLE_FOOT_SOLDIER } from "@/lib/content/model-examples";
 import { getViewer } from "@/lib/server/viewer";
@@ -38,7 +35,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
                 text="A window into history"
                 accentWords={["history"]}
                 delay={0.15}
-                style={{ fontSize: "clamp(46px, 6.4vw, 96px)", marginTop: 8 }}
+                style={{ fontSize: "clamp(40px, 4.8vw, 72px)", marginTop: 8 }}
               />
             </span>
           </h1>
@@ -65,11 +62,14 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
           </Reveal>
         </div>
         <Reveal delay={0.2}>
-          <div className="hero-art">
+          <div className="hero-art apollo-art">
             <HeroScene />
             <div className="caption">
-              <span>A tiny world, built from simple shapes</span>
-              <span>Move your pointer to look around</span>
+              <span>
+                <strong>Apollo 11</strong> · The first Moon landing
+                <br />
+                <small>July 1969 · Sea of Tranquility</small>
+              </span>
             </div>
           </div>
         </Reveal>
@@ -126,7 +126,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
               ],
               [
                 "Watch & keep",
-                "Your film plays right away and is saved to your library as a GIF you can download and share.",
+                "Your film plays right away and is saved to your library as an HD video with ambient sound you can download and share.",
               ],
             ].map(([title, body], i) => (
               <Reveal key={title} delay={i * 0.08}>
@@ -152,8 +152,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
               The Norman Conquest in 30 seconds
             </h2>
             <p className="lead">
-              This sample shows how your films can look. Press play, pause anywhere, or turn Voice and Ambience on or
-              off.
+              This sample shows how your films can look. Press play, pause anywhere, or turn Ambience on or off.
             </p>
             <ul className="muted" style={{ margin: 0, paddingLeft: 22, display: "grid", gap: 8 }}>
               <li>A globe shows where it happened and the route taken.</li>
@@ -173,8 +172,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
               Designed for the time and place
             </h2>
             <p className="lead">
-              Nothing is pulled from a fixed library. Each video gets its own people, buildings and vehicles, shaped to
-              fit the era you asked about.
+              Each video gets its own people, buildings and vehicles, shaped to fit the era you asked about.
             </p>
           </Reveal>
           <div className="model-cards">
@@ -247,26 +245,6 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
             <p>
               <Link href="/content-policy">Read our content &amp; safety policy →</Link>
             </p>
-          </Reveal>
-        </div>
-      </section>
-
-      <section className="section" aria-labelledby="type-title">
-        <div className="container split">
-          <Reveal className="stack" style={{ gap: 16 }}>
-            <span className="eyebrow">Even the letters</span>
-            <h2 id="type-title" className="section-title">
-              Built from simple shapes
-            </h2>
-            <p className="lead">
-              Our typefaces, Facet and Tessera, were drawn for Polyhistor from straight lines and clipped corners — the
-              same low-poly idea as our scenes.
-            </p>
-          </Reveal>
-          <Reveal delay={0.1}>
-            <div className="word-stage">
-              <GlyphScene text="HISTORY" />
-            </div>
           </Reveal>
         </div>
       </section>

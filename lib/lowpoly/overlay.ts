@@ -115,7 +115,7 @@ export function drawOverlay(ctx: CanvasRenderingContext2D, st: OverlayState) {
   // Watermark pill.
   {
     ctx.font = `900 ${u * 2.6}px ${FONT_DISPLAY}`;
-    const text = "POLYHISTOR";
+    const text = "POLYCHRONICLE";
     const tw = spacedWidth(ctx, text, u * 0.2);
     const h = u * 5.2;
     const w = tw + u * 8.2;
@@ -141,9 +141,23 @@ export function drawOverlay(ctx: CanvasRenderingContext2D, st: OverlayState) {
     ctx.font = `400 ${u * 2.6}px ${FONT_MONO}`;
     ctx.fillStyle = "#e0ebe9";
     ctx.fillText(script.dateLabel.toUpperCase(), pad, pad + u * 3);
-    ctx.font = `700 ${u * 4.4}px ${FONT_TEXT}`;
-    const heading = wrap(ctx, st.index === 0 ? script.title : scene.kicker, W - pad * 2);
-    heading.slice(0, 2).forEach((line, i) => ctx.fillText(line.join(" "), pad, pad + u * (9 + i * 5.4)));
+    let headingSize = u * (portrait ? 6.2 : 4.8);
+    const headingText = st.index === 0 ? script.title : scene.kicker;
+    ctx.font = `700 ${headingSize}px ${FONT_TEXT}`;
+    let heading = wrap(ctx, headingText, W - pad * 2);
+    while (heading.length > 2 && headingSize > u * 3.2) {
+      headingSize *= 0.9;
+      ctx.font = `700 ${headingSize}px ${FONT_TEXT}`;
+      heading = wrap(ctx, headingText, W - pad * 2);
+    }
+    const headlineIn = easeOut(clamp(local / 0.35, 0, 1));
+    ctx.globalAlpha = headlineIn;
+    heading
+      .slice(0, 2)
+      .forEach((line, i) =>
+        ctx.fillText(line.join(" "), pad, pad + u * (11 + i * (portrait ? 7.2 : 5.8) + (1 - headlineIn) * 1.5)),
+      );
+    ctx.globalAlpha = 1;
   }
 
   // Title card (scene 0).
@@ -379,19 +393,15 @@ function drawEndCard(ctx: CanvasRenderingContext2D, st: OverlayState) {
   ctx.fillStyle = PAPER;
   ctx.fillRect(0, 0, W, H);
   ctx.globalAlpha = easeInOut(clamp((st.time - start - 0.2) / 0.5, 0, 1));
-  const size = u * 8;
+  const size = u * (H > W ? 6.5 : 8);
   ctx.font = `900 ${size}px ${FONT_DISPLAY}`;
-  const tw = ctx.measureText("POLYHISTOR").width;
+  const tw = ctx.measureText("POLYCHRONICLE").width;
   logo(ctx, W / 2 - u * 4.5, H / 2 - size * 1.7, u * 9);
   ctx.fillStyle = TEXT;
-  ctx.fillText("POLYHISTOR", W / 2 - tw / 2, H / 2 + size * 0.3);
+  ctx.fillText("POLYCHRONICLE", W / 2 - tw / 2, H / 2 + size * 0.3);
   ctx.font = `700 ${u * 3.4}px ${FONT_TEXT}`;
   ctx.fillStyle = TERRA_DEEP;
   ctx.fillText(script.title, W / 2 - ctx.measureText(script.title).width / 2, H / 2 + size * 0.3 + u * 6);
-  ctx.font = `400 ${u * 2.6}px ${FONT_TEXT}`;
-  const t3 = "Keep exploring — every source is listed with this video.";
-  ctx.fillStyle = TEXT2;
-  ctx.fillText(t3, W / 2 - ctx.measureText(t3).width / 2, H / 2 + size * 0.3 + u * 10.5);
   ctx.globalAlpha = 1;
 }
 

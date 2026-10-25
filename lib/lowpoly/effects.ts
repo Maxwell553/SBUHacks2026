@@ -53,14 +53,26 @@ export function makeFire(width: number, height: number, rng: Rng): Effect {
     (c) => new THREE.MeshBasicMaterial({ color: c, toneMapped: false }),
   );
   const tongues: { m: THREE.Mesh; base: number; ph: number; sp: number }[] = [];
-  const n = 5;
-  const geo = new THREE.ConeGeometry(width * 0.22, height, 4);
+  const n = 7;
+  const geo = new THREE.LatheGeometry(
+    [
+      new THREE.Vector2(0.14, 0),
+      new THREE.Vector2(0.22, 0.18),
+      new THREE.Vector2(0.13, 0.5),
+      new THREE.Vector2(0.045, 0.82),
+      new THREE.Vector2(0, 1),
+    ],
+    5,
+  );
+  const vertices = geo.getAttribute("position") as THREE.BufferAttribute;
+  for (let i = 0; i < vertices.count; i++) vertices.setX(i, vertices.getX(i) + vertices.getY(i) ** 2 * 0.12);
+  geo.computeVertexNormals();
   for (let i = 0; i < n; i++) {
     const m = new THREE.Mesh(geo, mats[i % 3]);
     const a = (i / n) * Math.PI * 2;
-    const rr = i === 0 ? 0 : width * 0.18;
-    m.position.set(Math.cos(a) * rr, height / 2, Math.sin(a) * rr);
-    tongues.push({ m, base: i === 0 ? 1.15 : range(rng, 0.55, 0.9), ph: rng() * 10, sp: range(rng, 9, 15) });
+    const rr = i === 0 ? 0 : width * 0.24;
+    m.position.set(Math.cos(a) * rr, 0, Math.sin(a) * rr);
+    tongues.push({ m, base: i === 0 ? 1.15 : range(rng, 0.55, 0.95), ph: rng() * 10, sp: range(rng, 7, 12) });
     group.add(m);
   }
   return {
@@ -68,9 +80,9 @@ export function makeFire(width: number, height: number, rng: Rng): Effect {
     update(s) {
       for (const t of tongues) {
         const f = 0.75 + 0.25 * Math.sin(s.time * t.sp + t.ph) + 0.1 * Math.sin(s.time * 23 + t.ph * 2);
-        t.m.scale.set(1, t.base * f, 1);
-        t.m.position.y = (height / 2) * t.base * f;
-        t.m.rotation.y = s.time * 2 + t.ph;
+        t.m.scale.set(width * (0.9 + 0.1 * f), height * t.base * f, width);
+        t.m.rotation.y = s.time * 1.3 + t.ph;
+        t.m.rotation.z = 0.08 * Math.sin(s.time * 3 + t.ph);
       }
     },
     dispose() {
@@ -98,19 +110,32 @@ export function makeSmoke(
     opacity: 0.82,
     depthWrite: false,
   });
-  const geo = new THREE.IcosahedronGeometry(0.5 * size, 0);
+  const geo = new THREE.IcosahedronGeometry(0.5 * size, 1);
   const puffs = Array.from({ length: count }, (_, i) => {
-    const m = new THREE.Mesh(geo, mat);
+    const m = new THREE.Mesh(geo, mat.clone());
     group.add(m);
-    return { m, off: (i / count) * life, jx: range(rng, -0.3, 0.3), jz: range(rng, -0.3, 0.3), rot: rng() * 6 };
+    return {
+      m,
+      off: (i / count) * life,
+      jx: range(rng, -0.5, 0.5),
+      jz: range(rng, -0.5, 0.5),
+      rot: rng() * 6,
+      lifetime: life * range(rng, 0.85, 1.15),
+      spread: range(rng, 0.75, 1.25),
+    };
   });
   return {
     object: group,
     update(s) {
       for (const p of puffs) {
-        const age = ((((s.time + p.off + s.phase) % life) + life) % life) / life;
-        const sz = (0.4 + age * 1.8) * (age > 0.85 ? 1 - (age - 0.85) / 0.15 : 1);
-        p.m.position.set(p.jx * size + age * size * 1.2, age * rise, p.jz * size);
+        const age = ((((s.time + p.off + s.phase) % p.lifetime) + p.lifetime) % p.lifetime) / p.lifetime;
+        const sz = (0.3 + age * 2.4) * p.spread;
+        p.m.material.opacity = 0.62 * Math.sin(Math.PI * age) ** 0.7;
+        p.m.position.set(
+          p.jx * size + age * size * (1.2 + p.spread) + Math.sin(age * 5 + p.rot) * age * size * 0.35,
+          age * rise,
+          p.jz * size + Math.cos(age * 4 + p.rot) * age * size * 0.6,
+        );
         p.m.scale.setScalar(Math.max(0.001, sz));
         p.m.rotation.set(p.rot + age * 2, p.rot, 0);
       }
@@ -118,6 +143,7 @@ export function makeSmoke(
     dispose() {
       geo.dispose();
       mat.dispose();
+      puffs.forEach((p) => p.m.material.dispose());
     },
   };
 }

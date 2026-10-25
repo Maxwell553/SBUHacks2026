@@ -12,16 +12,16 @@ const input = z.object({
   duration: z.number().int().min(20).max(60).default(40),
   aspect: z.enum(["landscape", "portrait"]).default("landscape"),
 });
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const user = await requireUser();
     await query(
-      "UPDATE ph_videos SET status='failed',error='Generation was interrupted. Please try again.',updated_at=now() WHERE user_id=$1 AND status IN ('researching','scripting') AND updated_at<now()-interval '10 minutes'",
+      "DELETE FROM ph_videos WHERE user_id=$1 AND (status IN ('failed','rejected') OR (status<>'rendered' AND updated_at<now()-interval '30 minutes'))",
       [user.id],
     );
     const { rows } = await query(
-      "SELECT id,prompt,title,duration,aspect,status,sources,error,created_at,updated_at,gif_asset_id,poster_asset_id,gif_bytes FROM ph_videos WHERE user_id=$1 ORDER BY created_at DESC LIMIT 100",
-      [user.id],
+      "SELECT id,prompt,title,duration,aspect,status,sources,error,created_at,updated_at,gif_asset_id,poster_asset_id,gif_bytes FROM ph_videos WHERE user_id=$1 AND (status='rendered' OR $2::boolean) ORDER BY created_at DESC LIMIT 100",
+      [user.id, new URL(request.url).searchParams.get("active") === "1"],
     );
     return json({ videos: rows.map(videoResponse) });
   } catch (error) {
@@ -43,24 +43,23 @@ export async function POST(request: Request) {
       const {
         rows: [usage],
       } = await db.query(
-        "SELECT count(*)::int AS count, count(*) FILTER(WHERE status IN ('researching','scripting') AND updated_at>now()-interval '10 minutes')::int AS active FROM ph_videos WHERE user_id=$1",
+        "SELECT count(*)::int AS count, count(*) FILTER(WHERE status IN ('pending','researching','scripting') AND updated_at>now()-interval '10 minutes')::int AS active FROM ph_videos WHERE user_id=$1",
         [user.id],
       );
       if (usage.active > 0) throw new ApiError(409, "A video is already being researched. Wait for it to finish.");
       if (usage.count >= 100) throw new ApiError(409, "Your library is full. Delete an older video to create another.");
       const videoId = randomUUID();
-      await db.query("INSERT INTO ph_videos(id,user_id,prompt,duration,aspect) VALUES($1,$2,$3,$4,$5)", [
-        videoId,
-        user.id,
-        prompt,
-        duration,
-        aspect,
-      ]);
+      await db.query(
+        "INSERT INTO ph_videos(id,user_id,prompt,duration,aspect,status) VALUES($1,$2,$3,$4,$5,'pending')",
+        [videoId, user.id, prompt, duration, aspect],
+      );
       return videoId;
     });
-    const signal = AbortSignal.timeout(260000);
+    const signal = AbortSignal.any([AbortSignal.timeout(260000), request.signal]);
     const audit = { userId: user.id, videoId: id };
     await moderate(prompt, false, signal, audit);
+    signal.throwIfAborted();
+    await query("UPDATE ph_videos SET status='researching',updated_at=now() WHERE id=$1", [id]);
     // Reuse only this user's recent sourced briefing for the exact same request.
     // Moderation still runs above; no other user's prompt/research is exposed.
     const { rows: priorResearch } = await query(
@@ -81,12 +80,7 @@ export async function POST(request: Request) {
     return json({ video: videoResponse(rows[0]) }, 201);
   } catch (error) {
     if (id) {
-      const rejected = error instanceof ApiError && error.status === 422;
-      await query("UPDATE ph_videos SET status=$2,error=$3,updated_at=now() WHERE id=$1", [
-        id,
-        rejected ? "rejected" : "failed",
-        error instanceof ApiError ? error.message : "Generation failed. Please try again.",
-      ]).catch(() => {});
+      await query("DELETE FROM ph_videos WHERE id=$1 AND status<>'rendered'", [id]).catch(() => {});
     }
     return failure(error);
   }

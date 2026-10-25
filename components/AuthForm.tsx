@@ -43,7 +43,7 @@ export function AuthForm({ mode, next }: { mode: "login" | "signup"; next?: stri
   return (
     <form onSubmit={submit} noValidate>
       <div className="stack" style={{ gap: 8 }}>
-        <span className="eyebrow">{mode === "login" ? "Welcome back" : "Join Polyhistor"}</span>
+        <span className="eyebrow">{mode === "login" ? "Welcome back" : "Join PolyChronicle"}</span>
         <h1 style={{ fontSize: 36 }}>{mode === "login" ? "Sign in to keep exploring" : "Create your free account"}</h1>
         <p className="muted" style={{ fontSize: 16.5 }}>
           {mode === "login"

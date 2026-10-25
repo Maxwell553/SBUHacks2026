@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: "Your video library" };
 export default async function LibraryPage() {
   const user = await requireViewer("/library");
   return (
-    <div className="container" style={{ paddingBottom: 96 }}>
+    <div className="container" style={{ paddingBottom: 48 }}>
       <div className="page-head">
         <div>
           <span className="eyebrow">Hello, {user.name.split(" ")[0]}</span>

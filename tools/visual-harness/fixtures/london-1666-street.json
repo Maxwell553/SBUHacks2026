@@ -1,0 +1,1223 @@
+{
+  "version": 2,
+  "presentation": "immersive",
+  "title": "The Great Fire of London",
+  "subtitle": "How radical demolition stopped the 1666 inferno.",
+  "dateLabel": "September 1666",
+  "location": "London, England",
+  "coordinates": { "lat": 51.5101, "lon": -0.0859 },
+  "totalDuration": 60,
+  "seed": 170337004,
+  "palette": { "primary": "#8a3324", "secondary": "#2c2f33", "accent": "#ff8c00" },
+  "factions": [
+    { "name": "Citizens", "color": "#4a3c31" },
+    { "name": "Fire", "color": "#ff8c00" }
+  ],
+  "models": [
+    {
+      "id": "london_timber_house",
+      "name": "Seventeenth Century Timber House",
+      "category": "building",
+      "placement": "ground",
+      "scale": 1,
+      "materials": [
+        { "id": "plaster", "color": "#ece6d9", "finish": "matte" },
+        { "id": "timber", "color": "#382315", "finish": "matte" },
+        { "id": "roof_tile", "color": "#743522", "finish": "matte" },
+        { "id": "glass", "color": "#cce5ff", "finish": "glass" },
+        { "id": "brick", "color": "#8c4438", "finish": "matte" },
+        { "id": "shop_door", "color": "#533722", "finish": "matte" }
+      ],
+      "parts": [
+        {
+          "id": "ground_floor_walls",
+          "shape": "box",
+          "material": "plaster",
+          "size": [5, 2.5, 6],
+          "position": [0, 0, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "ground_posts",
+          "shape": "box",
+          "material": "timber",
+          "size": [0.15, 2.5, 0.15],
+          "position": [2.4, 0, 2.9],
+          "anchor": "bottom",
+          "mirror": "z"
+        },
+        {
+          "id": "ground_door",
+          "shape": "box",
+          "material": "shop_door",
+          "size": [0.1, 1.9, 0.9],
+          "position": [2.45, 0, 1.2],
+          "anchor": "bottom"
+        },
+        {
+          "id": "ground_shop_window",
+          "shape": "box",
+          "material": "glass",
+          "size": [0.15, 1.1, 1.6],
+          "position": [2.45, 0.6, -1.2],
+          "anchor": "bottom"
+        },
+        {
+          "id": "ground_window_shutter",
+          "shape": "box",
+          "material": "shop_door",
+          "size": [0.05, 0.5, 1.7],
+          "position": [2.5, 0.2, -1.2],
+          "anchor": "bottom"
+        },
+        {
+          "id": "jetty_first",
+          "shape": "box",
+          "material": "plaster",
+          "size": [5.4, 2.4, 6.4],
+          "position": [0, 2.5, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "first_timber_beams",
+          "shape": "box",
+          "material": "timber",
+          "size": [0.1, 2.4, 0.15],
+          "rotation": [0, 0, 0],
+          "anchor": "bottom",
+          "segments": 4,
+          "taper": 1.25,
+          "repeat": { "mode": "linear", "count": 5, "step": [0, 0, -1.4] }
+        },
+        {
+          "id": "first_floor_corner_posts",
+          "shape": "box",
+          "material": "timber",
+          "size": [0.15, 2.4, 0.15],
+          "position": [2.6, 2.5, 3.1],
+          "anchor": "bottom",
+          "mirror": "z"
+        },
+        {
+          "id": "first_floor_windows",
+          "shape": "box",
+          "material": "glass",
+          "size": [0.1, 1.1, 0.8],
+          "rotation": [0, 0, 0],
+          "anchor": "center",
+          "segments": 4,
+          "taper": 1.25,
+          "repeat": { "mode": "linear", "count": 2, "step": [0, 0, -2.4] }
+        },
+        {
+          "id": "jetty_second",
+          "shape": "box",
+          "material": "plaster",
+          "size": [5.8, 2.3, 6.8],
+          "position": [0, 4.9, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "second_floor_corner_posts",
+          "shape": "box",
+          "material": "timber",
+          "size": [0.15, 2.3, 0.15],
+          "position": [2.8, 4.9, 3.3],
+          "anchor": "bottom",
+          "mirror": "z"
+        },
+        {
+          "id": "second_floor_windows",
+          "shape": "box",
+          "material": "glass",
+          "size": [0.1, 1.1, 0.8],
+          "rotation": [0, 0, 0],
+          "anchor": "center",
+          "segments": 4,
+          "taper": 1.25,
+          "repeat": { "mode": "linear", "count": 3, "step": [0, 0, -1.8] }
+        },
+        {
+          "id": "timber_framing_diagonal",
+          "shape": "box",
+          "material": "timber",
+          "size": [0.1, 2, 0.1],
+          "position": [2.82, 6, 2.2],
+          "rotation": [45, 0, 0],
+          "anchor": "center",
+          "mirror": "z"
+        },
+        {
+          "id": "roof_gable",
+          "shape": "wedge",
+          "material": "roof_tile",
+          "size": [5.9, 2.4, 7],
+          "position": [0, 7.2, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "gable_wall_front",
+          "shape": "wedge",
+          "material": "plaster",
+          "size": [0.1, 2.1, 6.8],
+          "position": [2.81, 7.2, 0],
+          "rotation": [0, 90, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "gable_wall_back",
+          "shape": "wedge",
+          "material": "plaster",
+          "size": [0.1, 2.1, 6.8],
+          "position": [-2.81, 7.2, 0],
+          "rotation": [0, -90, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "gable_timber_trim",
+          "shape": "wedge",
+          "material": "timber",
+          "size": [0.15, 2.2, 7.1],
+          "position": [2.85, 7.2, 0],
+          "rotation": [0, 90, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "attic_window",
+          "shape": "box",
+          "material": "glass",
+          "size": [0.12, 0.7, 0.5],
+          "position": [2.86, 8, 0],
+          "anchor": "center"
+        },
+        {
+          "id": "chimney_stack",
+          "shape": "box",
+          "material": "brick",
+          "size": [1, 3.2, 1],
+          "position": [-1.8, 6.5, -2.2],
+          "anchor": "bottom"
+        },
+        {
+          "id": "chimney_pots",
+          "shape": "cylinder",
+          "material": "brick",
+          "size": [0.35, 0.6, 0.35],
+          "position": [-1.8, 9.7, -2.2],
+          "anchor": "bottom"
+        }
+      ],
+      "notes": "Classic London timber house with dual jetting, framing accents, a brick chimney, and detailed storefront components."
+    },
+    {
+      "id": "fire_hook_and_bucket_team",
+      "name": "Seventeenth Century Firefighter and Hook",
+      "category": "figure",
+      "placement": "ground",
+      "scale": 1,
+      "materials": [
+        { "id": "skin", "color": "#e0a080", "finish": "matte" },
+        { "id": "tunic", "color": "#4a5a80", "finish": "cloth", "tint": true },
+        { "id": "breeches", "color": "#785840", "finish": "cloth" },
+        { "id": "leather_boots_and_bucket", "color": "#30241c", "finish": "satin" },
+        { "id": "wood_shaft", "color": "#b88a50", "finish": "matte" },
+        { "id": "iron_hardware", "color": "#505058", "finish": "metal" },
+        { "id": "water", "color": "#3a82a0", "finish": "glass" }
+      ],
+      "parts": [
+        {
+          "id": "torso",
+          "shape": "box",
+          "material": "tunic",
+          "size": [0.35, 0.55, 0.25],
+          "position": [0, 0.8, 0],
+          "rotation": [0, 0, 5]
+        },
+        {
+          "id": "neck",
+          "parent": "torso",
+          "shape": "cylinder",
+          "material": "skin",
+          "size": [0.12, 0.08, 0.12],
+          "position": [0, 0.27, 0],
+          "taper": 1
+        },
+        {
+          "id": "head",
+          "parent": "neck",
+          "shape": "sphere",
+          "material": "skin",
+          "size": [0.22, 0.23, 0.22],
+          "position": [0, 0.11, 0]
+        },
+        {
+          "id": "hat_brim",
+          "parent": "head",
+          "shape": "cylinder",
+          "material": "leather_boots_and_bucket",
+          "size": [0.32, 0.02, 0.32],
+          "position": [0, 0.06, 0]
+        },
+        {
+          "id": "hat_crown",
+          "parent": "hat_brim",
+          "shape": "dome",
+          "material": "leather_boots_and_bucket",
+          "size": [0.2, 0.1, 0.2],
+          "position": [0, 0.01, 0]
+        },
+        {
+          "id": "skirt",
+          "parent": "torso",
+          "shape": "cylinder",
+          "material": "tunic",
+          "size": [0.38, 0.2, 0.28],
+          "position": [0, -0.28, 0],
+          "taper": 1.25
+        },
+        {
+          "id": "leg_left",
+          "parent": "torso",
+          "shape": "capsule",
+          "material": "breeches",
+          "size": [0.12, 0.45, 0.12],
+          "position": [0, -0.3, -0.09]
+        },
+        {
+          "id": "leg_right",
+          "parent": "torso",
+          "shape": "capsule",
+          "material": "breeches",
+          "size": [0.12, 0.45, 0.12],
+          "position": [-0.02, -0.3, 0.09]
+        },
+        {
+          "id": "boot_left",
+          "parent": "leg_left",
+          "shape": "cylinder",
+          "material": "leather_boots_and_bucket",
+          "size": [0.11, 0.4, 0.11],
+          "position": [0, -0.25, 0],
+          "taper": 1
+        },
+        {
+          "id": "boot_right",
+          "parent": "leg_right",
+          "shape": "cylinder",
+          "material": "leather_boots_and_bucket",
+          "size": [0.11, 0.4, 0.11],
+          "position": [0, -0.25, 0],
+          "taper": 1
+        },
+        {
+          "id": "foot_left",
+          "parent": "boot_left",
+          "shape": "box",
+          "material": "leather_boots_and_bucket",
+          "size": [0.18, 0.08, 0.1],
+          "position": [0.04, -0.2, 0]
+        },
+        {
+          "id": "foot_right",
+          "parent": "boot_right",
+          "shape": "box",
+          "material": "leather_boots_and_bucket",
+          "size": [0.18, 0.08, 0.1],
+          "position": [0.04, -0.2, 0]
+        },
+        {
+          "id": "shoulder_left",
+          "parent": "torso",
+          "shape": "group",
+          "size": [0.1, 0.1, 0.1],
+          "position": [0, 0.22, -0.15],
+          "rotation": [0, 15, 30],
+          "animation": [
+            {
+              "property": "rotation",
+              "axis": "z",
+              "wave": "sine",
+              "amplitude": 15,
+              "frequency": 0.4,
+              "when": "always"
+            },
+            { "property": "rotation", "axis": "y", "wave": "sine", "amplitude": 10, "frequency": 0.4, "when": "always" }
+          ]
+        },
+        {
+          "id": "arm_left",
+          "parent": "shoulder_left",
+          "shape": "capsule",
+          "material": "tunic",
+          "size": [0.1, 0.35, 0.1],
+          "position": [0, -0.15, 0]
+        },
+        {
+          "id": "forearm_left",
+          "parent": "arm_left",
+          "shape": "capsule",
+          "material": "skin",
+          "size": [0.09, 0.35, 0.09],
+          "position": [0.05, -0.3, 0],
+          "rotation": [0, 0, -50]
+        },
+        {
+          "id": "shoulder_right",
+          "parent": "torso",
+          "shape": "group",
+          "size": [0.1, 0.1, 0.1],
+          "position": [0.1, 0.2, 0.15],
+          "rotation": [0, -20, 25],
+          "segments": 4,
+          "animation": [
+            {
+              "property": "rotation",
+              "axis": "z",
+              "wave": "sine",
+              "amplitude": 15,
+              "frequency": 0.4,
+              "phase": 180,
+              "when": "always"
+            },
+            {
+              "property": "rotation",
+              "axis": "y",
+              "wave": "sine",
+              "amplitude": 10,
+              "frequency": 0.4,
+              "phase": 180,
+              "when": "always"
+            }
+          ]
+        },
+        {
+          "id": "arm_right",
+          "parent": "shoulder_right",
+          "shape": "capsule",
+          "material": "tunic",
+          "size": [0.1, 0.35, 0.1],
+          "position": [0, -0.15, 0]
+        },
+        {
+          "id": "forearm_right",
+          "parent": "arm_right",
+          "shape": "capsule",
+          "material": "skin",
+          "size": [0.09, 0.35, 0.09],
+          "position": [0.05, -0.3, 0],
+          "rotation": [0, 0, -45],
+          "segments": 4
+        },
+        {
+          "id": "hook_pivot",
+          "parent": "torso",
+          "shape": "group",
+          "size": [0.1, 0.1, 0.1],
+          "position": [0.4, 0.1, 0.05],
+          "rotation": [0, 0, 10],
+          "segments": 4,
+          "taper": 1,
+          "animation": [
+            {
+              "property": "position",
+              "axis": "x",
+              "wave": "sine",
+              "amplitude": 0.15,
+              "frequency": 0.4,
+              "when": "always"
+            },
+            { "property": "rotation", "axis": "z", "wave": "sine", "amplitude": 8, "frequency": 0.4, "when": "always" }
+          ]
+        },
+        {
+          "id": "pole_shaft",
+          "parent": "hook_pivot",
+          "shape": "cylinder",
+          "material": "wood_shaft",
+          "size": [0.04, 2.8, 0.04],
+          "position": [0, 0, 0],
+          "rotation": [0, 0, 80],
+          "taper": 1
+        },
+        {
+          "id": "iron_socket",
+          "parent": "pole_shaft",
+          "shape": "cylinder",
+          "material": "iron_hardware",
+          "size": [0.06, 0.3, 0.06],
+          "position": [0, 1.4, 0],
+          "taper": 0.75
+        },
+        {
+          "id": "iron_hook",
+          "parent": "iron_socket",
+          "shape": "torus",
+          "material": "iron_hardware",
+          "size": [0.24, 0.04, 0.24],
+          "position": [0.06, 0.1, 0],
+          "rotation": [90, 0, 0]
+        },
+        {
+          "id": "iron_point",
+          "parent": "iron_socket",
+          "shape": "cone",
+          "material": "iron_hardware",
+          "size": [0.05, 0.15, 0.05],
+          "position": [0, 0.2, 0]
+        },
+        {
+          "id": "leather_bucket",
+          "shape": "cylinder",
+          "material": "leather_boots_and_bucket",
+          "size": [0.22, 0.3, 0.22],
+          "position": [0.4, 0, -0.4],
+          "taper": 1.25
+        },
+        {
+          "id": "bucket_water",
+          "parent": "leather_bucket",
+          "shape": "cylinder",
+          "material": "water",
+          "size": [0.18, 0.01, 0.18],
+          "position": [0, 0.13, 0],
+          "taper": 1
+        },
+        {
+          "id": "bucket_handle",
+          "parent": "leather_bucket",
+          "shape": "torus",
+          "material": "leather_boots_and_bucket",
+          "size": [0.22, 0.02, 0.22],
+          "position": [0, 0.15, 0],
+          "rotation": [90, 0, 0]
+        }
+      ],
+      "notes": "17th-century London firefighter using a long ash-wood pole with an iron hook to demolish roofs. Articulated shoulders bring realism to his struggle."
+    },
+    {
+      "id": "evacuation_cart",
+      "name": "Wooden Handcart with Belongings",
+      "category": "vehicle",
+      "placement": "ground",
+      "scale": 1,
+      "materials": [
+        { "id": "wood_dark", "color": "#5c4033", "finish": "matte" },
+        { "id": "wood_light", "color": "#8b7355", "finish": "matte" },
+        { "id": "iron", "color": "#4a4a4a", "finish": "metal" },
+        { "id": "bedding_blue", "color": "#4682b4", "finish": "cloth" },
+        { "id": "bedding_sack", "color": "#d2b48c", "finish": "cloth" },
+        { "id": "pewter", "color": "#a9a9a9", "finish": "metal" }
+      ],
+      "parts": [
+        { "id": "chassis", "shape": "group", "size": [2.4, 0.9, 1.2] },
+        {
+          "id": "axle",
+          "parent": "chassis",
+          "shape": "cylinder",
+          "material": "iron",
+          "size": [0.08, 1.3, 0.08],
+          "position": [0, 0.45, 0],
+          "rotation": [90, 0, 0],
+          "anchor": "center"
+        },
+        {
+          "id": "wheel_pivot_left",
+          "parent": "axle",
+          "shape": "group",
+          "size": [0.9, 0.9, 0.08],
+          "position": [0, 0.6, 0],
+          "rotation": [0, 0, 0],
+          "segments": 8,
+          "taper": 1,
+          "animation": [
+            {
+              "property": "rotation",
+              "axis": "y",
+              "wave": "spin",
+              "amplitude": 360,
+              "frequency": 0.5,
+              "when": "always"
+            }
+          ]
+        },
+        {
+          "id": "wheel_rim_left",
+          "parent": "wheel_pivot_left",
+          "shape": "torus",
+          "material": "wood_dark",
+          "size": [0.9, 0.06, 0.9],
+          "rotation": [90, 0, 0],
+          "segments": 8,
+          "taper": 1
+        },
+        {
+          "id": "wheel_spokes_left",
+          "parent": "wheel_pivot_left",
+          "shape": "cylinder",
+          "material": "wood_light",
+          "size": [0.03, 0.85, 0.03],
+          "rotation": [0, 0, 0],
+          "segments": 4,
+          "taper": 1
+        },
+        {
+          "id": "wheel_spokes_cross_left",
+          "parent": "wheel_pivot_left",
+          "shape": "cylinder",
+          "material": "wood_light",
+          "size": [0.03, 0.85, 0.03],
+          "rotation": [0, 90, 0],
+          "segments": 4,
+          "taper": 1
+        },
+        {
+          "id": "wheel_pivot_right",
+          "parent": "axle",
+          "shape": "group",
+          "size": [0.9, 0.9, 0.08],
+          "position": [0, -0.6, 0],
+          "rotation": [0, 0, 0],
+          "segments": 8,
+          "taper": 1,
+          "animation": [
+            {
+              "property": "rotation",
+              "axis": "y",
+              "wave": "spin",
+              "amplitude": -360,
+              "frequency": 0.5,
+              "when": "always"
+            }
+          ]
+        },
+        {
+          "id": "wheel_rim_right",
+          "parent": "wheel_pivot_right",
+          "shape": "torus",
+          "material": "wood_dark",
+          "size": [0.9, 0.06, 0.9],
+          "rotation": [90, 0, 0],
+          "segments": 8,
+          "taper": 1
+        },
+        {
+          "id": "wheel_spokes_right",
+          "parent": "wheel_pivot_right",
+          "shape": "cylinder",
+          "material": "wood_light",
+          "size": [0.03, 0.85, 0.03],
+          "rotation": [0, 0, 0],
+          "segments": 4,
+          "taper": 1
+        },
+        {
+          "id": "wheel_spokes_cross_right",
+          "parent": "wheel_pivot_right",
+          "shape": "cylinder",
+          "material": "wood_light",
+          "size": [0.03, 0.85, 0.03],
+          "rotation": [0, 90, 0],
+          "segments": 4,
+          "taper": 1
+        },
+        {
+          "id": "wheel_hub_left",
+          "parent": "wheel_pivot_left",
+          "shape": "cylinder",
+          "material": "iron",
+          "size": [0.12, 0.16, 0.12],
+          "rotation": [90, 0, 0]
+        },
+        {
+          "id": "wheel_hub_right",
+          "parent": "wheel_pivot_right",
+          "shape": "cylinder",
+          "material": "iron",
+          "size": [0.12, 0.16, 0.12],
+          "rotation": [90, 0, 0]
+        },
+        {
+          "id": "shaft_frame",
+          "parent": "chassis",
+          "shape": "box",
+          "material": "wood_dark",
+          "size": [2.3, 0.06, 0.08],
+          "position": [0.1, 0.48, 0.45],
+          "mirror": "z"
+        },
+        {
+          "id": "handle_bar",
+          "parent": "chassis",
+          "shape": "cylinder",
+          "material": "wood_dark",
+          "size": [0.05, 1, 0.05],
+          "position": [1.15, 0.48, 0],
+          "rotation": [90, 0, 0]
+        },
+        {
+          "id": "bed_base",
+          "parent": "chassis",
+          "shape": "box",
+          "material": "wood_light",
+          "size": [1.4, 0.04, 0.9],
+          "position": [-0.1, 0.53, 0]
+        },
+        {
+          "id": "bed_side",
+          "parent": "chassis",
+          "shape": "box",
+          "material": "wood_dark",
+          "size": [1.4, 0.35, 0.04],
+          "position": [-0.1, 0.7, 0.44],
+          "mirror": "z"
+        },
+        {
+          "id": "bed_back",
+          "parent": "chassis",
+          "shape": "box",
+          "material": "wood_dark",
+          "size": [0.04, 0.35, 0.9],
+          "position": [-0.8, 0.7, 0]
+        },
+        {
+          "id": "crate_large",
+          "parent": "chassis",
+          "shape": "box",
+          "material": "wood_light",
+          "size": [0.55, 0.45, 0.5],
+          "position": [-0.4, 0.75, 0.1]
+        },
+        {
+          "id": "crate_small",
+          "parent": "chassis",
+          "shape": "box",
+          "material": "wood_dark",
+          "size": [0.4, 0.3, 0.35],
+          "position": [0.3, 0.68, -0.2]
+        },
+        {
+          "id": "bedding_roll_1",
+          "parent": "chassis",
+          "shape": "capsule",
+          "material": "bedding_blue",
+          "size": [0.3, 0.65, 0.3],
+          "position": [-0.35, 1.1, -0.1],
+          "rotation": [0, 0, 90]
+        },
+        {
+          "id": "bedding_roll_2",
+          "parent": "chassis",
+          "shape": "capsule",
+          "material": "bedding_sack",
+          "size": [0.25, 0.55, 0.25],
+          "position": [0.25, 0.9, 0.15],
+          "rotation": [10, 15, 80]
+        },
+        {
+          "id": "sack_lumpy",
+          "parent": "chassis",
+          "shape": "sphere",
+          "material": "bedding_sack",
+          "size": [0.45, 0.35, 0.45],
+          "position": [-0.42, 0.72, -0.22]
+        },
+        {
+          "id": "pewter_plate_stack",
+          "parent": "chassis",
+          "shape": "cylinder",
+          "material": "pewter",
+          "size": [0.24, 0.12, 0.24],
+          "position": [0.35, 0.61, 0.25]
+        },
+        {
+          "id": "support_stand",
+          "parent": "chassis",
+          "shape": "box",
+          "material": "iron",
+          "size": [0.05, 0.4, 0.05],
+          "position": [0.9, 0.28, 0.42],
+          "rotation": [0, 0, -10],
+          "mirror": "z"
+        },
+        {
+          "id": "wheel_animation_link",
+          "parent": "axle",
+          "shape": "group",
+          "size": [0.1, 0.1, 0.1],
+          "rotation": [0, 0, 0],
+          "segments": 4,
+          "taper": 1
+        }
+      ],
+      "notes": "17th-century London utility handcart laden with precious belongings (crates, sacks, metalware) fleeing the Great Fire, wheels spin constantly."
+    },
+    {
+      "id": "demolition_firebreak",
+      "name": "Gunpowder Demolition Ruin",
+      "category": "structure",
+      "placement": "ground",
+      "scale": 1,
+      "materials": [
+        { "id": "charred_wood", "color": "#2c2523", "finish": "matte" },
+        { "id": "splintered_timber", "color": "#a88a65", "finish": "matte" },
+        { "id": "shattered_plaster", "color": "#bfb8ad", "finish": "matte" },
+        { "id": "powder_barrel", "color": "#5c4033", "finish": "matte" },
+        { "id": "iron_hoops", "color": "#4a4a4a", "finish": "metal" },
+        { "id": "embers", "color": "#ff5500", "finish": "emissive" },
+        { "id": "dust_cloud", "color": "#9c968f", "finish": "matte" }
+      ],
+      "parts": [
+        {
+          "id": "shattered_base",
+          "shape": "box",
+          "material": "shattered_plaster",
+          "size": [4, 0.15, 4],
+          "position": [0, 0, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "plaster_rubble_pile",
+          "shape": "cone",
+          "material": "shattered_plaster",
+          "size": [3.2, 0.4, 3.2],
+          "position": [0, 0.1, 0],
+          "anchor": "bottom",
+          "segments": 5
+        },
+        {
+          "id": "charred_beam_main",
+          "shape": "box",
+          "material": "charred_wood",
+          "size": [3.5, 0.18, 0.18],
+          "position": [0.2, 0.2, -0.1],
+          "rotation": [12, 35, -8],
+          "anchor": "center"
+        },
+        {
+          "id": "splintered_beam_cross",
+          "shape": "box",
+          "material": "splintered_timber",
+          "size": [0.15, 0.15, 3],
+          "position": [-0.5, 0.25, 0.4],
+          "rotation": [-18, -45, 5],
+          "anchor": "center"
+        },
+        {
+          "id": "collapsed_wall_chunk",
+          "shape": "wedge",
+          "material": "shattered_plaster",
+          "size": [1.5, 0.3, 1.2],
+          "position": [1.1, 0.1, -1],
+          "rotation": [-10, 110, 5],
+          "anchor": "bottom"
+        },
+        {
+          "id": "splinter_spikes",
+          "shape": "cone",
+          "material": "splintered_timber",
+          "size": [0.12, 0.8, 0.12],
+          "position": [0.8, 0.1, 0.6],
+          "rotation": [65, -20, 15],
+          "anchor": "bottom",
+          "segments": 4,
+          "taper": 0
+        },
+        {
+          "id": "splinter_spikes_mirror",
+          "shape": "cone",
+          "material": "charred_wood",
+          "size": [0.1, 0.6, 0.1],
+          "position": [-0.9, 0.08, -0.8],
+          "rotation": [-55, 45, -30],
+          "anchor": "bottom",
+          "segments": 4,
+          "taper": 0
+        },
+        {
+          "id": "gunpowder_barrel_upright",
+          "shape": "cylinder",
+          "material": "powder_barrel",
+          "size": [0.5, 0.7, 0.5],
+          "position": [-1.4, 0, 1.4],
+          "rotation": [0, 15, 5],
+          "anchor": "bottom",
+          "segments": 8,
+          "taper": 1.25
+        },
+        {
+          "id": "barrel_hoop_top",
+          "parent": "gunpowder_barrel_upright",
+          "shape": "torus",
+          "material": "iron_hoops",
+          "size": [0.46, 0.03, 0.46],
+          "position": [0, 0.55, 0],
+          "rotation": [90, 0, 0]
+        },
+        {
+          "id": "barrel_hoop_bottom",
+          "parent": "gunpowder_barrel_upright",
+          "shape": "torus",
+          "material": "iron_hoops",
+          "size": [0.46, 0.03, 0.46],
+          "position": [0, 0.15, 0],
+          "rotation": [90, 0, 0]
+        },
+        {
+          "id": "gunpowder_barrel_tipped",
+          "shape": "cylinder",
+          "material": "powder_barrel",
+          "size": [0.5, 0.7, 0.5],
+          "position": [1.5, 0.15, 1.3],
+          "rotation": [85, 40, -10],
+          "anchor": "bottom",
+          "segments": 8,
+          "taper": 1.25
+        },
+        {
+          "id": "spilled_powder_pile",
+          "shape": "cone",
+          "material": "charred_wood",
+          "size": [0.6, 0.08, 0.8],
+          "position": [1.2, 0, 1.1],
+          "anchor": "bottom",
+          "segments": 5
+        },
+        {
+          "id": "burning_ember_spark",
+          "shape": "ico",
+          "material": "embers",
+          "size": [0.15, 0.1, 0.15],
+          "position": [0.5, 0.35, 0.2],
+          "rotation": [12, 45, 88],
+          "anchor": "center",
+          "segments": 4,
+          "taper": 0
+        },
+        {
+          "id": "smoldering_smoke",
+          "shape": "smoke",
+          "material": "dust_cloud",
+          "size": [0.6, 1.8, 0.01],
+          "position": [0.3, 0.3, 0.1],
+          "rotation": [-10, 0, 5]
+        },
+        {
+          "id": "dust_puff_side",
+          "shape": "smoke",
+          "material": "dust_cloud",
+          "size": [0.4, 1.2, 0.01],
+          "position": [-1, 0.1, -0.8]
+        },
+        {
+          "id": "scattered_debris_block",
+          "shape": "box",
+          "material": "shattered_plaster",
+          "size": [0.4, 0.2, 0.3],
+          "position": [-1.3, 0.02, -1.2],
+          "rotation": [5, -60, 12],
+          "anchor": "bottom"
+        },
+        {
+          "id": "shattered_plank_flat",
+          "shape": "box",
+          "material": "splintered_timber",
+          "size": [1.2, 0.05, 0.25],
+          "position": [-0.4, 0.05, -1.4],
+          "rotation": [-3, 25, -2],
+          "anchor": "bottom"
+        }
+      ],
+      "notes": "Low-poly flat-packed building ruin post-controlled gunpowder blast. Features timber splinters, a plaster mound, smoldering embers, dust effects, and Navy powder barrels."
+    }
+  ],
+  "scenes": [
+    {
+      "kind": "map",
+      "duration": 6,
+      "kicker": "September 2, 1666",
+      "caption": "A small bakery fire threatens the entire medieval capital.",
+      "setting": "city",
+      "timeOfDay": "night",
+      "weather": "clear",
+      "camera": "static",
+      "elements": [],
+      "map": { "lat": 51.5101, "lon": -0.0859, "label": "Pudding Lane", "zoom": "local" }
+    },
+    {
+      "kind": "diorama",
+      "duration": 8,
+      "kicker": "The Tinderbox City",
+      "caption": "London's narrow streets are packed with dry, flammable timber houses.",
+      "setting": "city",
+      "timeOfDay": "night",
+      "weather": "clear",
+      "camera": "tracking",
+      "elements": [
+        {
+          "model": "london_timber_house",
+          "count": 8,
+          "formation": "line",
+          "position": "left",
+          "motion": "idle",
+          "role": "background",
+          "offset": { "x": -4, "z": -10 },
+          "facing": "right",
+          "color": "#4a3c31",
+          "scale": 1
+        },
+        {
+          "model": "london_timber_house",
+          "count": 8,
+          "formation": "line",
+          "position": "right",
+          "motion": "idle",
+          "role": "subject",
+          "offset": { "x": 4, "z": -10 },
+          "facing": "left",
+          "color": "#4a3c31",
+          "scale": 1
+        }
+      ]
+    },
+    {
+      "kind": "diorama",
+      "duration": 8,
+      "kicker": "Wind and Panic",
+      "caption": "Fanned by strong easterly winds, panicked residents flee an encroaching firestorm.",
+      "setting": "city",
+      "timeOfDay": "night",
+      "weather": "smoke",
+      "camera": "pan_left",
+      "elements": [
+        {
+          "model": "evacuation_cart",
+          "count": 3,
+          "formation": "column",
+          "position": "center",
+          "motion": "retreat",
+          "role": "subject",
+          "offset": { "x": 0, "z": -5 },
+          "facing": "camera",
+          "color": "#8b5a2b",
+          "scale": 1
+        },
+        {
+          "model": "london_timber_house",
+          "count": 6,
+          "formation": "line",
+          "position": "left",
+          "motion": "burn",
+          "role": "background",
+          "offset": { "x": -4, "z": -15 },
+          "facing": "right",
+          "color": "#2c2f33",
+          "scale": 1
+        },
+        {
+          "model": "london_timber_house",
+          "count": 6,
+          "formation": "line",
+          "position": "right",
+          "motion": "burn",
+          "role": "background",
+          "offset": { "x": 4, "z": -15 },
+          "facing": "left",
+          "color": "#2c2f33",
+          "scale": 1
+        }
+      ]
+    },
+    {
+      "kind": "diorama",
+      "duration": 8,
+      "kicker": "Early Firefighting",
+      "caption": "Citizens use buckets and hooks, but they cannot stop the fire.",
+      "setting": "city",
+      "timeOfDay": "dawn",
+      "weather": "smoke",
+      "camera": "push_in",
+      "elements": [
+        {
+          "model": "fire_hook_and_bucket_team",
+          "count": 4,
+          "formation": "line",
+          "position": "center",
+          "motion": "march",
+          "role": "subject",
+          "offset": { "x": 0, "z": 0 },
+          "facing": "away",
+          "color": "#635147",
+          "scale": 1
+        },
+        {
+          "model": "london_timber_house",
+          "count": 5,
+          "formation": "line",
+          "position": "left",
+          "motion": "burn",
+          "role": "background",
+          "offset": { "x": -4, "z": -8 },
+          "facing": "right",
+          "color": "#3a1b15",
+          "scale": 1
+        },
+        {
+          "model": "london_timber_house",
+          "count": 5,
+          "formation": "line",
+          "position": "right",
+          "motion": "burn",
+          "role": "background",
+          "offset": { "x": 4, "z": -8 },
+          "facing": "left",
+          "color": "#3a1b15",
+          "scale": 1
+        }
+      ]
+    },
+    {
+      "kind": "diorama",
+      "duration": 7,
+      "kicker": "September 4, 1666",
+      "caption": "King Charles II ordered the Navy to demolish buildings using gunpowder.",
+      "setting": "city",
+      "timeOfDay": "day",
+      "weather": "smoke",
+      "camera": "orbit",
+      "elements": [
+        {
+          "model": "london_timber_house",
+          "count": 3,
+          "formation": "line",
+          "position": "center",
+          "motion": "explode",
+          "role": "subject",
+          "offset": { "x": 0, "z": -5 },
+          "facing": "camera",
+          "color": "#8a3324",
+          "scale": 1
+        },
+        {
+          "model": "london_timber_house",
+          "count": 4,
+          "formation": "line",
+          "position": "left",
+          "motion": "idle",
+          "role": "background",
+          "offset": { "x": -6, "z": 5 },
+          "facing": "right",
+          "color": "#4a3c31",
+          "scale": 1
+        }
+      ]
+    },
+    {
+      "kind": "diorama",
+      "duration": 8,
+      "kicker": "The Firebreaks",
+      "caption": "Controlled blasts create firebreaks to deprive an advancing fire of fuel.",
+      "setting": "city",
+      "timeOfDay": "day",
+      "weather": "dust",
+      "camera": "tracking",
+      "elements": [
+        {
+          "model": "demolition_firebreak",
+          "count": 6,
+          "formation": "line",
+          "position": "center",
+          "motion": "idle",
+          "role": "subject",
+          "offset": { "x": 0, "z": -2 },
+          "facing": "away",
+          "color": "#5a5a5a",
+          "scale": 1
+        },
+        {
+          "model": "london_timber_house",
+          "count": 6,
+          "formation": "line",
+          "position": "left",
+          "motion": "burn",
+          "role": "background",
+          "offset": { "x": -4, "z": -12 },
+          "facing": "right",
+          "color": "#1a1a1a",
+          "scale": 1
+        }
+      ]
+    },
+    {
+      "kind": "diorama",
+      "duration": 8,
+      "kicker": "Halting the Blaze",
+      "caption": "On September 5, the wind dropped and the flames burned themselves out.",
+      "setting": "city",
+      "timeOfDay": "day",
+      "weather": "smoke",
+      "camera": "crane_up",
+      "elements": [
+        {
+          "model": "demolition_firebreak",
+          "count": 8,
+          "formation": "line",
+          "position": "front",
+          "motion": "idle",
+          "role": "foreground",
+          "offset": { "x": -2, "z": 5 },
+          "facing": "camera",
+          "color": "#4a4a4a",
+          "scale": 1
+        },
+        {
+          "model": "london_timber_house",
+          "count": 10,
+          "formation": "line",
+          "position": "back",
+          "motion": "idle",
+          "role": "subject",
+          "offset": { "x": 0, "z": -15 },
+          "facing": "camera",
+          "color": "#524338",
+          "scale": 1
+        }
+      ]
+    },
+    {
+      "kind": "diorama",
+      "duration": 7,
+      "kicker": "The Aftermath",
+      "caption": "The drastic measure saved London, which was rebuilt with wider stone streets.",
+      "setting": "city",
+      "timeOfDay": "day",
+      "weather": "clear",
+      "camera": "pull_out",
+      "elements": [
+        {
+          "model": "london_timber_house",
+          "count": 8,
+          "formation": "line",
+          "position": "center",
+          "motion": "idle",
+          "role": "subject",
+          "offset": { "x": 0, "z": -8 },
+          "facing": "camera",
+          "color": "#65594f",
+          "scale": 1
+        },
+        {
+          "model": "demolition_firebreak",
+          "count": 10,
+          "formation": "scatter",
+          "position": "front",
+          "motion": "idle",
+          "role": "foreground",
+          "offset": { "x": 0, "z": 8 },
+          "facing": "away",
+          "color": "#333333",
+          "scale": 1
+        }
+      ]
+    }
+  ]
+}

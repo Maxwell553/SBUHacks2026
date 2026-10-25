@@ -2,17 +2,17 @@
 
 **A little curiosity. A window into history.**
 
-Polyhistor turns a question about the past into a 20–60 second low-poly animated film. Each film is researched from public sources with Gemini and Google Search, cast with 3D models designed for that event, animated entirely in code, and saved to your library as a GIF together with every source it used.
+Polyhistor turns a question about the past into a 20–60 second low-poly animated film. Each film is researched from public sources with Gemini and Google Search, cast with 3D models designed for that event, animated entirely in code, and saved to your library as an HD video together with every source it used.
 
 ## Features
 
 - **Grounded research.** Gemini researches each event with Google Search grounding and keeps the source list with the video.
 - **A new cast every time.** There's no fixed model library. Gemini designs declarative `ModelDefinition`s (primitives, materials, rigs and animation channels) for the people, buildings and machines of each event.
 - **Code-rendered film.** A deterministic Three.js engine draws every frame: procedural terrain, water and weather, a faceted globe with real coastlines, camera moves, captions and transitions. There's no generative video, and generated code never runs.
-- **In-browser export.** Frames are rendered offscreen, encoded to GIF in a Web Worker, and uploaded in 1 MiB chunks. A JPEG poster is saved alongside.
+- **In-browser export.** Frames are rendered offscreen, encoded at 720p and 30 fps using WebCodecs and Mediabunny, and uploaded in 1 MiB chunks. A JPEG poster is saved alongside.
 - **Safety by design.** Prompts and generated storyboards pass keyword and classifier checks. Every decision goes to an audit log that's deleted with the account.
-- **Accounts.** Email and password sign-up with hashed sessions, a private library, GIF downloads, and full account deletion.
-- **Optional audio.** Independent voice and procedural ambience controls in the interactive player. GIF downloads are silent.
+- **Accounts.** Email and password sign-up with hashed sessions, a private library, HD video downloads, and full account deletion.
+- **Optional audio.** Procedural ambience enabled by default in the interactive player (starts after a browser gesture); no voiceover. Saved movies include a synthesized ambient soundtrack; older GIF downloads remain silent.
 - **Original typefaces.** Facet, Tessera and Tessera Mono are generated in this repository from hand-designed glyph skeletons.
 - **Accessible, friendly UI.** A warm educational theme, motion.dev animations, React Three Fiber scenes, and support for reduced motion throughout.
 
@@ -20,7 +20,7 @@ Polyhistor turns a question about the past into a 20–60 second low-poly animat
 
 ```text
 question → safety check → grounded research → model plan → parallel geometry + storyboard
-        → safety check → saved script → browser render → GIF + poster upload → library
+        → safety check → saved script → browser render → HD movie + poster upload → library
 ```
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full lifecycle.
@@ -33,7 +33,7 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full lifecycle.
 | 3D and motion | Three.js, React Three Fiber, motion.dev                                     |
 | AI            | Google Gemini (Vertex AI) with Google Search grounding, via `@google/genai` |
 | Database      | TigerData (managed PostgreSQL) via `pg`                                     |
-| Media         | `gifenc` in a Web Worker; chunked storage in PostgreSQL                     |
+| Media         | Mediabunny/WebCodecs (MP4, WebM fallback); chunked PostgreSQL storage       |
 | Validation    | zod 4 (shared schemas for scripts and models)                               |
 | Hosting       | Vercel or any Node.js host                                                  |
 
@@ -52,19 +52,21 @@ Environment variables are documented in [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md#
 
 ## Scripts
 
-| Command                                          | What it does                                                        |
-| ------------------------------------------------ | ------------------------------------------------------------------- |
-| `npm run dev` / `build` / `start`                | Next.js development server, production build, production server     |
-| `npm run check`                                  | Type check, lint, format check and unit checks: run before every PR |
-| `npm run lint` / `format`                        | ESLint (Next.js config) / Prettier                                  |
-| `npm run test:unit`                              | Schema, example-model and redirect-safety checks (no network)       |
-| `npm run test:audit [-- --live]`                 | Moderation audit and account-deletion checks against the database   |
-| `npm run test:backend [-- --live]`               | HTTP integration suite against a local server                       |
-| `npm run test:film -- script.json`               | Validates a generated script and checks its models animate          |
-| `npm run db:migrate` / `db:check` / `db:inspect` | Apply schema / connectivity check / read-only operator views        |
-| `npm run gemini:check`                           | Live check of the Gemini key, model and Search grounding            |
-| `npm run secrets:check`                          | Scans commit candidates for configured secrets                      |
-| `npm run assets:fonts` / `assets:landmask`       | Regenerate the typefaces / the globe land mask                      |
+| Command                                          | What it does                                                                                                    |
+| ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------- |
+| `npm run dev` / `build` / `start`                | Next.js development server, production build, production server                                                 |
+| `npm run check`                                  | Type check, lint, format check and unit checks: run before every PR                                             |
+| `npm run lint` / `format`                        | ESLint (Next.js config) / Prettier                                                                              |
+| `npm run test:unit`                              | Schema, example-model and redirect-safety checks (no network)                                                   |
+| `npm run test:audit [-- --live]`                 | Moderation audit and account-deletion checks against the database                                               |
+| `npm run test:backend [-- --live]`               | HTTP integration suite against a local server                                                                   |
+| `npm run test:film -- script.json`               | Validates a generated script and checks its models animate                                                      |
+| `npm run visual:build` / `visual:serve`          | Visual harness: contact sheets, collision audit and timings for films ([guide](tools/visual-harness/README.md)) |
+| `npm run bench:builder [-- --films]`             | Live A/B of geometry builder models on one fixed plan ([results](docs/BUILDER_BENCHMARK.md))                    |
+| `npm run db:migrate` / `db:check` / `db:inspect` | Apply schema / connectivity check / read-only operator views                                                    |
+| `npm run gemini:check`                           | Live check of the Gemini key, model and Search grounding                                                        |
+| `npm run secrets:check`                          | Scans commit candidates for configured secrets                                                                  |
+| `npm run assets:fonts` / `assets:landmask`       | Regenerate the typefaces / the globe land mask                                                                  |
 
 ## Project structure
 
@@ -75,7 +77,7 @@ lib/
   client/       Browser API client, chunked upload, render-and-save
   content/      Site config, topic ideas, example models, sample reel
   lowpoly/      Renderer: model compiler, engine, environments, globe, overlay
-  render/       GIF export and worker
+  render/       HD movie export and legacy GIF worker
   schema/       Shared contracts: VideoScript and ModelDefinition
   server/       Auth, database, Gemini pipeline, moderation audit, media
   shared/       Isomorphic helpers
@@ -83,7 +85,10 @@ lib/
 db/             Database schema
 docs/           Project documentation
 public/fonts/   The Facet, Tessera and Tessera Mono typefaces
-scripts/        Asset builders, migrations, checks and tests
+scripts/        Asset builders, migrations, checks, tests and benchmarks
+tools/          Developer tools: tools/visual-harness/ renders films for visual QA
+tmp/            Local scratch (git-ignored): QA probes, benchmark runs, contact sheets
+.builds/        Side builds and TypeScript build info (git-ignored); .next is the default build
 ```
 
 ## Documentation
@@ -93,6 +98,8 @@ scripts/        Asset builders, migrations, checks and tests
 | [Architecture](docs/ARCHITECTURE.md)                                                        | System overview, request lifecycle, data model, code layout   |
 | [HTTP API](docs/API.md)                                                                     | Endpoints, payloads, errors and rate limits                   |
 | [Renderer](docs/RENDERER.md)                                                                | Script and model formats, compiler, engine, export            |
+| [Cinematic renderer](docs/CINEMATIC_RENDERER.md)                                            | Streets, waterfronts, settlements, interiors, shot rig, QA    |
+| [Builder benchmark](docs/BUILDER_BENCHMARK.md)                                              | Flash vs Pro geometry builder: quality, speed, recommendation |
 | [Safety, privacy and security](docs/SAFETY.md)                                              | Moderation layers, audit log, sessions, data lifecycle        |
 | [Design system](docs/DESIGN.md)                                                             | Theme, typefaces, components, motion                          |
 | [Deployment and operations](docs/DEPLOYMENT.md)                                             | Environment, Vercel, database, limits, checklist              |

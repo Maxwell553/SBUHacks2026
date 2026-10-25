@@ -1,8 +1,8 @@
 {
-  "name": "polyhistor",
+  "name": "polychronicle",
   "version": "1.0.0",
   "private": true,
-  "description": "Polyhistor \u2014 short low-poly history films, researched with Gemini and Google Search and animated entirely in code.",
+  "description": "PolyChronicle \u2014 short low-poly history films, researched with Gemini and Google Search and animated entirely in code.",
   "engines": {
     "node": ">=20.9"
   },
@@ -15,10 +15,13 @@
     "format:check": "prettier --check .",
     "typecheck": "next typegen && tsc --noEmit",
     "check": "npm run typecheck && npm run lint && npm run format:check && npm run test:unit",
-    "test:unit": "node --import tsx scripts/validate-models.ts && node --import tsx scripts/test-navigation.ts && node --import tsx scripts/test-world-schema.ts && node --test scripts/test-production-config.mjs",
+    "test:unit": "node --import tsx scripts/validate-models.ts && node --import tsx scripts/test-navigation.ts && node --import tsx scripts/test-world-schema.ts && node --test scripts/test-production-config.mjs && node --import tsx scripts/test-soundtrack.ts && node --import tsx scripts/test-structure-state.ts && node --import tsx scripts/test-animation-pivot.ts && node --import tsx scripts/test-truss.ts && node --import tsx scripts/test-camera-framing.ts && node --import tsx scripts/test-scene-effects.ts && node --import tsx scripts/test-motion-keyframes.ts",
     "test:audit": "node --env-file=.env.local --import tsx scripts/test-moderation-audit.ts",
     "test:backend": "node --env-file=.env.local scripts/test-backend.mjs",
     "test:film": "node --import tsx scripts/test-generated-film.ts",
+    "bench:builder": "node --env-file=.env.local --import tsx scripts/bench-builder.ts",
+    "visual:build": "node tools/visual-harness/build.mjs",
+    "visual:serve": "node tools/visual-harness/serve.mjs",
     "db:migrate": "node --env-file-if-exists=.env.local scripts/migrate.mjs",
     "db:check": "node --env-file=.env.local scripts/check-tigerdata.mjs",
     "db:inspect": "node --env-file=.env.local scripts/db-inspect.mjs",
@@ -33,6 +36,7 @@
     "@react-three/fiber": "^9.8.2",
     "@vercel/functions": "3.6.1",
     "gifenc": "^1.0.3",
+    "mediabunny": "^1.62.1",
     "motion": "^14.6.0",
     "next": "^16.4.3",
     "pg": "^8.23.1",

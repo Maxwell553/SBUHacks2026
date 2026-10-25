@@ -23,7 +23,7 @@ export default function ContentPolicyPage() {
       sections={SECTIONS}
       summary={
         <p>
-          Polyhistor makes respectful, educational videos about real moments in history. We check every request and
+          PolyChronicle makes respectful, educational videos about real moments in history. We check every request and
           every storyboard, and we decline requests that are hateful, sexual, graphic, harassing, dangerous or not about
           history.
         </p>

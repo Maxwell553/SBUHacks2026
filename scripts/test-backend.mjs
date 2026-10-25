@@ -1,6 +1,7 @@
 // Local integration tests against the real TigerData database. Creates and removes only its own test accounts.
 // Add --live to exercise paid Gemini/Google Search research and scene generation once.
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { randomUUID, randomBytes, createHash } from "node:crypto";
 import pg from "pg";
 import { databaseConfig } from "./lib/database-config.mjs";
@@ -200,12 +201,94 @@ try {
   check(r.response.status === 404, "other user cannot download media");
   r = await call(`/api/videos/${videoId}`, { cookie: a.cookie });
   check(r.body.video.status === "rendered" && r.body.video.gifUrl, "saved render updates video library fields");
+  // Exercise the new HD path with an actual browser export when supplied.
+  // The tiny default only tests container routing/storage, not decoder validity.
+  const movie = process.env.TEST_MOVIE_PATH
+    ? readFileSync(process.env.TEST_MOVIE_PATH)
+    : Buffer.from("000000186674797069736f6d0000020069736f6d69736f32", "hex");
+  const movieChunks = Math.ceil(movie.length / 1048576);
+  r = await call(`/api/videos/${videoId}/assets/init`, {
+    method: "POST",
+    cookie: a.cookie,
+    data: { mime: "video/mp4", totalBytes: movie.length, chunkCount: movieChunks },
+  });
+  check(r.response.status === 201, "HD movie upload initialized");
+  const movieAssetId = r.body.assetId;
+  const movieUpload = `/api/videos/${videoId}/assets/${movieAssetId}`;
+  for (let i = 0; i < movieChunks; i++) {
+    r = await call(movieUpload + `/chunks/${i}`, {
+      method: "PUT",
+      cookie: a.cookie,
+      raw: movie.subarray(i * 1048576, (i + 1) * 1048576),
+    });
+    assert.equal(r.response.status, 200);
+  }
+  r = await call(movieUpload + "/complete", { method: "POST", cookie: a.cookie });
+  check(
+    r.response.status === 200 && r.body.sha256 === createHash("sha256").update(movie).digest("hex"),
+    "HD movie checksum matches",
+  );
+  r = await call(`/api/videos/${videoId}`, { cookie: a.cookie });
+  check(
+    r.body.video.movieMime === "video/mp4" && r.body.video.movieUrl?.includes(movieAssetId),
+    "detail selects saved HD movie alongside legacy GIF",
+  );
+  const moviePath = r.body.video.movieUrl;
+  download = await fetch(base + moviePath, { headers: { Cookie: a.cookie } });
+  check(
+    download.headers.get("content-type") === "video/mp4" && Buffer.from(await download.arrayBuffer()).equals(movie),
+    "HD movie downloads with exact bytes and MIME",
+  );
+  r = await call(moviePath, { cookie: b.cookie });
+  check(r.response.status === 404, "other user cannot download HD movie");
   r = await call("/api/videos", {
     method: "POST",
     cookie: a.cookie,
     data: { prompt: "Generate graphic gore for entertainment", duration: 20 },
   });
   check(r.response.status === 422, "unsafe prompt rejected before generation");
+  // The first step is a real gate, and declined attempts never become drafts.
+  r = await call("/api/videos", {
+    method: "POST",
+    cookie: a.cookie,
+    data: { prompt: "nude avatars", duration: 20 },
+  });
+  check(r.response.status === 422, "nudity rejected by the input gate");
+  const blocked = await client.query("SELECT id FROM ph_videos WHERE user_id=$1 AND prompt=$2", [a.id, "nude avatars"]);
+  check(blocked.rowCount === 0, "declined attempt is deleted, not saved as a draft");
+  const audit = await client.query("SELECT details FROM ph_audit WHERE user_id=$1 AND details->>'rule'='nudity'", [
+    a.id,
+  ]);
+  check(
+    audit.rows.some(({ details }) => details.stage === "input" && details.source === "keyword"),
+    "nudity rejection audited before research",
+  );
+  const unfinished = randomUUID(),
+    stale = randomUUID();
+  await client.query(
+    "INSERT INTO ph_videos(id,user_id,prompt,duration,status,updated_at) VALUES($1,$3,'unfinished fixture',20,'ready',now()),($2,$3,'stale fixture',20,'ready',now()-interval '31 minutes')",
+    [unfinished, stale, a.id],
+  );
+  r = await call("/api/videos", { cookie: a.cookie });
+  check(
+    r.body.videos.every((v) => v.status === "rendered"),
+    "library only lists completed films",
+  );
+  check(
+    (await client.query("SELECT id FROM ph_videos WHERE id=$1", [stale])).rowCount === 0,
+    "abandoned attempts cleaned up",
+  );
+  r = await call(`/api/videos/${unfinished}?incomplete=1`, { method: "DELETE", cookie: a.cookie });
+  check(
+    r.response.status === 200 &&
+      (await client.query("SELECT id FROM ph_videos WHERE id=$1", [unfinished])).rowCount === 0,
+    "cancel discards incomplete film",
+  );
+  await call(`/api/videos/${videoId}?incomplete=1`, { method: "DELETE", cookie: a.cookie });
+  check(
+    (await client.query("SELECT id FROM ph_videos WHERE id=$1", [videoId])).rowCount === 1,
+    "late cancellation preserves a completed film",
+  );
   r = await call("/api/auth/logout", { method: "POST", cookie: newCookie });
   check(r.response.status === 200, "logout succeeds");
   r = await call("/api/auth/me", { cookie: newCookie });

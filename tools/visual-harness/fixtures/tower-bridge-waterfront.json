@@ -1,0 +1,967 @@
+{
+  "seed": 1731500274,
+  "title": "Tower Bridge Opens",
+  "models": [
+    {
+      "id": "tower_bridge_1894",
+      "name": "Tower Bridge (1894)",
+      "notes": "1894 Tower Bridge with massive stone piers, steel walkways, Gothic towers, and functional brown bascules swinging via sine animation.",
+      "parts": [
+        {
+          "id": "pier_left",
+          "size": [6, 3, 10],
+          "shape": "box",
+          "anchor": "bottom",
+          "material": "river_stone",
+          "position": [-7.5, 0, 0]
+        },
+        {
+          "id": "pier_right",
+          "size": [6, 3, 10],
+          "shape": "box",
+          "anchor": "bottom",
+          "material": "river_stone",
+          "position": [7.5, 0, 0]
+        },
+        {
+          "id": "tower_left",
+          "size": [4, 18, 7],
+          "shape": "box",
+          "anchor": "bottom",
+          "parent": "pier_left",
+          "attachTo": "top",
+          "material": "gothic_sandstone",
+          "position": [0, 0, 0]
+        },
+        {
+          "id": "tower_right",
+          "size": [4, 18, 7],
+          "shape": "box",
+          "anchor": "bottom",
+          "parent": "pier_right",
+          "attachTo": "top",
+          "material": "gothic_sandstone",
+          "position": [0, 0, 0]
+        },
+        {
+          "id": "spire_left",
+          "size": [3.8, 5, 3.8],
+          "shape": "cone",
+          "anchor": "bottom",
+          "mirror": "z",
+          "parent": "tower_left",
+          "attachTo": "top",
+          "material": "victorian_steel",
+          "position": [-1, 0, 0],
+          "segments": 4
+        },
+        {
+          "id": "spire_right",
+          "size": [3.8, 5, 3.8],
+          "shape": "cone",
+          "anchor": "bottom",
+          "mirror": "z",
+          "parent": "tower_right",
+          "attachTo": "top",
+          "material": "victorian_steel",
+          "position": [1, 0, 0],
+          "segments": 4
+        },
+        {
+          "id": "walkway_lower",
+          "size": [11, 0.8, 3],
+          "shape": "box",
+          "anchor": "center",
+          "parent": "tower_left",
+          "material": "victorian_steel",
+          "position": [5.5, 14, 0]
+        },
+        {
+          "id": "walkway_upper",
+          "size": [11, 0.8, 3],
+          "shape": "box",
+          "anchor": "center",
+          "parent": "tower_left",
+          "material": "victorian_steel",
+          "position": [5.5, 16.5, 0]
+        },
+        {
+          "id": "walkway_glass",
+          "size": [11, 1.7, 2.8],
+          "shape": "box",
+          "anchor": "center",
+          "parent": "walkway_lower",
+          "material": "window_glass",
+          "position": [0, 1.25, 0]
+        },
+        {
+          "id": "bascule_left",
+          "size": [5.5, 0.6, 4],
+          "shape": "box",
+          "anchor": "left",
+          "parent": "pier_left",
+          "material": "bascule_road",
+          "position": [3, 2.5, 0],
+          "animation": [
+            {
+              "axis": "z",
+              "wave": "sine",
+              "when": "always",
+              "phase": 0,
+              "property": "rotation",
+              "amplitude": 45,
+              "frequency": 0.08
+            }
+          ],
+          "animationAnchor": "left"
+        },
+        {
+          "id": "bascule_right",
+          "size": [5.5, 0.6, 4],
+          "shape": "box",
+          "anchor": "right",
+          "parent": "pier_right",
+          "material": "bascule_road",
+          "position": [-3, 2.5, 0],
+          "animation": [
+            {
+              "axis": "z",
+              "wave": "sine",
+              "when": "always",
+              "phase": 0,
+              "property": "rotation",
+              "amplitude": -45,
+              "frequency": 0.08
+            }
+          ],
+          "animationAnchor": "right"
+        },
+        {
+          "id": "road_approach_left",
+          "size": [10, 0.6, 4],
+          "shape": "box",
+          "anchor": "center",
+          "material": "bascule_road",
+          "position": [-15.5, 2.5, 0]
+        },
+        {
+          "id": "road_approach_right",
+          "size": [10, 0.6, 4],
+          "shape": "box",
+          "anchor": "center",
+          "material": "bascule_road",
+          "position": [15.5, 2.5, 0]
+        },
+        {
+          "id": "gothic_window_left",
+          "size": [0.2, 3, 1.5],
+          "shape": "wedge",
+          "anchor": "center",
+          "mirror": "z",
+          "parent": "tower_left",
+          "material": "window_glass",
+          "position": [0, 8, 3.51],
+          "geometryRotation": [90, 0, 0]
+        },
+        {
+          "id": "gothic_window_right",
+          "size": [0.2, 3, 1.5],
+          "shape": "wedge",
+          "anchor": "center",
+          "mirror": "z",
+          "parent": "tower_right",
+          "material": "window_glass",
+          "position": [0, 8, 3.51],
+          "geometryRotation": [90, 0, 0]
+        },
+        {
+          "id": "suspension_chain_left",
+          "size": [11, 6, 0.2],
+          "shape": "truss",
+          "anchor": "center",
+          "mirror": "z",
+          "parent": "tower_left",
+          "material": "victorian_steel",
+          "position": [-5.5, 8, 2],
+          "geometryRotation": [0, 0, 180]
+        },
+        {
+          "id": "suspension_chain_right",
+          "size": [11, 6, 0.2],
+          "shape": "truss",
+          "anchor": "center",
+          "mirror": "z",
+          "parent": "tower_right",
+          "material": "victorian_steel",
+          "position": [5.5, 8, 2]
+        }
+      ],
+      "scale": 1,
+      "category": "structure",
+      "materials": [
+        { "id": "river_stone", "color": "#a8a294", "finish": "matte" },
+        { "id": "gothic_sandstone", "color": "#e0d7c3", "finish": "matte" },
+        { "id": "victorian_steel", "color": "#4a5d6e", "finish": "metal" },
+        { "id": "bascule_road", "color": "#4e3629", "finish": "matte" },
+        { "id": "window_glass", "color": "#1b2c3a", "finish": "glass" }
+      ],
+      "placement": "water",
+      "instancePolicy": "unique"
+    },
+    {
+      "id": "thames_warehouse",
+      "name": "Victorian Thames Warehouse",
+      "notes": "1890s Thames brick warehouse with custom repeated window bays, stone foundations, arched river access, slate gable roof, and a protruding iron hoisting crane.",
+      "parts": [
+        {
+          "id": "foundation",
+          "size": [12, 3, 15],
+          "shape": "box",
+          "anchor": "bottom",
+          "material": "stone_base",
+          "position": [0, 0, 0]
+        },
+        {
+          "id": "river_arch",
+          "size": [2.8, 2.5, 3.2],
+          "shape": "cylinder",
+          "anchor": "bottom",
+          "mirror": "z",
+          "parent": "foundation",
+          "material": "warehouse_door",
+          "position": [6.05, 0, 0],
+          "geometryRotation": [0, 0, 90]
+        },
+        {
+          "id": "brick_body",
+          "size": [12, 11, 15],
+          "shape": "box",
+          "anchor": "bottom",
+          "parent": "foundation",
+          "attachTo": "top",
+          "material": "dark_brick",
+          "position": [0, 0, 0]
+        },
+        {
+          "id": "gables",
+          "size": [12, 4, 15],
+          "shape": "wedge",
+          "anchor": "bottom",
+          "parent": "brick_body",
+          "attachTo": "top",
+          "material": "dark_brick",
+          "position": [0, 0, 0]
+        },
+        {
+          "id": "roof_slope",
+          "size": [12.2, 4.1, 15.2],
+          "shape": "wedge",
+          "anchor": "bottom",
+          "parent": "gables",
+          "attachTo": "center",
+          "material": "slate_roof",
+          "position": [0, 0.1, 0]
+        },
+        {
+          "id": "front_windows",
+          "size": [0.1, 1.2, 0.8],
+          "shape": "box",
+          "anchor": "center",
+          "parent": "brick_body",
+          "repeat": { "mode": "linear", "step": [0, 2.5, 3], "count": 12 },
+          "material": "glass_window",
+          "position": [6.01, 1.5, -4.5]
+        },
+        {
+          "id": "side_windows_left",
+          "size": [0.8, 1.2, 0.1],
+          "shape": "box",
+          "anchor": "center",
+          "parent": "brick_body",
+          "repeat": { "mode": "linear", "step": [2.5, 2.5, 0], "count": 12 },
+          "material": "glass_window",
+          "position": [-3.5, 1.5, 7.51]
+        },
+        {
+          "id": "side_windows_right",
+          "size": [0.8, 1.2, 0.1],
+          "shape": "box",
+          "anchor": "center",
+          "parent": "brick_body",
+          "repeat": { "mode": "linear", "step": [2.5, 2.5, 0], "count": 12 },
+          "material": "glass_window",
+          "position": [-3.5, 1.5, -7.51]
+        },
+        {
+          "id": "hoisting_crane_beam",
+          "size": [3, 0.3, 0.3],
+          "shape": "box",
+          "anchor": "bottom",
+          "parent": "gables",
+          "material": "crane_iron",
+          "position": [5.5, 2.5, 0]
+        },
+        {
+          "id": "hoisting_crane_strut",
+          "size": [0.2, 2, 0.2],
+          "shape": "box",
+          "anchor": "center",
+          "parent": "hoisting_crane_beam",
+          "material": "crane_iron",
+          "position": [-1, -1, 0],
+          "rotation": [0, 0, 35]
+        },
+        {
+          "id": "hoisting_chain",
+          "size": [0.06, 3.5, 0.06],
+          "shape": "cylinder",
+          "anchor": "center",
+          "parent": "hoisting_crane_beam",
+          "material": "crane_iron",
+          "position": [1.3, -1.75, 0]
+        },
+        {
+          "id": "chimney_base",
+          "size": [1.2, 2.2, 1.2],
+          "shape": "box",
+          "anchor": "bottom",
+          "parent": "roof_slope",
+          "material": "dark_brick",
+          "position": [-3, 1.5, 3.5]
+        },
+        {
+          "id": "chimney_pots",
+          "size": [0.4, 0.6, 0.4],
+          "shape": "cylinder",
+          "anchor": "bottom",
+          "parent": "chimney_base",
+          "repeat": { "mode": "linear", "step": [0.5, 0, 0], "count": 2 },
+          "attachTo": "top",
+          "material": "stone_base",
+          "position": [0, 0, 0]
+        },
+        {
+          "id": "loading_hatch",
+          "size": [0.15, 2, 1.2],
+          "shape": "box",
+          "anchor": "center",
+          "parent": "brick_body",
+          "material": "warehouse_door",
+          "position": [6.02, 4, 0]
+        },
+        {
+          "id": "loading_hatch_upper",
+          "size": [0.15, 2, 1.2],
+          "shape": "box",
+          "anchor": "center",
+          "parent": "brick_body",
+          "material": "warehouse_door",
+          "position": [6.02, 8, 0]
+        },
+        {
+          "id": "cornice_trim",
+          "size": [12.2, 0.3, 15.2],
+          "shape": "box",
+          "anchor": "center",
+          "parent": "brick_body",
+          "attachTo": "top",
+          "material": "stone_base",
+          "position": [0, 0, 0]
+        }
+      ],
+      "category": "building",
+      "materials": [
+        { "id": "dark_brick", "color": "#63473b", "finish": "matte" },
+        { "id": "stone_base", "color": "#5c5c56", "finish": "matte" },
+        { "id": "slate_roof", "color": "#2d353b", "finish": "matte" },
+        { "id": "warehouse_door", "color": "#4a2a1a", "finish": "matte" },
+        { "id": "glass_window", "color": "#1a2a30", "finish": "glass" },
+        { "id": "crane_iron", "color": "#1c1c1c", "finish": "metal" }
+      ],
+      "placement": "ground",
+      "instancePolicy": "repeatable"
+    },
+    {
+      "id": "tall_masted_ship",
+      "name": "Victorian Tall Ship",
+      "notes": "Victorian commercial trading tall ship with three masts, highly recognizable angled bowsprit, structured cabin, and furled sails to clear low bridges.",
+      "parts": [
+        {
+          "id": "hull_main",
+          "size": [11, 2.5, 3.4],
+          "shape": "hull",
+          "anchor": "bottom",
+          "material": "hull_dark_wood",
+          "position": [0, 0, 0]
+        },
+        {
+          "id": "bowsprit",
+          "size": [0.25, 3.5, 0.25],
+          "shape": "cylinder",
+          "taper": 0.5,
+          "anchor": "bottom",
+          "parent": "hull_main",
+          "material": "mast_wood",
+          "position": [5.3, 1.8, 0],
+          "rotation": [0, 0, -68]
+        },
+        {
+          "id": "deck_surface",
+          "size": [9.5, 0.1, 3.2],
+          "shape": "box",
+          "anchor": "top",
+          "parent": "hull_main",
+          "material": "deck_light_wood",
+          "position": [-0.5, 2.45, 0]
+        },
+        {
+          "id": "cabin_structure",
+          "size": [2.2, 1, 2.4],
+          "shape": "box",
+          "anchor": "bottom",
+          "parent": "hull_main",
+          "material": "hull_dark_wood",
+          "position": [-3.5, 2.4, 0]
+        },
+        {
+          "id": "cabin_roof",
+          "size": [2.3, 0.15, 2.5],
+          "shape": "box",
+          "anchor": "bottom",
+          "parent": "cabin_structure",
+          "material": "deck_light_wood",
+          "position": [0, 1, 0]
+        },
+        {
+          "id": "cabin_window",
+          "size": [0.4, 0.4, 0.05],
+          "shape": "box",
+          "anchor": "center",
+          "mirror": "z",
+          "parent": "cabin_structure",
+          "material": "glass_window",
+          "position": [-0.4, 0.5, 1.21]
+        },
+        {
+          "id": "ship_wheel",
+          "size": [0.8, 0.08, 0.8],
+          "shape": "torus",
+          "anchor": "center",
+          "parent": "hull_main",
+          "material": "mast_wood",
+          "position": [-2, 2.8, 0],
+          "geometryRotation": [0, 90, 0]
+        },
+        {
+          "id": "wheel_stand",
+          "size": [0.15, 0.7, 0.15],
+          "shape": "cylinder",
+          "anchor": "bottom",
+          "parent": "hull_main",
+          "material": "metal_iron",
+          "position": [-2, 2.4, 0]
+        },
+        {
+          "id": "mast_fore",
+          "size": [0.35, 8.5, 0.35],
+          "shape": "cylinder",
+          "taper": 0.5,
+          "anchor": "bottom",
+          "parent": "hull_main",
+          "material": "mast_wood",
+          "position": [3, 2.4, 0]
+        },
+        {
+          "id": "yardarms_fore",
+          "size": [0.12, 3.5, 0.12],
+          "shape": "cylinder",
+          "anchor": "center",
+          "parent": "mast_fore",
+          "repeat": { "mode": "linear", "step": [0, 1.4, 0], "count": 3 },
+          "material": "mast_wood",
+          "position": [0, 5, 0],
+          "geometryRotation": [90, 0, 0]
+        },
+        {
+          "id": "sails_fore",
+          "size": [0.4, 3.4, 0.4],
+          "shape": "capsule",
+          "anchor": "center",
+          "parent": "mast_fore",
+          "repeat": { "mode": "linear", "step": [0, 1.4, 0], "count": 3 },
+          "material": "furled_sails",
+          "position": [0, 5, 0],
+          "geometryRotation": [90, 0, 0]
+        },
+        {
+          "id": "mast_main",
+          "size": [0.4, 9.5, 0.4],
+          "shape": "cylinder",
+          "taper": 0.5,
+          "anchor": "bottom",
+          "parent": "hull_main",
+          "material": "mast_wood",
+          "position": [0, 2.4, 0]
+        },
+        {
+          "id": "yardarms_main",
+          "size": [0.12, 4.2, 0.12],
+          "shape": "cylinder",
+          "anchor": "center",
+          "parent": "mast_main",
+          "repeat": { "mode": "linear", "step": [0, 1.5, 0], "count": 3 },
+          "material": "mast_wood",
+          "position": [0, 5.5, 0],
+          "geometryRotation": [90, 0, 0]
+        },
+        {
+          "id": "sails_main",
+          "size": [0.45, 4.1, 0.45],
+          "shape": "capsule",
+          "anchor": "center",
+          "parent": "mast_main",
+          "repeat": { "mode": "linear", "step": [0, 1.5, 0], "count": 3 },
+          "material": "furled_sails",
+          "position": [0, 5.5, 0],
+          "geometryRotation": [90, 0, 0]
+        },
+        {
+          "id": "mast_mizzen",
+          "size": [0.3, 7.5, 0.3],
+          "shape": "cylinder",
+          "taper": 0.5,
+          "anchor": "bottom",
+          "parent": "hull_main",
+          "material": "mast_wood",
+          "position": [-3, 2.4, 0]
+        },
+        {
+          "id": "yardarms_mizzen",
+          "size": [0.1, 2.8, 0.1],
+          "shape": "cylinder",
+          "anchor": "center",
+          "parent": "mast_mizzen",
+          "repeat": { "mode": "linear", "step": [0, 1.2, 0], "count": 3 },
+          "material": "mast_wood",
+          "position": [0, 4.5, 0],
+          "geometryRotation": [90, 0, 0]
+        },
+        {
+          "id": "sails_mizzen",
+          "size": [0.35, 2.7, 0.35],
+          "shape": "capsule",
+          "anchor": "center",
+          "parent": "mast_mizzen",
+          "repeat": { "mode": "linear", "step": [0, 1.2, 0], "count": 3 },
+          "material": "furled_sails",
+          "position": [0, 4.5, 0],
+          "geometryRotation": [90, 0, 0]
+        },
+        {
+          "id": "ship_stern_railing",
+          "size": [3.8, 0.3, 0.1],
+          "shape": "box",
+          "anchor": "bottom",
+          "mirror": "z",
+          "parent": "hull_main",
+          "material": "metal_iron",
+          "position": [-3.1, 2.4, 1.55]
+        }
+      ],
+      "scale": 1,
+      "category": "watercraft",
+      "materials": [
+        { "id": "hull_dark_wood", "color": "#3d2b1f", "finish": "matte" },
+        { "id": "deck_light_wood", "color": "#8c7355", "finish": "matte" },
+        { "id": "mast_wood", "color": "#6e5033", "finish": "matte" },
+        { "id": "furled_sails", "color": "#e0dacb", "finish": "cloth" },
+        { "id": "metal_iron", "color": "#2c2c2c", "finish": "metal" },
+        { "id": "glass_window", "color": "#aed8f2", "finish": "glass" }
+      ],
+      "placement": "water",
+      "instancePolicy": "repeatable"
+    },
+    {
+      "id": "horse_drawn_omnibus",
+      "name": "Victorian Horse-Drawn Omnibus",
+      "notes": "1894 London double-horse omnibus carriage with authentic blue and dark wood livery, high-set driver, spoked wheels, and walking draft horses.",
+      "parts": [
+        {
+          "id": "cabin",
+          "size": [3.2, 1.6, 1.4],
+          "shape": "box",
+          "anchor": "bottom",
+          "material": "carriage_body",
+          "position": [0, 0.9, 0]
+        },
+        {
+          "id": "cabin_roof",
+          "size": [3.2, 0.3, 1.4],
+          "shape": "dome",
+          "anchor": "bottom",
+          "parent": "cabin",
+          "attachTo": "top",
+          "material": "wood_trim",
+          "position": [0, 0, 0]
+        },
+        {
+          "id": "windows_side",
+          "size": [2.4, 0.6, 1.44],
+          "shape": "box",
+          "anchor": "center",
+          "parent": "cabin",
+          "material": "glass_window",
+          "position": [0, -0.4, 0]
+        },
+        {
+          "id": "boarding_steps",
+          "size": [0.6, 0.5, 0.8],
+          "shape": "wedge",
+          "anchor": "top",
+          "parent": "cabin",
+          "attachTo": "back",
+          "material": "wood_trim",
+          "position": [0, 0, 0],
+          "geometryRotation": [180, 0, 0]
+        },
+        {
+          "id": "driver_bench",
+          "size": [0.7, 0.6, 1.2],
+          "shape": "box",
+          "anchor": "bottom",
+          "parent": "cabin",
+          "attachTo": "front",
+          "material": "wood_trim",
+          "position": [0, 0, 0]
+        },
+        {
+          "id": "driver_body",
+          "size": [0.35, 0.6, 0.35],
+          "shape": "cylinder",
+          "anchor": "bottom",
+          "parent": "driver_bench",
+          "attachTo": "top",
+          "material": "driver_coat",
+          "position": [0.1, 0, 0]
+        },
+        {
+          "id": "driver_hat",
+          "size": [0.25, 0.2, 0.25],
+          "shape": "cylinder",
+          "anchor": "bottom",
+          "parent": "driver_body",
+          "attachTo": "top",
+          "material": "harness_black",
+          "position": [0, 0.15, 0]
+        },
+        {
+          "id": "front_axle",
+          "size": [0.15, 0.15, 1.6],
+          "shape": "cylinder",
+          "anchor": "center",
+          "parent": "cabin",
+          "material": "iron_metal",
+          "position": [1.1, -0.45, 0],
+          "geometryRotation": [90, 0, 0]
+        },
+        {
+          "id": "rear_axle",
+          "size": [0.15, 0.15, 1.6],
+          "shape": "cylinder",
+          "anchor": "center",
+          "parent": "cabin",
+          "material": "iron_metal",
+          "position": [-1.1, -0.3, 0],
+          "geometryRotation": [90, 0, 0]
+        },
+        {
+          "id": "front_wheel",
+          "size": [0.9, 0.12, 0.9],
+          "shape": "cylinder",
+          "taper": 1.25,
+          "anchor": "center",
+          "mirror": "z",
+          "parent": "front_axle",
+          "material": "wood_trim",
+          "position": [0, 0, 0],
+          "rotation": [0, 0, 0]
+        },
+        {
+          "id": "rear_wheel",
+          "size": [1.2, 0.12, 1.2],
+          "shape": "cylinder",
+          "taper": 1.25,
+          "anchor": "center",
+          "mirror": "z",
+          "parent": "rear_axle",
+          "material": "wood_trim",
+          "position": [0, 0, 0],
+          "rotation": [0, 0, 0]
+        },
+        {
+          "id": "carriage_shaft",
+          "size": [2.6, 0.1, 0.5],
+          "shape": "box",
+          "anchor": "center",
+          "parent": "cabin",
+          "material": "iron_metal",
+          "position": [1.9, -0.4, 0]
+        },
+        {
+          "id": "horse_torso",
+          "size": [0.6, 1.3, 0.6],
+          "shape": "capsule",
+          "taper": 1.25,
+          "anchor": "center",
+          "mirror": "z",
+          "parent": "carriage_shaft",
+          "material": "horse_hide",
+          "position": [0.6, 0.6, 0.45],
+          "rotation": [0, 0, 90]
+        },
+        {
+          "id": "horse_neck",
+          "size": [0.45, 0.7, 0.45],
+          "shape": "cylinder",
+          "anchor": "bottom",
+          "parent": "horse_torso",
+          "attachTo": "top",
+          "material": "horse_hide",
+          "position": [0, 0.6, 0],
+          "rotation": [0, 0, -35]
+        },
+        {
+          "id": "horse_head",
+          "size": [0.35, 0.6, 0.35],
+          "shape": "cone",
+          "anchor": "bottom",
+          "parent": "horse_neck",
+          "attachTo": "top",
+          "material": "horse_hide",
+          "position": [0, 0.5, 0],
+          "rotation": [0, 0, -55]
+        },
+        {
+          "id": "horse_harness",
+          "size": [0.8, 0.08, 0.8],
+          "shape": "torus",
+          "anchor": "center",
+          "parent": "horse_torso",
+          "material": "harness_black",
+          "position": [0, 0.2, 0],
+          "geometryRotation": [90, 0, 0]
+        },
+        {
+          "id": "horse_front_leg",
+          "size": [0.18, 0.7, 0.18],
+          "shape": "capsule",
+          "anchor": "top",
+          "parent": "horse_torso",
+          "material": "horse_hide",
+          "position": [0.2, 0.4, 0.15],
+          "animation": [
+            {
+              "axis": "z",
+              "wave": "sine",
+              "when": "moving",
+              "property": "rotation",
+              "alternate": true,
+              "amplitude": 25,
+              "frequency": 1.4
+            }
+          ],
+          "animationAnchor": "top"
+        },
+        {
+          "id": "horse_hind_leg",
+          "size": [0.18, 0.7, 0.18],
+          "shape": "capsule",
+          "anchor": "top",
+          "parent": "horse_torso",
+          "material": "horse_hide",
+          "position": [-0.2, -0.4, 0.15],
+          "animation": [
+            {
+              "axis": "z",
+              "wave": "sine",
+              "when": "moving",
+              "property": "rotation",
+              "alternate": true,
+              "amplitude": -25,
+              "frequency": 1.4
+            }
+          ],
+          "animationAnchor": "top"
+        }
+      ],
+      "scale": 1,
+      "category": "vehicle",
+      "materials": [
+        { "id": "carriage_body", "color": "#112e51", "finish": "satin" },
+        { "id": "wood_trim", "color": "#8c4f2b", "finish": "matte" },
+        { "id": "glass_window", "color": "#e0f2fe", "finish": "glass" },
+        { "id": "horse_hide", "color": "#523728", "finish": "matte" },
+        { "id": "harness_black", "color": "#111111", "finish": "matte" },
+        { "id": "driver_coat", "color": "#334155", "finish": "cloth" },
+        { "id": "iron_metal", "color": "#475569", "finish": "metal" }
+      ],
+      "placement": "ground",
+      "instancePolicy": "repeatable"
+    }
+  ],
+  "scenes": [
+    {
+      "kind": "diorama",
+      "camera": "eye_level",
+      "kicker": "June 1894",
+      "layout": "open",
+      "caption": "Engineers design a bridge that splits in two.",
+      "setting": "river",
+      "weather": "clear",
+      "duration": 5,
+      "elements": [
+        {
+          "role": "subject",
+          "count": 1,
+          "model": "tower_bridge_1894",
+          "motion": "idle",
+          "position": "center",
+          "formation": "single"
+        },
+        {
+          "role": "foreground",
+          "count": 2,
+          "model": "horse_drawn_omnibus",
+          "motion": "march",
+          "position": "center",
+          "formation": "line"
+        },
+        {
+          "role": "background",
+          "count": 8,
+          "model": "thames_warehouse",
+          "motion": "idle",
+          "position": "back",
+          "formation": "scatter"
+        }
+      ],
+      "shotSize": "medium",
+      "timeOfDay": "day"
+    },
+    {
+      "kind": "diorama",
+      "camera": "tracking",
+      "kicker": "The Bascules",
+      "layout": "open",
+      "caption": "Hydraulic power turns giant cogs to lift the road.",
+      "setting": "river",
+      "weather": "clear",
+      "duration": 5,
+      "elements": [
+        {
+          "role": "subject",
+          "count": 1,
+          "model": "tower_bridge_1894",
+          "motion": "wave",
+          "position": "center",
+          "formation": "single"
+        },
+        {
+          "role": "background",
+          "count": 6,
+          "model": "thames_warehouse",
+          "motion": "idle",
+          "position": "back",
+          "formation": "scatter"
+        }
+      ],
+      "shotSize": "close",
+      "timeOfDay": "day"
+    },
+    {
+      "kind": "diorama",
+      "camera": "pull_out",
+      "kicker": "Maximum Angle",
+      "layout": "open",
+      "caption": "The bridge reaches its angle in ninety seconds.",
+      "setting": "river",
+      "weather": "clear",
+      "duration": 5,
+      "elements": [
+        {
+          "role": "subject",
+          "count": 1,
+          "model": "tower_bridge_1894",
+          "motion": "idle",
+          "position": "center",
+          "formation": "single"
+        },
+        {
+          "role": "foreground",
+          "count": 1,
+          "model": "tall_masted_ship",
+          "motion": "sail",
+          "position": "front",
+          "formation": "single"
+        },
+        {
+          "role": "background",
+          "count": 8,
+          "model": "thames_warehouse",
+          "motion": "idle",
+          "position": "back",
+          "formation": "scatter"
+        }
+      ],
+      "shotSize": "wide",
+      "timeOfDay": "day"
+    },
+    {
+      "kind": "diorama",
+      "camera": "static",
+      "kicker": "River Access",
+      "layout": "open",
+      "caption": "Majestic tall ships pass easily into London.",
+      "setting": "river",
+      "weather": "clear",
+      "duration": 5,
+      "elements": [
+        {
+          "role": "subject",
+          "count": 1,
+          "model": "tall_masted_ship",
+          "motion": "sail",
+          "position": "center",
+          "formation": "single"
+        },
+        {
+          "role": "background",
+          "count": 1,
+          "model": "tower_bridge_1894",
+          "motion": "idle",
+          "position": "back",
+          "formation": "single"
+        },
+        {
+          "role": "background",
+          "count": 8,
+          "model": "thames_warehouse",
+          "motion": "idle",
+          "position": "back",
+          "formation": "scatter"
+        }
+      ],
+      "shotSize": "medium",
+      "timeOfDay": "day"
+    }
+  ],
+  "palette": { "accent": "#c4a484", "primary": "#4a3b32", "secondary": "#2b4c7e" },
+  "version": 2,
+  "factions": [{ "name": "Victorian London", "color": "#4a3b32" }],
+  "location": "London, England",
+  "subtitle": "The hydraulic mechanism behind an engineering marvel",
+  "dateLabel": "June 30, 1894",
+  "coordinates": { "lat": 51.5055, "lon": -0.0754 },
+  "presentation": "immersive",
+  "totalDuration": 20
+}

@@ -21,7 +21,9 @@ export const MODEL_LIMITS = {
   maxMaterials: 10,
   maxExpandedNodes: 240,
   maxCopiesPerPart: 64,
-  maxDepth: 6,
+  // Articulated hips, knees, shoulders, elbows and held tools need more than six levels.
+  // Expanded node and triangle caps independently bound rendering work.
+  maxDepth: 12,
   maxTriangles: 14_000,
   maxChannelsPerPart: 3,
   maxProfilePoints: 24,
@@ -53,6 +55,7 @@ export const SHAPES = [
   "hull",
   "extrusion",
   "lathe",
+  "truss",
   "group",
   // animated effect primitives (rendered procedurally, deterministic)
   "flag",
@@ -92,6 +95,8 @@ export type Axis = (typeof AXES)[number];
 
 /** Human-readable size semantics per shape (also embedded in prompts). */
 export const SHAPE_GUIDE: Record<Shape, string> = {
+  truss:
+    "Open rectangular lattice frame: size=[base x width,height,base z depth], taper=top/base width ratio (0.05–2), segments=3–8 vertical bays, optional beamWidth in metres. Four corner posts, horizontal rings and X braces; NEVER solid infill. Rotate to form horizontal bridge spans or crane booms.",
   box: "size=[width x, height y, depth z]",
   wedge: "triangular prism (gable roof / ramp); ridge runs along x; size=[length x, height y, base width z]",
   cylinder:
@@ -145,6 +150,13 @@ export const channelSchema = z.object({
   amplitude: z.number().min(-MODEL_LIMITS.maxSpinDegPerSec).max(MODEL_LIMITS.maxSpinDegPerSec),
   frequency: z.number().min(0).max(MODEL_LIMITS.maxFrequencyHz),
   phase: z.number().min(-360).max(360).optional(),
+  /** One-shot motion in normalized scene time, overriding the periodic wave. */
+  keyframes: z
+    .array(z.object({ at: z.number().min(0).max(1), value: z.number().min(-1).max(1) }))
+    .min(2)
+    .max(8)
+    .optional(),
+  interpolation: z.enum(["linear", "smooth", "hold"]).optional(),
   /** Mirrored / repeated copies alternate phase by 180° (walk cycles, oars). */
   alternate: z.boolean().optional(),
   when: z.enum(CHANNEL_WHEN).optional(),
@@ -172,9 +184,12 @@ export const partSchema = z.object({
   size: size3,
   position: vec3.optional(),
   rotation: rot3.optional(),
+  geometryRotation: rot3.optional(),
   anchor: z.enum(ANCHORS).optional(),
+  attachTo: z.enum(ANCHORS).optional(),
   segments: z.number().int().min(MODEL_LIMITS.minSegments).max(MODEL_LIMITS.maxSegments).optional(),
   taper: z.number().min(0).max(2).optional(),
+  beamWidth: dim.optional(),
   detail: z.number().int().min(0).max(1).optional(),
   profile: z
     .array(z.tuple([z.number().min(-1).max(1), z.number().min(-1).max(1)]))
@@ -184,6 +199,8 @@ export const partSchema = z.object({
   mirror: z.enum(AXES).optional(),
   repeat: repeatSchema.optional(),
   animation: z.array(channelSchema).max(MODEL_LIMITS.maxChannelsPerPart).optional(),
+  animationPivot: vec3.optional(),
+  animationAnchor: z.enum(ANCHORS).optional(),
 });
 
 export const modelDefinitionSchema = z
@@ -191,6 +208,7 @@ export const modelDefinitionSchema = z
     id: slug,
     name: z.string().min(1).max(48),
     category: z.enum(MODEL_CATEGORIES),
+    instancePolicy: z.enum(["unique", "repeatable"]).optional(),
     placement: z.enum(PLACEMENTS),
     scale: z.number().min(0.1).max(10).optional(),
     materials: z.array(materialSchema).min(1).max(MODEL_LIMITS.maxMaterials),
@@ -245,6 +263,8 @@ export function copiesOf(p: Pick<ModelPart, "mirror" | "repeat">): number {
 export function trianglesOf(p: ModelPart): number {
   const seg = p.segments ?? 8;
   switch (p.shape) {
+    case "truss":
+      return 12 * (8 + 12 * Math.max(3, Math.min(8, Math.round(seg))));
     case "box":
       return 12;
     case "wedge":
@@ -391,11 +411,18 @@ function normalizePart(raw: unknown, i: number, matIds: Set<string>, defaultMat:
   if (shape !== "group") part.material = matIds.has(mat) ? mat : defaultMat;
   if (p.position !== undefined)
     part.position = arr3(p.position, -MODEL_LIMITS.maxOffset, MODEL_LIMITS.maxOffset, [0, 0, 0]);
+  if (p.animationAnchor !== undefined) part.animationAnchor = pickEnum(ANCHORS, p.animationAnchor, "center");
+  if (p.animationPivot !== undefined)
+    part.animationPivot = arr3(p.animationPivot, -MODEL_LIMITS.maxOffset, MODEL_LIMITS.maxOffset, [0, 0, 0]);
   if (p.rotation !== undefined) part.rotation = arr3(p.rotation, -720, 720, [0, 0, 0]);
+  if (p.geometryRotation !== undefined) part.geometryRotation = arr3(p.geometryRotation, -720, 720, [0, 0, 0]);
   if (p.anchor !== undefined) part.anchor = pickEnum(ANCHORS, p.anchor, "center");
+  if (p.attachTo !== undefined && p.attachTo !== "none") part.attachTo = pickEnum(ANCHORS, p.attachTo, "center");
   if (p.segments !== undefined)
     part.segments = Math.round(n(p.segments, MODEL_LIMITS.minSegments, MODEL_LIMITS.maxSegments, 8));
   if (p.taper !== undefined) part.taper = n(p.taper, 0, 2, 1);
+  if (p.beamWidth !== undefined)
+    part.beamWidth = n(p.beamWidth, MODEL_LIMITS.minDimension, MODEL_LIMITS.maxDimension, 0.05);
   if (p.detail !== undefined) part.detail = n(p.detail, 0, 1, 0) >= 0.5 ? 1 : 0;
   if (Array.isArray(p.profile)) {
     const prof = p.profile
@@ -446,6 +473,18 @@ function normalizePart(raw: unknown, i: number, matIds: Set<string>, defaultMat:
           amplitude: n(c.amplitude, -cap, cap, 0),
           frequency: n(c.frequency, 0, MODEL_LIMITS.maxFrequencyHz, 1),
         };
+        if (Array.isArray(c.keyframes)) {
+          const keys = new Map<number, number>();
+          for (const raw of c.keyframes.slice(0, 8)) {
+            const k = o(raw);
+            if (!Number.isFinite(Number(k.at)) || !Number.isFinite(Number(k.value))) continue;
+            keys.set(n(k.at, 0, 1, 0), n(k.value, -1, 1, 0));
+          }
+          if (keys.size >= 2) {
+            out.keyframes = [...keys].sort((a, b) => a[0] - b[0]).map(([at, value]) => ({ at, value }));
+            out.interpolation = pickEnum(["linear", "smooth", "hold"] as const, c.interpolation, "smooth");
+          }
+        }
         if (c.phase !== undefined) out.phase = n(c.phase, -360, 360, 0);
         if (c.alternate !== undefined) out.alternate = !!c.alternate;
         if (c.when !== undefined) out.when = pickEnum(CHANNEL_WHEN, c.when, "always");
@@ -463,7 +502,11 @@ function normalizePart(raw: unknown, i: number, matIds: Set<string>, defaultMat:
  * and trims trailing parts until complexity limits hold. Throws if nothing
  * renderable remains.
  */
-export function normalizeModelDefinition(raw: unknown, fallbackId = "model"): ModelDefinition {
+export function normalizeModelDefinition(
+  raw: unknown,
+  fallbackId = "model",
+  options: { requireComplete?: boolean } = {},
+): ModelDefinition {
   const r = o(raw);
   const materials: ModelMaterial[] = [];
   const seenMat = new Set<string>();
@@ -516,8 +559,33 @@ export function normalizeModelDefinition(raw: unknown, fallbackId = "model"): Mo
     }
   }
 
-  // Trim from the end (children first) until within bounds.
-  let trimmed = parts;
+  // Remove only over-deep branches. Trimming the tail for a depth violation
+  // could discard every later sibling (e.g. legs after a deeply nested hat).
+  // Keep surviving transforms intact rather than reparenting visible geometry.
+  let trimmed = parts.filter((p) => {
+    let depth = 1;
+    let parent = p.parent;
+    while (parent) {
+      depth++;
+      parent = byId.get(parent)?.parent;
+    }
+    return depth <= MODEL_LIMITS.maxDepth;
+  });
+  // Lower tessellation before removing structural parts. Repeated trusses can
+  // consume the triangle budget even with very few declarative parts.
+  while (analyzeModel({ parts: trimmed }).triangles > MODEL_LIMITS.maxTriangles) {
+    let changed = false;
+    for (const part of trimmed) {
+      const segments = part.segments ?? 8;
+      if (segments <= MODEL_LIMITS.minSegments) continue;
+      const reduced = { ...part, segments: segments - 1 };
+      if (trianglesOf(reduced) >= trianglesOf(part)) continue;
+      part.segments = reduced.segments;
+      changed = true;
+    }
+    if (!changed) break;
+  }
+  // Trim from the end (children first) for aggregate complexity limits.
   for (let guard = 0; guard < MODEL_LIMITS.maxParts; guard++) {
     const a = analyzeModel({ parts: trimmed });
     if (
@@ -540,6 +608,13 @@ export function normalizeModelDefinition(raw: unknown, fallbackId = "model"): Mo
     trimmed = trimmed.filter((p) => !dropIds.has(p.id));
     if (!trimmed.length) break;
   }
+  if (options.requireComplete && trimmed.length !== (Array.isArray(r.parts) ? r.parts.length : 0))
+    throw new Error(
+      `Geometry budget would remove structural parts (${parts.length} requested, ${trimmed.length} retained; ` +
+        `${analyzeModel({ parts }).triangles} triangles, ${analyzeModel({ parts }).nodes} expanded nodes, depth ${analyzeModel({ parts }).depth}). ` +
+        `Limits: ${MODEL_LIMITS.maxTriangles} triangles, ${MODEL_LIMITS.maxExpandedNodes} nodes, depth ${MODEL_LIMITS.maxDepth}. ` +
+        "Rebuild the complete silhouette with shallow independent roots and fewer repeats. Children inherit ALL parent copies; never repeat a child again to match repeated parents.",
+    );
   if (!trimmed.some((p) => p.shape !== "group"))
     throw new Error(`model ${String(r.id ?? fallbackId)} has no renderable parts`);
 
@@ -555,6 +630,7 @@ export function normalizeModelDefinition(raw: unknown, fallbackId = "model"): Mo
     materials,
     parts: trimmed,
   };
+  if (r.instancePolicy === "unique" || r.instancePolicy === "repeatable") def.instancePolicy = r.instancePolicy;
   if (r.scale !== undefined) def.scale = n(r.scale, 0.1, 10, 1);
   if (typeof r.notes === "string" && r.notes.trim()) def.notes = r.notes.trim().slice(0, 240);
   return modelDefinitionSchema.parse(def);
@@ -625,15 +701,58 @@ export function geminiModelDefinitionJsonSchema() {
           type: "object",
           properties: {
             id: slugS("Part id"),
-            parent: slugS("Parent part id (omit for root)"),
+            parent: {
+              type: "string",
+              description:
+                "Parent part id, or empty string for a root. Child positions are LOCAL to this parent; root positions are absolute model coordinates.",
+            },
             shape: en(SHAPES, "Primitive"),
             material: slugS("Material id"),
             size: v3(0, MODEL_LIMITS.maxDimension, "Metres; meaning depends on shape"),
             position: v3(-MODEL_LIMITS.maxOffset, MODEL_LIMITS.maxOffset, "Offset from parent origin (metres)"),
-            rotation: v3(-720, 720, "Euler degrees XYZ"),
-            anchor: en(ANCHORS, "Which face of the part sits at its origin (top = hangs down, for limbs)"),
+            rotation: v3(
+              -720,
+              720,
+              "Rig rotation in Euler degrees XYZ; also rotates ALL children. Use geometryRotation to orient only the primitive.",
+            ),
+            geometryRotation: {
+              type: "array",
+              minItems: 3,
+              maxItems: 3,
+              items: { type: "string", enum: ["-180", "-90", "0", "90", "180"] },
+              description:
+                "Only reorient a primitive's manufacturing axis, e.g. [0,0,90] makes a vertical capsule horizontal WITHOUT rotating children. Use [0,0,0] normally. Use rotation, NOT this field, for bent limbs, head poses and angled joints. Animation axes remain in the unrotated rig frame.",
+            },
+            animationAnchor: en(
+              ANCHORS,
+              "Preferred hinge: rotate about THIS primitive's named face center. Computed after geometryRotation and anchor, so top always means the actual top contact. Overrides numeric animationPivot. Use top for hanging limbs, center for wheels; omit for non-animated parts.",
+            ),
+            animationPivot: v3(
+              -MODEL_LIMITS.maxOffset,
+              MODEL_LIMITS.maxOffset,
+              "Local joint point for rotation/scale animation, relative to this part origin. Does not move rest geometry. For a centered vertical limb, its top joint is [0, size.y/2, 0].",
+            ),
+            anchor: en(
+              ANCHORS,
+              "Which face of THIS part sits at its origin. Default center, including lathe. Top hangs down; bottom extends up.",
+            ),
+            attachTo: en(
+              ["none", ...ANCHORS],
+              "Connect THIS geometry to a face of the parent primitive. Position slides along that face; its normal-axis component is ignored to guarantee contact. Example: neck parent=torso, attachTo=top, anchor=bottom, position=[0,0,0]. Use none for roots, group parents, or deliberately separated parts. Use an actual face for physically connected anatomy; never bury a neck inside a torso.",
+            ),
+            beamWidth: {
+              type: "number",
+              description: "Truss beam thickness in metres; optional, defaults to 3.5% of base width.",
+            },
             segments: { type: "integer", minimum: MODEL_LIMITS.minSegments, maximum: MODEL_LIMITS.maxSegments },
-            taper: num(0, 2, "cylinder top/bottom radius ratio"),
+            // Some Gemini structured decoders loop on an unconstrained tiny
+            // exponent here. Decimal strings bound that choice; normalization
+            // converts them to the canonical numeric taper used by the compiler.
+            taper: {
+              type: "string",
+              enum: ["0", "0.25", "0.5", "0.75", "1", "1.25", "1.5", "2"],
+              description: "Cylinder top/bottom radius ratio: 1 = straight walls, 0 = cone. Parsed as a number.",
+            },
             detail: { type: "integer", minimum: 0, maximum: 1 },
             profile: {
               type: "array",
@@ -668,6 +787,19 @@ export function geminiModelDefinitionJsonSchema() {
                   amplitude: num(-MODEL_LIMITS.maxSpinDegPerSec, MODEL_LIMITS.maxSpinDegPerSec, "deg | m | ratio"),
                   frequency: num(0, MODEL_LIMITS.maxFrequencyHz, "Hz"),
                   phase: num(-360, 360),
+                  keyframes: {
+                    type: "array",
+                    minItems: 2,
+                    maxItems: 8,
+                    description:
+                      "Optional one-shot motion across scene progress 0–1. Values -1–1 multiply amplitude; keys override wave/frequency/phase and hold their endpoints. Use for purposeful changes instead of repeated oscillation.",
+                    items: {
+                      type: "object",
+                      properties: { at: num(0, 1), value: num(-1, 1) },
+                      required: ["at", "value"],
+                    },
+                  },
+                  interpolation: en(["linear", "smooth", "hold"], "Interpolation between keyframes; smooth by default"),
                   alternate: { type: "boolean", description: "mirrored/repeated copies offset by 180°" },
                   when: en(CHANNEL_WHEN, "moving = only while the element marches/sails/flies"),
                 },
@@ -675,7 +807,7 @@ export function geminiModelDefinitionJsonSchema() {
               },
             },
           },
-          required: ["id", "shape", "size", "material"],
+          required: ["id", "parent", "shape", "size", "material", "position", "anchor", "attachTo"],
         },
       },
     },
@@ -716,13 +848,17 @@ ${Object.entries(SHAPE_GUIDE)
   .join("\n")}
 Rules:
   - Silhouette first: block the biggest masses, then 2-4 identifying details (era cues). Skip tiny details < 5 cm.
-  - Use parent/child parts for anything that moves together; children inherit parent transforms.
-  - Use mirror:"z" for left/right pairs and repeat (linear/radial) for rows of columns, windows, oars, spokes, crenellations.
+  - Distinguish geometryRotation (only orients this primitive) from rotation (rotates this part AND every child). Orient a horizontal cylinder/capsule torso with geometryRotation, keeping its frame upright for neck and legs. Use rotation for intentional rig poses.
+  - Use parent/child parts for anything that moves together; children inherit parent transforms. Explicitly set parent on EVERY part: empty string means world-space root. A head positioned near [0, 0.3, 0] must name its torso as parent; without that parent it sits at ground level. Never mix local coordinates with an empty parent. Emit parents before children.
+  - Every primitive, including lathe, is CENTERED unless anchor is explicit. Profile heights do not change this. For connected body parts use explicit attachTo: neck attaches to torso top with anchor bottom; head attaches to neck top with anchor bottom; a hanging limb attaches at its parent's bottom with anchor top. position then slides along that face; its perpendicular component is ignored so the surfaces meet. Do not add the full parent height. attachTo uses the parent primitive only, never descendants. For group parents use attachTo none and explicit local coordinates instead. Shoulder pivots must be at shoulder height: for a bottom-anchored torso, near size.y, not size.y/2. A top-anchored hanging limb hinges at local y=0; a centered limb hinges at size.y/2.
+  - Use mirror:"z" for left/right pairs and repeat (linear/radial) for rows of columns, windows, oars, spokes, crenellations. A mirrored pair must have nonzero position on its mirrored axis, otherwise both copies overlap.
+  - A linear repeat starts at position, not at its center. To center N copies around a point, compute the first position as center minus step*(N-1)/2 on each axis, and emit the resulting numeric coordinates. Check BOTH end copies against their supporting surface; never leave struts, windows or wheels floating beyond it.
   - Keep total expanded parts <= ${MODEL_LIMITS.maxExpandedNodes} and triangles <= ${MODEL_LIMITS.maxTriangles}; low segments (5-8) look best.
   - Materials: muted, historically plausible colours; mark faction-coloured materials tint:true so scenes can recolour them.
     finish "emissive" for flames/lamps, nightGlow for windows, "glass" for canopies/windows, "metal" for armour/guns.
-  - Animation channels are optional, deterministic waves on a part's LOCAL axis around the part origin:
-    walk cycles (rotation x on hip/shoulder pivots, when:"moving", alternate:true), spinning propellers/wheels
+  - Animation channels are optional, deterministic motion on a part's LOCAL axis. Use bounded keyframes [{at:0,value:0},{at:1,value:1}] for one-shot changes over normalized scene progress; values multiply amplitude and hold at endpoints. Choose linear, smooth or hold interpolation. Use waves for repeating actions. Keyframes override wave, frequency and phase; alternate reverses their sign in mirrored/repeated copies. Prefer animationAnchor to specify a hinge at a primitive face (top for a hanging limb, center for a wheel), computed after anchoring; this avoids coordinate arithmetic. animationPivot can alternatively specify a numeric local hinge point without moving the rest geometry; for a centered vertical limb use [0,size.y/2,0] to rotate at its top. Articulated movement needs at least two independently rotating limb joints (or a mirrored pair with alternate phase), never only a bobbing torso.
+    Supported waves:
+    walk cycles (rotation z on hip/shoulder pivots, when:"moving", alternate:true), spinning propellers/wheels
     (wave "spin", amplitude in deg/sec), waving flags (shape "flag"), bobbing (position y sine), flicker (scale pulse).
   - Never depict gore, injuries, weapons in use against people, hate symbols or real-person likeness caricatures.
 `.trim(),

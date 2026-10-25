@@ -17,5 +17,17 @@ export default defineConfig([
       "@next/next/no-assign-module-variable": "off",
     },
   },
-  globalIgnores([".next/**", ".next-verify/**", "out/**", "build/**", "next-env.d.ts", "lib/lowpoly/landmask.ts"]),
+  globalIgnores([
+    ".next/**",
+    ".next-*/**",
+    ".builds/**",
+    "tmp/**",
+    "tools/visual-harness/dist/**",
+    "work/**",
+    "outputs/**",
+    "out/**",
+    "build/**",
+    "next-env.d.ts",
+    "lib/lowpoly/landmask.ts",
+  ]),
 ]);

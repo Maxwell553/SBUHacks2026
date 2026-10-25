@@ -21,6 +21,8 @@ npm run build           # production build
 npm run test:audit      # DB-backed moderation audit checks (add -- --live for Gemini)
 npm run test:backend    # HTTP integration suite against a running local server
 npm run format          # prettier --write .
+npm run visual:build && npm run visual:serve   # renderer visual QA harness (tools/visual-harness)
+npm run bench:builder -- --films               # live builder-model A/B (costs Gemini calls)
 ```
 
 Run `npm run check` before handing work back. Run the DB and live suites when you touch `lib/server/`, `app/api/` or `db/`.
@@ -39,6 +41,8 @@ Run `npm run check` before handing work back. Run the DB and live suites when yo
 | `lib/typography/`, `lib/lowpoly/landmask.ts`, `public/fonts/` | Generated assets. Regenerate via `npm run assets:*`; never hand-edit                                           |
 | `db/schema.sql`                                               | Idempotent schema (`npm run db:migrate`)                                                                       |
 | `docs/`                                                       | Architecture, API, renderer, safety, design, deployment                                                        |
+| `tools/visual-harness/`                                       | Browser harness and curated fixtures for renderer visual QA (contact sheets, collision audit, timings)         |
+| `tmp/`                                                        | Git-ignored scratch: QA probes, benchmark runs, contact sheets (see `tmp/README.md`)                           |
 
 ## Rules
 
@@ -57,7 +61,7 @@ Run `npm run check` before handing work back. Run the DB and live suites when yo
 - Error boundaries receive `{ error, retry }` (not `reset`). `global-error.tsx` must render its own `<html>` and `<body>`.
 - `next lint` is gone. ESLint runs via `eslint.config.mjs` (flat config, `eslint-config-next`).
 - Turbopack's persistent dev cache can serve stale server modules after heavy edits. Stop the server and delete `.next/`.
-- To build while another process serves `.next`, use `NEXT_DIST_DIR=.next-verify npm run build`, and serve it on another port with `NEXT_DIST_DIR=.next-verify npx next start -p 3100`.
+- To build while another process serves `.next`, build into `.builds/<name>`: `NEXT_DIST_DIR=.builds/verify npm run build`, then serve it on another port with `NEXT_DIST_DIR=.builds/verify npx next start -p 3100`. Keep every side build under `.builds/` (git-ignored); retired ones go in `.builds/archive/` or are deleted.
 - `next/og` (`app/opengraph-image.tsx`) has its own font parser. Confirm a production build after changing fonts there.
 
 ## Working alongside other agents

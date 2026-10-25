@@ -52,9 +52,9 @@ export default function PrivacyPage() {
     >
       <h2 id="who">1. Who we are</h2>
       <p>
-        This policy explains how {SITE.legalEntity} (“Polyhistor”, “we”, “us”) handles personal information when you use
-        the Polyhistor website and services (the “Service”). We are the controller of the personal information described
-        here. Contact details are at the end of this policy.
+        This policy explains how {SITE.legalEntity} (“PolyChronicle”, “we”, “us”) handles personal information when you
+        use the PolyChronicle website and services (the “Service”). We are the controller of the personal information
+        described here. Contact details are at the end of this policy.
       </p>
 
       <h2 id="collect">2. What we collect</h2>
@@ -103,8 +103,8 @@ export default function PrivacyPage() {
           <tr>
             <td>Saved videos</td>
             <td>
-              The animated GIF and still image created in your browser and uploaded to your library, with their size and
-              a checksum.
+              The animated video (or legacy GIF) and still image created in your browser and uploaded to your library,
+              with their size and a checksum.
             </td>
           </tr>
           <tr>
@@ -188,8 +188,8 @@ export default function PrivacyPage() {
 
       <h2 id="sharing">6. Who we share it with</h2>
       <p>
-        We share personal information only with service providers who help us run Polyhistor, under contracts that limit
-        their use of it:
+        We share personal information only with service providers who help us run PolyChronicle, under contracts that
+        limit their use of it:
       </p>
       <table>
         <thead>
@@ -220,6 +220,12 @@ export default function PrivacyPage() {
         We may also disclose information if required by law, to protect the rights, safety and property of our users or
         others, or as part of a merger or acquisition (with notice to you). We never share your videos publicly; your
         library is private to your account unless you download and share a video yourself.
+      </p>
+
+      <p>
+        Your library contains completed videos only. Failed or declined attempts are discarded. If you leave before a
+        video finishes, we attempt to discard it immediately; abandoned temporary records are also removed on your next
+        library visit once they are over 30 minutes old. Safety-check fingerprints remain until account deletion.
       </p>
 
       <h2 id="cookies">7. Cookies</h2>
@@ -269,7 +275,7 @@ export default function PrivacyPage() {
       <ul>
         <li>
           <strong>Access and copies:</strong> your library shows your questions, sources and videos, and you can
-          download each GIF.
+          download each saved video.
         </li>
         <li>
           <strong>Delete:</strong> delete individual videos from your library, or delete your whole account from your{" "}

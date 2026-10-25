@@ -9,7 +9,7 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
-  // Lets a verification build run beside a live `next start` (NEXT_DIST_DIR=.next-verify).
+  // Lets a side build run beside a live `next start` (NEXT_DIST_DIR=.builds/<name>).
   ...(process.env.NEXT_DIST_DIR ? { distDir: process.env.NEXT_DIST_DIR } : {}),
   reactStrictMode: true,
   poweredByHeader: false,

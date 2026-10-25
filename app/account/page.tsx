@@ -7,7 +7,7 @@ export const metadata: Metadata = { title: "Your account" };
 export default async function AccountPage() {
   const user = await requireViewer("/account");
   return (
-    <div className="container" style={{ paddingBottom: 96 }}>
+    <div className="container" style={{ paddingBottom: 48 }}>
       <div className="page-head">
         <div>
           <span className="eyebrow">Account</span>

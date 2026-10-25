@@ -1,0 +1,1071 @@
+{
+  "version": 2,
+  "presentation": "immersive",
+  "title": "The Gutenberg Press",
+  "subtitle": "The birth of movable type in Europe.",
+  "dateLabel": "c. 1455",
+  "location": "Mainz, Germany",
+  "coordinates": { "lat": 49.9929, "lon": 8.2732 },
+  "totalDuration": 40,
+  "seed": 1071489594,
+  "palette": { "primary": "#5c4033", "secondary": "#2f4f4f", "accent": "#f5deb3" },
+  "factions": [{ "name": "Printers", "color": "#8b4513" }],
+  "models": [
+    {
+      "id": "gutenberg_workshop_room",
+      "name": "15th-Century German Printing Workshop",
+      "category": "building",
+      "placement": "ground",
+      "materials": [
+        { "id": "floor_wood", "color": "#7a5c3d", "finish": "matte" },
+        { "id": "stone_wall", "color": "#5c554e", "finish": "matte" },
+        { "id": "plaster_wall", "color": "#e3dac9", "finish": "matte" },
+        { "id": "timber_frame", "color": "#3d2a1a", "finish": "matte" },
+        { "id": "leaded_glass", "color": "#a1b5a9", "finish": "glass" },
+        { "id": "shelf_wood", "color": "#4e3621", "finish": "satin" }
+      ],
+      "parts": [
+        {
+          "id": "floor",
+          "shape": "box",
+          "material": "floor_wood",
+          "size": [10, 0.2, 14],
+          "position": [0, 0, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "back_wall",
+          "shape": "box",
+          "material": "plaster_wall",
+          "size": [0.4, 5, 14],
+          "position": [-4.8, 0, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "left_wall",
+          "shape": "box",
+          "material": "stone_wall",
+          "size": [10, 5, 0.4],
+          "position": [0, 0, -6.8],
+          "anchor": "bottom"
+        },
+        {
+          "id": "right_wall",
+          "shape": "box",
+          "material": "plaster_wall",
+          "size": [10, 5, 0.4],
+          "position": [0, 0, 6.8],
+          "anchor": "bottom"
+        },
+        {
+          "id": "stone_chimney",
+          "shape": "box",
+          "material": "stone_wall",
+          "size": [1.5, 5, 1.5],
+          "position": [-3.8, 0, -5.5],
+          "anchor": "bottom"
+        },
+        {
+          "id": "wood_beams_back",
+          "shape": "box",
+          "material": "timber_frame",
+          "size": [0.1, 0.2, 14],
+          "position": [-4.55, 4.8, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "wood_columns_back",
+          "shape": "box",
+          "material": "timber_frame",
+          "size": [0.15, 4.8, 0.15],
+          "position": [-4.55, 0, 0],
+          "anchor": "bottom",
+          "repeat": { "mode": "linear", "count": 4, "step": [0, 0, 4.2] }
+        },
+        {
+          "id": "window_frame",
+          "shape": "box",
+          "material": "timber_frame",
+          "size": [0.15, 2, 1.6],
+          "position": [-4.6, 1.8, -2],
+          "anchor": "bottom",
+          "repeat": { "mode": "linear", "count": 2, "step": [0, 0, 4] }
+        },
+        {
+          "id": "window_glass",
+          "shape": "box",
+          "material": "leaded_glass",
+          "size": [0.02, 1.8, 1.4],
+          "position": [-4.6, 1.9, -2],
+          "anchor": "bottom",
+          "repeat": { "mode": "linear", "count": 2, "step": [0, 0, 4] }
+        },
+        {
+          "id": "right_wall_timbers",
+          "shape": "box",
+          "material": "timber_frame",
+          "size": [9.6, 0.15, 0.1],
+          "position": [0, 2.4, 6.55],
+          "anchor": "center"
+        },
+        {
+          "id": "right_wall_verticals",
+          "shape": "box",
+          "material": "timber_frame",
+          "size": [0.15, 4.8, 0.1],
+          "position": [-4.5, 0, 6.55],
+          "anchor": "bottom",
+          "repeat": { "mode": "linear", "count": 4, "step": [3, 0, 0] }
+        },
+        {
+          "id": "main_ceiling_beam",
+          "shape": "box",
+          "material": "timber_frame",
+          "size": [10, 0.3, 0.3],
+          "position": [0, 4.7, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "cross_beams",
+          "shape": "box",
+          "material": "timber_frame",
+          "size": [0.15, 0.2, 13.6],
+          "position": [-3.5, 4.8, 0],
+          "anchor": "bottom",
+          "repeat": { "mode": "linear", "count": 5, "step": [1.8, 0, 0] }
+        },
+        {
+          "id": "drying_rack_shelf",
+          "shape": "box",
+          "material": "shelf_wood",
+          "size": [0.6, 0.05, 5],
+          "position": [3.5, 3.8, 4],
+          "anchor": "bottom"
+        },
+        {
+          "id": "drying_rack_supports",
+          "shape": "box",
+          "material": "timber_frame",
+          "size": [0.05, 1, 0.05],
+          "position": [3.5, 3.8, 1.6],
+          "anchor": "bottom",
+          "repeat": { "mode": "linear", "count": 2, "step": [0, 0, 4.8] }
+        },
+        {
+          "id": "storage_shelves",
+          "shape": "box",
+          "material": "shelf_wood",
+          "size": [0.8, 2.2, 2.4],
+          "position": [2, 0, -6.2],
+          "anchor": "bottom"
+        },
+        {
+          "id": "storage_shelf_dividers",
+          "shape": "box",
+          "material": "timber_frame",
+          "size": [0.78, 0.04, 2.3],
+          "position": [2, 0.7, -6.2],
+          "anchor": "bottom",
+          "repeat": { "mode": "linear", "count": 3, "step": [0, 0.7, 0] }
+        }
+      ],
+      "notes": "1450s Mainz-style workshop interior. Traditional timber frame architecture, custom leaded windows, open front, heavy structural ceiling beams and stone walls."
+    },
+    {
+      "id": "wooden_printing_press",
+      "name": "Gutenberg Wooden Screw Press",
+      "category": "structure",
+      "placement": "ground",
+      "materials": [
+        { "id": "timber_dark", "color": "#4e3629", "finish": "matte" },
+        { "id": "timber_light", "color": "#8a6d51", "finish": "matte" },
+        { "id": "iron_black", "color": "#303030", "finish": "metal" },
+        { "id": "brass", "color": "#d4af37", "finish": "metal" },
+        { "id": "paper_white", "color": "#f4edd4", "finish": "cloth" }
+      ],
+      "parts": [
+        {
+          "id": "frame_base",
+          "shape": "box",
+          "material": "timber_dark",
+          "size": [1.6, 0.12, 1.1],
+          "position": [0, 0, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "cheek_right",
+          "shape": "box",
+          "material": "timber_dark",
+          "size": [0.24, 2.3, 0.18],
+          "position": [0, 0.12, 0.46],
+          "anchor": "bottom"
+        },
+        {
+          "id": "cheek_left",
+          "shape": "box",
+          "material": "timber_dark",
+          "size": [0.24, 2.3, 0.18],
+          "position": [0, 0.12, -0.46],
+          "anchor": "bottom"
+        },
+        {
+          "id": "cap_beam",
+          "shape": "box",
+          "material": "timber_dark",
+          "size": [0.3, 0.22, 1.3],
+          "position": [0, 2.3, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "hose_guide",
+          "shape": "box",
+          "material": "timber_dark",
+          "size": [0.28, 0.15, 1.1],
+          "position": [0, 1.3, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "rails",
+          "shape": "box",
+          "material": "timber_dark",
+          "size": [1.5, 0.08, 0.06],
+          "position": [0, 0.85, 0.3],
+          "anchor": "bottom",
+          "mirror": "z"
+        },
+        {
+          "id": "rail_supports",
+          "shape": "box",
+          "material": "timber_dark",
+          "size": [0.1, 0.73, 0.08],
+          "position": [0.6, 0.12, 0.3],
+          "anchor": "bottom",
+          "mirror": "z"
+        },
+        {
+          "id": "gallows_support",
+          "shape": "box",
+          "material": "timber_dark",
+          "size": [0.1, 0.85, 0.7],
+          "position": [0.7, 0, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "screw_spindle",
+          "shape": "cylinder",
+          "material": "timber_light",
+          "size": [0.12, 0.8, 0.12],
+          "position": [0, 1.4, 0],
+          "anchor": "center",
+          "animation": [
+            {
+              "property": "rotation",
+              "axis": "y",
+              "wave": "sine",
+              "amplitude": 45,
+              "frequency": 0.55,
+              "when": "always"
+            }
+          ]
+        },
+        {
+          "id": "hose_housing",
+          "shape": "box",
+          "material": "iron_black",
+          "size": [0.18, 0.3, 0.18],
+          "position": [0, 1.1, 0],
+          "anchor": "center",
+          "animation": [
+            {
+              "property": "position",
+              "axis": "y",
+              "wave": "sine",
+              "amplitude": -0.08,
+              "frequency": 0.55,
+              "when": "always"
+            }
+          ]
+        },
+        {
+          "id": "platen",
+          "parent": "hose_housing",
+          "shape": "box",
+          "material": "timber_dark",
+          "size": [0.42, 0.06, 0.52],
+          "position": [0, -0.18, 0],
+          "anchor": "center"
+        },
+        {
+          "id": "brass_collar",
+          "parent": "hose_housing",
+          "shape": "cylinder",
+          "material": "brass",
+          "size": [0.14, 0.04, 0.14],
+          "position": [0, 0.17, 0],
+          "anchor": "center"
+        },
+        {
+          "id": "lever_arm",
+          "shape": "cylinder",
+          "material": "timber_light",
+          "size": [0.06, 0.85, 0.06],
+          "position": [0, 0.2, 0.05],
+          "rotation": [90, 0, 0],
+          "anchor": "bottom",
+          "segments": 5,
+          "taper": 0.75
+        },
+        {
+          "id": "lever_handle",
+          "parent": "lever_arm",
+          "shape": "cylinder",
+          "material": "timber_dark",
+          "size": [0.09, 0.2, 0.09],
+          "position": [0, 0.8, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "iron_ring",
+          "parent": "lever_arm",
+          "shape": "torus",
+          "material": "iron_black",
+          "size": [0.14, 0.03, 0.14],
+          "position": [0, 0, 0],
+          "anchor": "center"
+        },
+        {
+          "id": "carriage_bed",
+          "shape": "box",
+          "material": "timber_dark",
+          "size": [0.6, 0.06, 0.64],
+          "position": [0, 0.93, 0],
+          "anchor": "bottom",
+          "animation": [
+            {
+              "property": "position",
+              "axis": "x",
+              "wave": "sine",
+              "amplitude": 0.35,
+              "frequency": 0.55,
+              "when": "always"
+            }
+          ]
+        },
+        {
+          "id": "coffin_box",
+          "parent": "carriage_bed",
+          "shape": "box",
+          "material": "timber_light",
+          "size": [0.54, 0.08, 0.58],
+          "position": [0, 0.06, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "chase_iron_frame",
+          "parent": "carriage_bed",
+          "shape": "box",
+          "material": "iron_black",
+          "size": [0.4, 0.02, 0.44],
+          "position": [0, 0.15, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "paper_sheet",
+          "parent": "carriage_bed",
+          "shape": "box",
+          "material": "paper_white",
+          "size": [0.34, 0.01, 0.38],
+          "position": [0, 0.17, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "windlass_crank",
+          "shape": "cylinder",
+          "material": "iron_black",
+          "size": [0.04, 0.3, 0.04],
+          "position": [0, 0.88, 0.44],
+          "rotation": [90, 0, 0],
+          "anchor": "bottom",
+          "segments": 4
+        },
+        {
+          "id": "windlass_handle",
+          "parent": "windlass_crank",
+          "shape": "cylinder",
+          "material": "timber_dark",
+          "size": [0.03, 0.12, 0.03],
+          "position": [0, 0.3, 0],
+          "rotation": [0, 90, 0],
+          "anchor": "bottom"
+        }
+      ],
+      "notes": "Gutenberg-era wooden screw press with synchronized lever/platen plunge mechanics and realistic carriage-bed sliding action."
+    },
+    {
+      "id": "compositor_table_and_typecase",
+      "name": "Type Case and Composing Station",
+      "category": "prop",
+      "placement": "ground",
+      "materials": [
+        { "id": "dark_oak", "color": "#3d2a1c", "finish": "matte" },
+        { "id": "worn_wood", "color": "#6e523b", "finish": "matte" },
+        { "id": "lead_alloy", "color": "#7c858a", "finish": "metal" },
+        { "id": "brass", "color": "#b5a260", "finish": "metal" },
+        { "id": "ink_black", "color": "#111111", "finish": "matte" }
+      ],
+      "parts": [
+        {
+          "id": "table_legs",
+          "shape": "box",
+          "material": "dark_oak",
+          "size": [0.08, 0.9, 0.08],
+          "position": [-0.4, 0, -0.6],
+          "anchor": "bottom",
+          "mirror": "z"
+        },
+        {
+          "id": "table_legs_front",
+          "shape": "box",
+          "material": "dark_oak",
+          "size": [0.08, 0.78, 0.08],
+          "position": [0.4, 0, -0.6],
+          "anchor": "bottom",
+          "mirror": "z"
+        },
+        {
+          "id": "table_frame_long",
+          "shape": "box",
+          "material": "dark_oak",
+          "size": [0.05, 0.1, 1.28],
+          "position": [0, 0.75, 0],
+          "anchor": "center",
+          "mirror": "x"
+        },
+        {
+          "id": "table_frame_short",
+          "shape": "box",
+          "material": "dark_oak",
+          "size": [0.88, 0.1, 0.05],
+          "position": [0, 0.75, -0.61],
+          "anchor": "center",
+          "mirror": "z"
+        },
+        {
+          "id": "slanted_desk_top",
+          "shape": "box",
+          "material": "worn_wood",
+          "size": [0.96, 0.04, 1.36],
+          "position": [0, 0.86, 0],
+          "rotation": [0, 0, -8],
+          "segments": 4
+        },
+        {
+          "id": "shelf_under",
+          "shape": "box",
+          "material": "worn_wood",
+          "size": [0.75, 0.02, 1.15],
+          "position": [0, 0.35, 0]
+        },
+        {
+          "id": "typecase_base",
+          "shape": "box",
+          "material": "dark_oak",
+          "size": [0.45, 0.03, 1.1],
+          "position": [-0.1, 0.9, 0],
+          "rotation": [0, 0, -8]
+        },
+        {
+          "id": "typecase_outer_rim",
+          "shape": "box",
+          "material": "dark_oak",
+          "size": [0.45, 0.05, 0.02],
+          "position": [-0.1, 0.92, -0.55],
+          "rotation": [0, 0, -8],
+          "segments": 3,
+          "taper": 1
+        },
+        {
+          "id": "typecase_outer_rim_right",
+          "shape": "box",
+          "material": "dark_oak",
+          "size": [0.45, 0.05, 0.02],
+          "position": [-0.1, 0.92, 0.55],
+          "rotation": [0, 0, -8]
+        },
+        {
+          "id": "typecase_dividers_long",
+          "parent": "typecase_base",
+          "shape": "box",
+          "material": "worn_wood",
+          "size": [0.01, 0.04, 1.08],
+          "position": [0, 0.025, 0],
+          "repeat": { "mode": "linear", "count": 5, "step": [0.08, 0, 0] }
+        },
+        {
+          "id": "typecase_dividers_cross",
+          "parent": "typecase_base",
+          "shape": "box",
+          "material": "worn_wood",
+          "size": [0.41, 0.04, 0.01],
+          "position": [0, 0.025, 0],
+          "repeat": { "mode": "linear", "count": 10, "step": [0, 0, 0.1] }
+        },
+        {
+          "id": "type_slugs_cluster",
+          "parent": "typecase_base",
+          "shape": "box",
+          "material": "lead_alloy",
+          "size": [0.05, 0.035, 0.06],
+          "position": [-0.08, 0.02, 0.15],
+          "repeat": { "mode": "linear", "count": 4, "step": [0.08, 0, -0.12] }
+        },
+        {
+          "id": "composing_stick_plate",
+          "shape": "box",
+          "material": "brass",
+          "size": [0.1, 0.01, 0.3],
+          "position": [0.28, 0.96, 0.2],
+          "rotation": [12, -45, -8]
+        },
+        {
+          "id": "composing_stick_back",
+          "parent": "composing_stick_plate",
+          "shape": "box",
+          "material": "brass",
+          "size": [0.01, 0.03, 0.3],
+          "position": [-0.045, 0.01, 0]
+        },
+        {
+          "id": "composing_stick_stop",
+          "parent": "composing_stick_plate",
+          "shape": "box",
+          "material": "brass",
+          "size": [0.09, 0.03, 0.01],
+          "position": [0, 0.01, -0.14]
+        },
+        {
+          "id": "composing_stick_slide",
+          "parent": "composing_stick_plate",
+          "shape": "box",
+          "material": "brass",
+          "size": [0.08, 0.028, 0.015],
+          "position": [0, 0.01, 0.05]
+        },
+        {
+          "id": "set_type_lines",
+          "parent": "composing_stick_plate",
+          "shape": "box",
+          "material": "lead_alloy",
+          "size": [0.06, 0.015, 0.22],
+          "position": [0.01, 0.01, -0.02]
+        },
+        {
+          "id": "inked_type_surface",
+          "parent": "set_type_lines",
+          "shape": "box",
+          "material": "ink_black",
+          "size": [0.058, 0.01, 0.21],
+          "position": [0, 0.009, 0]
+        },
+        {
+          "id": "paper_proof_sheet",
+          "shape": "box",
+          "material": "lead_alloy",
+          "size": [0.35, 0.01, 0.28],
+          "position": [0.25, 0.95, -0.25],
+          "rotation": [0, 0, -8]
+        }
+      ],
+      "notes": "Slanted compositor desk from Gutenberg's era with detailed subdivided type case, hand composing stick lined with set metal type, and printed proof paper sheet."
+    },
+    {
+      "id": "inking_balls_and_chase",
+      "name": "Inking Station and locked Chase",
+      "category": "prop",
+      "placement": "ground",
+      "scale": 1,
+      "materials": [
+        { "id": "oak", "color": "#5c4033", "finish": "matte" },
+        { "id": "iron", "color": "#2c2c2c", "finish": "metal" },
+        { "id": "lead", "color": "#7a828a", "finish": "satin" },
+        { "id": "leather", "color": "#8b5a2b", "finish": "satin" },
+        { "id": "ink", "color": "#111111", "finish": "emissive" },
+        { "id": "wood_light", "color": "#b88a53", "finish": "matte" }
+      ],
+      "parts": [
+        {
+          "id": "table_top",
+          "shape": "box",
+          "material": "oak",
+          "size": [1.4, 0.1, 0.9],
+          "position": [0, 0.75, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "table_leg",
+          "parent": "table_top",
+          "shape": "box",
+          "material": "oak",
+          "size": [0.12, 0.75, 0.12],
+          "position": [0.55, 0, 0.35],
+          "anchor": "bottom",
+          "repeat": { "mode": "linear", "count": 4, "step": [-1.1, 0, -0.7] }
+        },
+        {
+          "id": "shelf",
+          "parent": "table_top",
+          "shape": "box",
+          "material": "oak",
+          "size": [1.2, 0.04, 0.7],
+          "position": [0, -0.5, 0],
+          "anchor": "center"
+        },
+        {
+          "id": "ink_slab",
+          "parent": "table_top",
+          "shape": "box",
+          "material": "iron",
+          "size": [0.4, 0.02, 0.4],
+          "position": [-0.35, 0.1, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "ink_puddle",
+          "parent": "ink_slab",
+          "shape": "cylinder",
+          "material": "ink",
+          "size": [0.3, 0.01, 0.3],
+          "position": [0, 0.02, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "chase_frame",
+          "parent": "table_top",
+          "shape": "box",
+          "material": "iron",
+          "size": [0.6, 0.04, 0.5],
+          "position": [0.3, 0.1, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "chase_inside",
+          "parent": "chase_frame",
+          "shape": "box",
+          "material": "lead",
+          "size": [0.52, 0.03, 0.42],
+          "position": [0, 0.02, 0],
+          "anchor": "center"
+        },
+        {
+          "id": "wooden_furniture",
+          "parent": "chase_frame",
+          "shape": "box",
+          "material": "wood_light",
+          "size": [0.06, 0.035, 0.38],
+          "position": [-0.22, 0.022, 0],
+          "anchor": "center",
+          "repeat": { "mode": "linear", "count": 2, "step": [0.44, 0, 0] }
+        },
+        {
+          "id": "type_columns",
+          "parent": "chase_frame",
+          "shape": "box",
+          "material": "lead",
+          "size": [0.08, 0.038, 0.32],
+          "position": [-0.06, 0.025, 0],
+          "anchor": "center",
+          "repeat": { "mode": "linear", "count": 2, "step": [0.12, 0, 0] }
+        },
+        {
+          "id": "inking_ball_pivot_1",
+          "parent": "table_top",
+          "shape": "group",
+          "size": [0.25, 0.3, 0.25],
+          "position": [-0.4, 0.12, 0.15],
+          "rotation": [5, 10, -5],
+          "taper": 1
+        },
+        {
+          "id": "ball_cushion_1",
+          "parent": "inking_ball_pivot_1",
+          "shape": "sphere",
+          "material": "leather",
+          "size": [0.24, 0.14, 0.24],
+          "position": [0, 0.07, 0],
+          "anchor": "center"
+        },
+        {
+          "id": "ball_leather_top_1",
+          "parent": "inking_ball_pivot_1",
+          "shape": "cone",
+          "material": "leather",
+          "size": [0.24, 0.08, 0.24],
+          "position": [0, 0.14, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "ball_handle_1",
+          "parent": "inking_ball_pivot_1",
+          "shape": "cylinder",
+          "material": "wood_light",
+          "size": [0.04, 0.16, 0.04],
+          "position": [0, 0.2, 0],
+          "anchor": "bottom",
+          "taper": 0.75
+        },
+        {
+          "id": "inking_ball_pivot_2",
+          "parent": "table_top",
+          "shape": "group",
+          "size": [0.25, 0.3, 0.25],
+          "position": [0.2, 0.14, -0.15],
+          "rotation": [-10, 0, 15]
+        },
+        {
+          "id": "ball_cushion_2",
+          "parent": "inking_ball_pivot_2",
+          "shape": "sphere",
+          "material": "leather",
+          "size": [0.24, 0.14, 0.24],
+          "position": [0, 0.07, 0],
+          "anchor": "center"
+        },
+        {
+          "id": "ball_leather_top_2",
+          "parent": "inking_ball_pivot_2",
+          "shape": "cone",
+          "material": "leather",
+          "size": [0.24, 0.08, 0.24],
+          "position": [0, 0.14, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "ball_handle_2",
+          "parent": "inking_ball_pivot_2",
+          "shape": "cylinder",
+          "material": "wood_light",
+          "size": [0.04, 0.16, 0.04],
+          "position": [0, 0.2, 0],
+          "anchor": "bottom",
+          "taper": 0.75
+        },
+        {
+          "id": "ink_pot",
+          "parent": "shelf",
+          "shape": "cylinder",
+          "material": "iron",
+          "size": [0.18, 0.22, 0.18],
+          "position": [-0.45, -0.2, -0.15],
+          "anchor": "bottom"
+        },
+        {
+          "id": "ink_pot_fluid",
+          "parent": "ink_pot",
+          "shape": "cylinder",
+          "material": "ink",
+          "size": [0.16, 0.01, 0.16],
+          "position": [0, 0.2, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "animating_inking_hand",
+          "parent": "table_top",
+          "shape": "group",
+          "size": [0.25, 0.3, 0.25],
+          "position": [0.35, 0.15, 0.1],
+          "rotation": [0, 0, 0],
+          "taper": 1,
+          "animation": [
+            {
+              "property": "position",
+              "axis": "y",
+              "wave": "bounce",
+              "amplitude": 0.15,
+              "frequency": 0.6,
+              "phase": 0,
+              "alternate": false,
+              "when": "always"
+            },
+            {
+              "property": "rotation",
+              "axis": "x",
+              "wave": "sine",
+              "amplitude": 15,
+              "frequency": 0.6,
+              "phase": 0.25,
+              "alternate": false,
+              "when": "always"
+            },
+            {
+              "property": "position",
+              "axis": "z",
+              "wave": "sine",
+              "amplitude": 0.1,
+              "frequency": 0.3,
+              "phase": 0,
+              "alternate": false,
+              "when": "always"
+            }
+          ]
+        },
+        {
+          "id": "active_ball_cushion",
+          "parent": "animating_inking_hand",
+          "shape": "sphere",
+          "material": "leather",
+          "size": [0.25, 0.14, 0.25],
+          "position": [0, 0.07, 0],
+          "anchor": "center"
+        },
+        {
+          "id": "active_ball_ink_smudge",
+          "parent": "active_ball_cushion",
+          "shape": "cylinder",
+          "material": "ink",
+          "size": [0.15, 0.01, 0.15],
+          "position": [0, -0.01, 0],
+          "anchor": "top"
+        },
+        {
+          "id": "active_ball_top",
+          "parent": "animating_inking_hand",
+          "shape": "cone",
+          "material": "leather",
+          "size": [0.25, 0.09, 0.25],
+          "position": [0, 0.14, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "active_ball_handle",
+          "parent": "animating_inking_hand",
+          "shape": "cylinder",
+          "material": "wood_light",
+          "size": [0.04, 0.18, 0.04],
+          "position": [0, 0.22, 0],
+          "anchor": "bottom",
+          "taper": 0.75
+        }
+      ],
+      "notes": "Mainz printing house details: a robust oak bench carrying an iron chase of lead type, plus ink balls. An active hand-held inking ball bobs to demonstrate action."
+    }
+  ],
+  "scenes": [
+    {
+      "kind": "map",
+      "duration": 5,
+      "kicker": "Mainz, Germany",
+      "caption": "In 1455, Gutenberg invented the printing press.",
+      "setting": "city",
+      "layout": "open",
+      "timeOfDay": "day",
+      "weather": "clear",
+      "camera": "push_in",
+      "elements": [],
+      "map": { "lat": 49.9929, "lon": 8.2732, "label": "Mainz", "zoom": "local" }
+    },
+    {
+      "kind": "diorama",
+      "duration": 6,
+      "kicker": "Gutenberg's Workshop",
+      "caption": "Inside the timber-framed shop, metal and muscle combine to mass-produce the written word.",
+      "setting": "city",
+      "layout": "interior",
+      "timeOfDay": "day",
+      "weather": "clear",
+      "camera": "eye_level",
+      "elements": [
+        {
+          "model": "gutenberg_workshop_room",
+          "count": 1,
+          "formation": "single",
+          "position": "center",
+          "motion": "idle",
+          "role": "background",
+          "scale": 1
+        },
+        {
+          "model": "wooden_printing_press",
+          "count": 1,
+          "formation": "single",
+          "position": "center",
+          "motion": "idle",
+          "role": "subject",
+          "scale": 1
+        },
+        {
+          "model": "compositor_table_and_typecase",
+          "count": 1,
+          "formation": "single",
+          "position": "left",
+          "motion": "idle",
+          "role": "background",
+          "scale": 1
+        }
+      ]
+    },
+    {
+      "kind": "diorama",
+      "duration": 6,
+      "kicker": "The Compositor",
+      "caption": "Workers arrange metal letters into lines of text.",
+      "setting": "city",
+      "layout": "interior",
+      "timeOfDay": "day",
+      "weather": "clear",
+      "camera": "push_in",
+      "elements": [
+        {
+          "model": "gutenberg_workshop_room",
+          "count": 1,
+          "formation": "single",
+          "position": "center",
+          "motion": "idle",
+          "role": "background",
+          "scale": 1
+        },
+        {
+          "model": "compositor_table_and_typecase",
+          "count": 1,
+          "formation": "single",
+          "position": "center",
+          "motion": "idle",
+          "role": "subject",
+          "scale": 1
+        }
+      ]
+    },
+    {
+      "kind": "diorama",
+      "duration": 6,
+      "kicker": "Preparing the Form",
+      "caption": "A pressman applies black ink to the locked metal type.",
+      "setting": "city",
+      "layout": "interior",
+      "timeOfDay": "day",
+      "weather": "clear",
+      "camera": "pan_right",
+      "elements": [
+        {
+          "model": "gutenberg_workshop_room",
+          "count": 1,
+          "formation": "single",
+          "position": "center",
+          "motion": "idle",
+          "role": "background",
+          "scale": 1
+        },
+        {
+          "model": "inking_balls_and_chase",
+          "count": 1,
+          "formation": "single",
+          "position": "center",
+          "motion": "sway",
+          "role": "subject",
+          "scale": 1
+        }
+      ]
+    },
+    {
+      "kind": "diorama",
+      "duration": 7,
+      "kicker": "The Impression",
+      "caption": "Dampened paper is pressed against inked type using a wooden lever.",
+      "setting": "city",
+      "layout": "interior",
+      "timeOfDay": "day",
+      "weather": "clear",
+      "camera": "tracking",
+      "elements": [
+        {
+          "model": "gutenberg_workshop_room",
+          "count": 1,
+          "formation": "single",
+          "position": "center",
+          "motion": "idle",
+          "role": "background",
+          "scale": 1
+        },
+        {
+          "model": "wooden_printing_press",
+          "count": 1,
+          "formation": "single",
+          "position": "center",
+          "motion": "sway",
+          "role": "subject",
+          "scale": 1
+        }
+      ]
+    },
+    {
+      "kind": "diorama",
+      "duration": 5,
+      "kicker": "Applying Pressure",
+      "caption": "A central screw presses ink onto the page.",
+      "setting": "city",
+      "layout": "interior",
+      "timeOfDay": "day",
+      "weather": "clear",
+      "camera": "push_in",
+      "elements": [
+        {
+          "model": "gutenberg_workshop_room",
+          "count": 1,
+          "formation": "single",
+          "position": "center",
+          "motion": "idle",
+          "role": "background",
+          "scale": 1
+        },
+        {
+          "model": "wooden_printing_press",
+          "count": 1,
+          "formation": "single",
+          "position": "center",
+          "motion": "sway",
+          "role": "subject",
+          "scale": 1
+        }
+      ]
+    },
+    {
+      "kind": "diorama",
+      "duration": 5,
+      "kicker": "The 42-Line Bible",
+      "caption": "The printing press sparks an information revolution.",
+      "setting": "city",
+      "layout": "interior",
+      "timeOfDay": "day",
+      "weather": "clear",
+      "camera": "pull_out",
+      "elements": [
+        {
+          "model": "gutenberg_workshop_room",
+          "count": 1,
+          "formation": "single",
+          "position": "center",
+          "motion": "idle",
+          "role": "background",
+          "scale": 1
+        },
+        {
+          "model": "wooden_printing_press",
+          "count": 1,
+          "formation": "single",
+          "position": "center",
+          "motion": "idle",
+          "role": "subject",
+          "scale": 1
+        },
+        {
+          "model": "inking_balls_and_chase",
+          "count": 1,
+          "formation": "single",
+          "position": "right",
+          "motion": "idle",
+          "role": "foreground",
+          "scale": 1
+        }
+      ]
+    }
+  ]
+}

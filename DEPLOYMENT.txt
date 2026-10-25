@@ -1,9 +1,0 @@
-POLYHISTOR DEPLOYMENT
-
-The maintained deployment and operations guide is docs/DEPLOYMENT.md.
-Start with README.md for local setup.
-
-Before pushing: npm run check && npm run secrets:check && npm run build
-Before public deployment: npm run release:check with target runtime variables.
-Migrations are an explicit release step, never part of the application build.
-Never commit .env.local or put migration/admin credentials in the runtime.

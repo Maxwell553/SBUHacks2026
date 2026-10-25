@@ -7,9 +7,9 @@ export function Header({ user }: { user: User | null }) {
   return (
     <header className="site-header">
       <div className="container bar">
-        <Link href="/" className="brand" aria-label="Polyhistor home">
+        <Link href="/" className="brand" aria-label="PolyChronicle home">
           <Logo size={30} />
-          <span>POLYHISTOR</span>
+          <span>POLYCHRONICLE</span>
         </Link>
         <NavLinks signedIn={!!user} name={user?.name ?? null} />
       </div>

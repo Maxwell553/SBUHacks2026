@@ -1,0 +1,917 @@
+{
+  "seed": 1784398799,
+  "title": "Street Life of Pompeii",
+  "models": [
+    {
+      "id": "thermopolium_shop",
+      "name": "Thermopolium Shop Facade",
+      "notes": "Thermopolium street food facade with basalt street paving, stepping stones, L-shaped masonry counter, sunken terracotta jars (dolia), and red painted political graffiti.",
+      "parts": [
+        {
+          "id": "street_basalt",
+          "size": [1.2, 0.05, 3.2],
+          "shape": "box",
+          "material": "stone_basalt",
+          "position": [1.4, 0.025, 0]
+        },
+        {
+          "id": "stepping_stone",
+          "size": [0.6, 0.25, 0.4],
+          "shape": "box",
+          "material": "stone_basalt",
+          "position": [1.4, 0.125, 0]
+        },
+        {
+          "id": "sidewalk_base",
+          "size": [1.2, 0.2, 3.2],
+          "shape": "box",
+          "material": "stone_basalt",
+          "position": [0.3, 0.1, 0]
+        },
+        {
+          "id": "wall_back",
+          "size": [0.2, 2.8, 3],
+          "shape": "box",
+          "material": "plaster_wall",
+          "position": [-0.8, 1.4, 0]
+        },
+        {
+          "id": "wall_left",
+          "size": [1.3, 2.8, 0.2],
+          "shape": "box",
+          "material": "plaster_wall",
+          "position": [-0.15, 1.4, -1.4]
+        },
+        {
+          "id": "wall_right",
+          "size": [1.3, 2.8, 0.2],
+          "shape": "box",
+          "material": "plaster_wall",
+          "position": [-0.15, 1.4, 1.4]
+        },
+        {
+          "id": "pillar_front_r",
+          "size": [0.3, 2.8, 0.3],
+          "shape": "box",
+          "material": "plaster_wall",
+          "position": [0.35, 1.4, 1.35]
+        },
+        {
+          "id": "lintel",
+          "size": [0.3, 0.3, 3],
+          "shape": "box",
+          "material": "plaster_wall",
+          "position": [0.35, 2.65, 0]
+        },
+        {
+          "id": "shutter_groove",
+          "size": [0.06, 0.02, 2.4],
+          "shape": "box",
+          "material": "wood_shutter",
+          "position": [0.35, 0.21, -0.1]
+        },
+        {
+          "id": "counter_base",
+          "size": [0.5, 0.9, 1.8],
+          "shape": "box",
+          "material": "masonry_counter",
+          "position": [0.35, 0.65, -0.4]
+        },
+        {
+          "id": "counter_return",
+          "size": [0.6, 0.9, 0.6],
+          "shape": "box",
+          "material": "masonry_counter",
+          "position": [-0.2, 0.65, 0.8]
+        },
+        {
+          "id": "doli_1",
+          "size": [0.4, 0.05, 0.4],
+          "shape": "cylinder",
+          "material": "terracotta",
+          "position": [0.35, 1.12, -0.9]
+        },
+        {
+          "id": "doli_2",
+          "size": [0.4, 0.05, 0.4],
+          "shape": "cylinder",
+          "material": "terracotta",
+          "position": [0.35, 1.12, -0.3]
+        },
+        {
+          "id": "doli_3",
+          "size": [0.4, 0.05, 0.4],
+          "shape": "cylinder",
+          "material": "terracotta",
+          "position": [0.35, 1.12, 0.3]
+        },
+        {
+          "id": "graffiti_red_1",
+          "size": [0.01, 0.6, 0.28],
+          "shape": "box",
+          "material": "red_graffiti",
+          "position": [0.51, 1.2, 1.35],
+          "rotation": [0, 90, 0]
+        },
+        {
+          "id": "graffiti_red_2",
+          "size": [0.01, 0.2, 1.2],
+          "shape": "box",
+          "material": "red_graffiti",
+          "position": [0.51, 2.65, 0.1],
+          "rotation": [0, 90, 0]
+        },
+        {
+          "id": "roof_overhang",
+          "size": [0.9, 0.08, 3.2],
+          "shape": "box",
+          "material": "terracotta",
+          "position": [0.5, 2.8, 0],
+          "rotation": [0, 0, -12]
+        },
+        {
+          "id": "shrine_niche",
+          "size": [0.05, 0.5, 0.4],
+          "shape": "box",
+          "material": "plaster_wall",
+          "position": [-0.68, 1.4, 0.8]
+        }
+      ],
+      "category": "building",
+      "materials": [
+        { "id": "stone_basalt", "color": "#3a3a3c", "finish": "matte" },
+        { "id": "plaster_wall", "color": "#e5d3b3", "finish": "matte" },
+        { "id": "masonry_counter", "color": "#cbb295", "finish": "matte" },
+        { "id": "terracotta", "color": "#b85c37", "finish": "matte" },
+        { "id": "red_graffiti", "color": "#a11d1d", "finish": "matte" },
+        { "id": "wood_shutter", "color": "#513a21", "finish": "matte" }
+      ],
+      "placement": "ground"
+    },
+    {
+      "id": "roman_cart",
+      "name": "Roman Iron-Wheeled Cart",
+      "notes": "Roman transport cart with heavy iron-rimmed wheels matched to the width of Pompeii stepping stones. Animated rotating axles.",
+      "parts": [
+        {
+          "id": "chassis",
+          "size": [2.2, 0.15, 1.2],
+          "shape": "box",
+          "material": "wood_dark",
+          "position": [0, 0.65, 0],
+          "rotation": [0, 0, 0],
+          "animation": [
+            {
+              "axis": "y",
+              "wave": "sine",
+              "when": "always",
+              "property": "position",
+              "amplitude": 0.015,
+              "frequency": 0.8
+            }
+          ]
+        },
+        {
+          "id": "draft_pole",
+          "size": [2.4, 0.08, 0.08],
+          "shape": "box",
+          "parent": "chassis",
+          "material": "wood_dark",
+          "position": [1.4, -0.04, 0]
+        },
+        {
+          "id": "yoke",
+          "size": [0.08, 1, 0.08],
+          "shape": "cylinder",
+          "parent": "draft_pole",
+          "material": "wood_light",
+          "position": [1, 0.1, 0],
+          "rotation": [90, 0, 0]
+        },
+        {
+          "id": "sideboard",
+          "size": [2.2, 0.35, 0.06],
+          "shape": "box",
+          "taper": 1,
+          "parent": "chassis",
+          "material": "wood_light",
+          "position": [0, 0.25, 0],
+          "rotation": [0, 0, 0],
+          "segments": 3
+        },
+        {
+          "id": "sideboard_l",
+          "size": [2.2, 0.35, 0.06],
+          "shape": "box",
+          "parent": "chassis",
+          "material": "wood_light",
+          "position": [0, 0.25, 0.57],
+          "rotation": [0, 0, 0]
+        },
+        {
+          "id": "sideboard_r",
+          "size": [2.2, 0.35, 0.06],
+          "shape": "box",
+          "parent": "chassis",
+          "material": "wood_light",
+          "position": [0, 0.25, -0.57],
+          "rotation": [0, 0, 0]
+        },
+        {
+          "id": "tailgate",
+          "size": [0.06, 0.35, 1.1],
+          "shape": "box",
+          "parent": "chassis",
+          "material": "wood_light",
+          "position": [-1.07, 0.25, 0]
+        },
+        {
+          "id": "wheel_group",
+          "size": [1.3, 1.3, 1.5],
+          "shape": "group",
+          "taper": 1,
+          "position": [0, 0.65, 0],
+          "rotation": [0, 0, 0],
+          "segments": 3
+        },
+        {
+          "id": "axle",
+          "size": [0.12, 1.5, 0.12],
+          "shape": "cylinder",
+          "parent": "wheel_group",
+          "material": "iron",
+          "position": [0, 0, 0],
+          "rotation": [90, 0, 0]
+        },
+        {
+          "id": "wheel_l",
+          "size": [1.3, 0.12, 1.3],
+          "shape": "cylinder",
+          "taper": 1,
+          "parent": "wheel_group",
+          "material": "wood_dark",
+          "position": [0, 0, 0.72],
+          "rotation": [90, 0, 0],
+          "segments": 10,
+          "animation": [
+            {
+              "axis": "y",
+              "wave": "spin",
+              "when": "always",
+              "property": "rotation",
+              "amplitude": -360,
+              "frequency": 0.4
+            }
+          ]
+        },
+        {
+          "id": "iron_rim_l",
+          "size": [1.32, 0.03, 1.32],
+          "shape": "torus",
+          "parent": "wheel_l",
+          "material": "iron",
+          "position": [0, 0, 0],
+          "rotation": [90, 0, 0]
+        },
+        {
+          "id": "wheel_r",
+          "size": [1.3, 0.12, 1.3],
+          "shape": "cylinder",
+          "taper": 1,
+          "parent": "wheel_group",
+          "material": "wood_dark",
+          "position": [0, 0, -0.72],
+          "rotation": [90, 0, 0],
+          "segments": 10,
+          "animation": [
+            {
+              "axis": "y",
+              "wave": "spin",
+              "when": "always",
+              "property": "rotation",
+              "amplitude": 360,
+              "frequency": 0.4
+            }
+          ]
+        },
+        {
+          "id": "iron_rim_r",
+          "size": [1.32, 0.03, 1.32],
+          "shape": "torus",
+          "parent": "wheel_r",
+          "material": "iron",
+          "position": [0, 0, 0],
+          "rotation": [90, 0, 0]
+        },
+        {
+          "id": "amphora_1",
+          "size": [0.35, 0.8, 0.35],
+          "shape": "cylinder",
+          "taper": 0.5,
+          "parent": "chassis",
+          "material": "terracotta",
+          "position": [0.4, 0.4, 0.2],
+          "rotation": [10, 0, 15],
+          "segments": 8
+        },
+        {
+          "id": "amphora_2",
+          "size": [0.35, 0.8, 0.35],
+          "shape": "cylinder",
+          "taper": 0.5,
+          "parent": "chassis",
+          "material": "terracotta",
+          "position": [-0.3, 0.4, -0.2],
+          "rotation": [-8, 0, -12],
+          "segments": 8
+        },
+        {
+          "id": "amphora_3",
+          "size": [0.35, 0.8, 0.35],
+          "shape": "cylinder",
+          "taper": 0.5,
+          "parent": "chassis",
+          "material": "terracotta",
+          "position": [0.1, 0.4, -0.3],
+          "rotation": [5, 0, -8],
+          "segments": 8
+        },
+        {
+          "id": "rope_tie",
+          "size": [0.8, 0.04, 0.8],
+          "shape": "torus",
+          "parent": "chassis",
+          "material": "rope",
+          "position": [0, 0.4, 0],
+          "rotation": [0, 0, 0]
+        }
+      ],
+      "scale": 1,
+      "category": "vehicle",
+      "materials": [
+        { "id": "wood_dark", "color": "#7a5a3a", "finish": "matte" },
+        { "id": "wood_light", "color": "#9e7d5a", "finish": "matte" },
+        { "id": "iron", "color": "#4a4d50", "finish": "metal" },
+        { "id": "terracotta", "color": "#bd6339", "finish": "matte" },
+        { "id": "rope", "color": "#c2b280", "finish": "matte" }
+      ],
+      "placement": "ground"
+    },
+    {
+      "id": "pompeii_street_module",
+      "name": "Pompeii Street and Stepping Stones",
+      "notes": "Pompeian street module with characteristic tall curbs, three limestone stepping stones spaced for cart wheels, and an active corner water fountain.",
+      "parts": [
+        {
+          "id": "roadbed",
+          "size": [4, 0.15, 3],
+          "shape": "box",
+          "material": "basalt",
+          "position": [0, 0, 0],
+          "rotation": [0, 0, 0],
+          "segments": 4
+        },
+        {
+          "id": "curb_left",
+          "size": [4, 0.45, 0.6],
+          "shape": "box",
+          "anchor": "bottom",
+          "material": "sidewalk_stone",
+          "position": [0, 0.05, -1.8]
+        },
+        {
+          "id": "curb_right",
+          "size": [4, 0.45, 0.6],
+          "shape": "box",
+          "anchor": "bottom",
+          "material": "sidewalk_stone",
+          "position": [0, 0.05, 1.8]
+        },
+        {
+          "id": "stepping_stone_center",
+          "size": [0.5, 0.5, 0.8],
+          "shape": "capsule",
+          "anchor": "bottom",
+          "material": "sidewalk_stone",
+          "position": [0, 0.15, 0],
+          "rotation": [90, 0, 0]
+        },
+        {
+          "id": "stepping_stone_left",
+          "size": [0.5, 0.5, 0.8],
+          "shape": "capsule",
+          "anchor": "bottom",
+          "material": "sidewalk_stone",
+          "position": [0, 0.15, -0.9],
+          "rotation": [90, 0, 0]
+        },
+        {
+          "id": "stepping_stone_right",
+          "size": [0.5, 0.5, 0.8],
+          "shape": "capsule",
+          "anchor": "bottom",
+          "material": "sidewalk_stone",
+          "position": [0, 0.15, 0.9],
+          "rotation": [90, 0, 0]
+        },
+        {
+          "id": "fountain_basin",
+          "size": [0.9, 0.8, 0.9],
+          "shape": "box",
+          "anchor": "bottom",
+          "material": "fountain_stone",
+          "position": [1.5, 0.45, -1.8]
+        },
+        {
+          "id": "fountain_basin_hollow",
+          "size": [0.7, 0.1, 0.7],
+          "shape": "box",
+          "anchor": "bottom",
+          "material": "water",
+          "position": [1.5, 1.2, -1.8]
+        },
+        {
+          "id": "fountain_spire",
+          "size": [0.3, 1.2, 0.3],
+          "shape": "cylinder",
+          "taper": 0.8,
+          "anchor": "bottom",
+          "material": "fountain_stone",
+          "position": [1.5, 1.25, -1.8]
+        },
+        {
+          "id": "fountain_spout",
+          "size": [0.08, 0.25, 0.08],
+          "shape": "cylinder",
+          "anchor": "top",
+          "material": "bronze",
+          "position": [1.5, 2.1, -1.65],
+          "rotation": [90, 0, 0]
+        },
+        {
+          "id": "water_stream",
+          "size": [0.04, 0.9, 0.04],
+          "shape": "cylinder",
+          "anchor": "top",
+          "material": "water",
+          "position": [1.5, 2.05, -1.52],
+          "rotation": [15, 0, 0]
+        },
+        {
+          "id": "shop_wall_back",
+          "size": [2.5, 2.8, 0.3],
+          "shape": "box",
+          "anchor": "bottom",
+          "material": "white_plaster",
+          "position": [-0.5, 0.5, 2.1]
+        },
+        {
+          "id": "shop_painted_base",
+          "size": [2.51, 1, 0.31],
+          "shape": "box",
+          "anchor": "bottom",
+          "material": "red_wall",
+          "position": [-0.5, 0.5, 2.1]
+        },
+        {
+          "id": "graffiti_stripe",
+          "size": [1.2, 0.2, 0.32],
+          "shape": "box",
+          "anchor": "bottom",
+          "material": "white_plaster",
+          "position": [-0.5, 1.1, 2.1]
+        },
+        {
+          "id": "street_debris_rut",
+          "size": [4, 0.02, 0.15],
+          "shape": "box",
+          "repeat": { "mode": "linear", "step": [0, 0, 0.9], "count": 2 },
+          "material": "water",
+          "position": [0, 0.16, -0.45]
+        }
+      ],
+      "scale": 1,
+      "category": "structure",
+      "materials": [
+        { "id": "basalt", "color": "#3a3c3e", "finish": "matte" },
+        { "id": "sidewalk_stone", "color": "#948f85", "finish": "matte" },
+        { "id": "fountain_stone", "color": "#b5ae9f", "finish": "matte" },
+        { "id": "water", "color": "#769fa8", "finish": "glass" },
+        { "id": "red_wall", "color": "#9c3024", "finish": "matte" },
+        { "id": "white_plaster", "color": "#dfdacf", "finish": "matte" },
+        { "id": "bronze", "color": "#8c7043", "finish": "metal" }
+      ],
+      "placement": "ground"
+    },
+    {
+      "id": "pompeian_pedestrian",
+      "name": "Pompeian Citizen in Toga",
+      "notes": "Roman pedestrian in a draped white wool toga with purple trim, walking across Pompeian stepping stones. Active leg joints capture the stepping-up motion.",
+      "parts": [
+        { "id": "pelvis", "size": [0.3, 0.2, 0.25], "shape": "group", "position": [0, 0.8, 0] },
+        {
+          "id": "torso",
+          "size": [0.28, 0.55, 0.24],
+          "shape": "cylinder",
+          "parent": "pelvis",
+          "material": "toga_white",
+          "position": [0, 0.25, 0],
+          "animation": [
+            {
+              "axis": "y",
+              "wave": "sine",
+              "when": "always",
+              "phase": 90,
+              "property": "rotation",
+              "alternate": false,
+              "amplitude": 8,
+              "frequency": 0.6
+            }
+          ]
+        },
+        {
+          "id": "toga_fold_diagonal",
+          "size": [0.3, 0.1, 0.28],
+          "shape": "box",
+          "parent": "torso",
+          "material": "toga_purple",
+          "position": [0, 0.1, 0],
+          "rotation": [15, 0, 20]
+        },
+        {
+          "id": "toga_drape_shoulder",
+          "size": [0.12, 0.6, 0.28],
+          "shape": "box",
+          "parent": "torso",
+          "material": "toga_white",
+          "position": [-0.05, 0.1, -0.1],
+          "rotation": [0, 0, -10]
+        },
+        {
+          "id": "head",
+          "size": [0.18, 0.23, 0.18],
+          "shape": "capsule",
+          "parent": "torso",
+          "material": "skin",
+          "position": [0, 0.35, 0]
+        },
+        {
+          "id": "hair_back",
+          "size": [0.19, 0.12, 0.19],
+          "shape": "dome",
+          "parent": "head",
+          "material": "hair",
+          "position": [-0.01, 0.06, 0],
+          "rotation": [-15, 0, 0]
+        },
+        {
+          "id": "nose",
+          "size": [0.03, 0.06, 0.03],
+          "shape": "cone",
+          "parent": "head",
+          "material": "skin",
+          "position": [0.09, 0, 0],
+          "rotation": [0, 0, -90]
+        },
+        {
+          "id": "arm_l_shoulder",
+          "size": [0.1, 0.1, 0.1],
+          "shape": "group",
+          "parent": "torso",
+          "position": [0, 0.22, -0.15],
+          "rotation": [0, 0, 0],
+          "segments": 4
+        },
+        {
+          "id": "arm_l_upper",
+          "size": [0.08, 0.35, 0.08],
+          "shape": "capsule",
+          "anchor": "top",
+          "parent": "arm_l_shoulder",
+          "material": "toga_white",
+          "position": [0, 0, 0],
+          "rotation": [15, 0, -10],
+          "segments": 5
+        },
+        {
+          "id": "arm_l_lower",
+          "size": [0.07, 0.3, 0.07],
+          "shape": "capsule",
+          "anchor": "top",
+          "parent": "arm_l_upper",
+          "material": "skin",
+          "position": [0, -0.32, 0],
+          "rotation": [35, 0, 0],
+          "segments": 5
+        },
+        {
+          "id": "arm_r_shoulder",
+          "size": [0.1, 0.1, 0.1],
+          "shape": "group",
+          "parent": "torso",
+          "position": [0, 0.22, 0.15]
+        },
+        {
+          "id": "arm_r_upper",
+          "size": [0.08, 0.35, 0.08],
+          "shape": "capsule",
+          "anchor": "top",
+          "parent": "arm_r_shoulder",
+          "material": "skin",
+          "position": [0, 0, 0],
+          "rotation": [-20, 0, 15],
+          "segments": 5
+        },
+        {
+          "id": "arm_r_lower",
+          "size": [0.07, 0.3, 0.07],
+          "shape": "capsule",
+          "anchor": "top",
+          "parent": "arm_r_upper",
+          "material": "skin",
+          "position": [0, -0.32, 0],
+          "rotation": [-45, 0, 0],
+          "segments": 5
+        },
+        {
+          "id": "leg_l_hip",
+          "size": [0.12, 0.12, 0.12],
+          "shape": "group",
+          "taper": 1,
+          "parent": "pelvis",
+          "position": [0, 0, -0.08],
+          "rotation": [15, 0, 0],
+          "segments": 4,
+          "animation": [
+            {
+              "axis": "z",
+              "wave": "sine",
+              "when": "always",
+              "phase": 0,
+              "property": "rotation",
+              "alternate": false,
+              "amplitude": 15,
+              "frequency": 0.6
+            }
+          ]
+        },
+        {
+          "id": "leg_l_thigh",
+          "size": [0.11, 0.42, 0.11],
+          "shape": "capsule",
+          "anchor": "top",
+          "parent": "leg_l_hip",
+          "material": "skin",
+          "position": [0, 0, 0],
+          "rotation": [15, 0, 0],
+          "segments": 6
+        },
+        {
+          "id": "toga_skirt_l",
+          "size": [0.14, 0.35, 0.14],
+          "shape": "cylinder",
+          "taper": 1.1,
+          "anchor": "top",
+          "parent": "leg_l_thigh",
+          "material": "toga_white",
+          "position": [0, 0.05, 0]
+        },
+        {
+          "id": "leg_l_calf",
+          "size": [0.09, 0.38, 0.09],
+          "shape": "capsule",
+          "anchor": "top",
+          "parent": "leg_l_thigh",
+          "material": "skin",
+          "position": [0, -0.38, 0],
+          "rotation": [-25, 0, 0]
+        },
+        {
+          "id": "leg_l_foot",
+          "size": [0.22, 0.06, 0.09],
+          "shape": "box",
+          "anchor": "bottom",
+          "parent": "leg_l_calf",
+          "material": "sandal_leather",
+          "position": [0.06, -0.38, 0],
+          "rotation": [10, 0, 0]
+        },
+        {
+          "id": "leg_r_hip",
+          "size": [0.12, 0.12, 0.12],
+          "shape": "group",
+          "taper": 1,
+          "parent": "pelvis",
+          "position": [0, 0, 0.08],
+          "rotation": [-20, 0, 0],
+          "segments": 4,
+          "animation": [
+            {
+              "axis": "z",
+              "wave": "sine",
+              "when": "always",
+              "phase": 180,
+              "property": "rotation",
+              "alternate": false,
+              "amplitude": 15,
+              "frequency": 0.6
+            }
+          ]
+        },
+        {
+          "id": "leg_r_thigh",
+          "size": [0.11, 0.42, 0.11],
+          "shape": "capsule",
+          "anchor": "top",
+          "parent": "leg_r_hip",
+          "material": "skin",
+          "position": [0, 0, 0],
+          "rotation": [-15, 0, 0],
+          "segments": 6
+        },
+        {
+          "id": "toga_skirt_r",
+          "size": [0.14, 0.35, 0.14],
+          "shape": "cylinder",
+          "taper": 1.1,
+          "anchor": "top",
+          "parent": "leg_r_thigh",
+          "material": "toga_white",
+          "position": [0, 0.05, 0]
+        },
+        {
+          "id": "leg_r_calf",
+          "size": [0.09, 0.38, 0.09],
+          "shape": "capsule",
+          "anchor": "top",
+          "parent": "leg_r_thigh",
+          "material": "skin",
+          "position": [0, -0.38, 0],
+          "rotation": [5, 0, 0]
+        },
+        {
+          "id": "leg_r_foot",
+          "size": [0.22, 0.06, 0.09],
+          "shape": "box",
+          "anchor": "bottom",
+          "parent": "leg_r_calf",
+          "material": "sandal_leather",
+          "position": [0.06, -0.38, 0],
+          "rotation": [10, 0, 0]
+        }
+      ],
+      "scale": 1,
+      "category": "figure",
+      "materials": [
+        { "id": "skin", "color": "#e0a986", "finish": "satin" },
+        { "id": "toga_white", "tint": true, "color": "#f5f3eb", "finish": "cloth" },
+        { "id": "toga_purple", "color": "#6a1b29", "finish": "cloth" },
+        { "id": "hair", "color": "#332211", "finish": "matte" },
+        { "id": "sandal_leather", "color": "#5e3e29", "finish": "matte" }
+      ],
+      "placement": "ground"
+    }
+  ],
+  "scenes": [
+    {
+      "kind": "diorama",
+      "camera": "eye_level",
+      "kicker": "Daily Life",
+      "caption": "Pompeii's sloped basalt streets drained wastewater.",
+      "setting": "city",
+      "weather": "clear",
+      "duration": 5,
+      "elements": [
+        {
+          "role": "subject",
+          "count": 4,
+          "model": "pompeii_street_module",
+          "facing": "camera",
+          "motion": "idle",
+          "position": "center",
+          "formation": "line"
+        },
+        {
+          "role": "background",
+          "count": 2,
+          "model": "thermopolium_shop",
+          "scale": 1,
+          "facing": "camera",
+          "motion": "idle",
+          "position": "back",
+          "formation": "line"
+        }
+      ],
+      "timeOfDay": "day"
+    },
+    {
+      "kind": "diorama",
+      "camera": "tracking",
+      "kicker": "Clearing the Crosswalks",
+      "caption": "Carts navigated streets with raised stepping stones.",
+      "setting": "city",
+      "weather": "clear",
+      "duration": 5,
+      "elements": [
+        {
+          "role": "subject",
+          "count": 1,
+          "model": "roman_cart",
+          "facing": "away",
+          "motion": "march",
+          "position": "center",
+          "formation": "single"
+        },
+        {
+          "role": "background",
+          "count": 6,
+          "model": "pompeii_street_module",
+          "facing": "camera",
+          "motion": "idle",
+          "position": "center",
+          "formation": "line"
+        }
+      ],
+      "timeOfDay": "day"
+    },
+    {
+      "kind": "diorama",
+      "camera": "push_in",
+      "kicker": "Dry Shod",
+      "caption": "Pedestrians use elevated crosswalks to stay dry.",
+      "setting": "city",
+      "weather": "clear",
+      "duration": 5,
+      "elements": [
+        {
+          "role": "subject",
+          "count": 1,
+          "model": "pompeian_pedestrian",
+          "scale": 1.2,
+          "facing": "right",
+          "motion": "march",
+          "position": "center",
+          "formation": "single"
+        },
+        {
+          "role": "background",
+          "count": 3,
+          "model": "pompeii_street_module",
+          "facing": "camera",
+          "motion": "idle",
+          "position": "center",
+          "formation": "line"
+        }
+      ],
+      "timeOfDay": "day"
+    },
+    {
+      "kind": "diorama",
+      "camera": "pan_right",
+      "kicker": "Street Food",
+      "caption": "Thermopolia served hot stews to bustling crowds.",
+      "setting": "city",
+      "weather": "clear",
+      "duration": 5,
+      "elements": [
+        {
+          "role": "subject",
+          "count": 3,
+          "model": "thermopolium_shop",
+          "facing": "camera",
+          "motion": "idle",
+          "position": "center",
+          "formation": "line"
+        },
+        {
+          "role": "foreground",
+          "count": 4,
+          "model": "pompeian_pedestrian",
+          "facing": "away",
+          "motion": "idle",
+          "position": "front",
+          "formation": "scatter"
+        },
+        {
+          "role": "background",
+          "count": 3,
+          "model": "pompeii_street_module",
+          "facing": "camera",
+          "motion": "idle",
+          "position": "center",
+          "formation": "line"
+        }
+      ],
+      "timeOfDay": "day"
+    }
+  ],
+  "palette": { "accent": "#d49a46", "primary": "#b34233", "secondary": "#dfd7c5" },
+  "version": 2,
+  "factions": [{ "name": "Pompeians", "color": "#dfd7c5" }],
+  "location": "Pompeii, Roman Empire",
+  "subtitle": "Daily life in Roman Pompeii before the eruption",
+  "dateLabel": "Before 79 CE",
+  "coordinates": { "lat": 40.75, "lon": 14.485 },
+  "presentation": "immersive",
+  "totalDuration": 20
+}

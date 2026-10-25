@@ -3,12 +3,41 @@
 import { EXAMPLE_MODELS } from "../lib/content/model-examples";
 import {
   analyzeModel,
+  MODEL_LIMITS,
   modelDefinitionSchema,
   normalizeModelDefinition,
   geminiModelSetJsonSchema,
 } from "../lib/schema/model";
 import { normalizeVideoScript, validateVideoScript, geminiVideoScriptJsonSchema } from "../lib/schema/video";
 import { SHOWCASE_SCRIPT } from "../lib/content/showcase";
+import assert from "node:assert/strict";
+
+// A too-deep decorative branch must not remove later independent limbs.
+const boundedRig = normalizeModelDefinition({
+  id: "depth_regression",
+  name: "Depth regression",
+  category: "figure",
+  placement: "ground",
+  materials: [{ id: "cloth", color: "#445566" }],
+  parts: [
+    ...Array.from({ length: MODEL_LIMITS.maxDepth + 2 }, (_, i) => ({
+      id: `joint_${i}`,
+      shape: "box",
+      size: [0.1, 0.1, 0.1],
+      material: "cloth",
+      ...(i ? { parent: `joint_${i - 1}` } : {}),
+    })),
+    { id: "leg", parent: "joint_0", shape: "box", size: [0.2, 0.8, 0.2], material: "cloth" },
+    { id: "foot", parent: "leg", shape: "box", size: [0.3, 0.1, 0.2], material: "cloth" },
+  ],
+});
+assert.deepEqual(
+  boundedRig.parts.map((p) => p.id),
+  [...Array.from({ length: MODEL_LIMITS.maxDepth }, (_, i) => `joint_${i}`), "leg", "foot"],
+);
+assert.equal(analyzeModel(boundedRig).depth, MODEL_LIMITS.maxDepth);
+assert.ok(modelDefinitionSchema.safeParse(boundedRig).success);
+console.log("✓ over-deep detail removal preserves later limbs and their transforms");
 
 let failed = false;
 for (const m of EXAMPLE_MODELS) {

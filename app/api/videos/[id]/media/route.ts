@@ -78,7 +78,7 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
         "Accept-Ranges": "bytes",
         "Cache-Control": "private, no-store",
         "X-Content-Type-Options": "nosniff",
-        "Content-Disposition": `inline; filename="polyhistor-${id}.${extension}"`,
+        "Content-Disposition": `inline; filename="polychronicle-${id}.${extension}"`,
         ...(range ? { "Content-Range": `bytes ${start}-${end}/${asset.total_bytes}` } : {}),
       },
     });

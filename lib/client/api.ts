@@ -36,6 +36,8 @@ export interface Video {
   research?: string | null;
   sources: Source[] | null;
   gifUrl: string | null;
+  movieUrl?: string | null;
+  movieMime?: "video/mp4" | "video/webm" | null;
   posterUrl: string | null;
   gifBytes?: number | null;
   error?: string | null;
@@ -84,10 +86,12 @@ export const auth = {
 };
 
 export const videos = {
-  list: () => api<{ videos: Video[] }>("/api/videos"),
+  list: (active = false) => api<{ videos: Video[] }>(active ? "/api/videos?active=1" : "/api/videos"),
   get: (id: string) => api<{ video: Video }>(`/api/videos/${id}`),
-  create: (prompt: string, duration: number, aspect: Aspect) =>
-    api<{ video: Video }>("/api/videos", { method: "POST", json: { prompt, duration, aspect } }),
+  create: (prompt: string, duration: number, aspect: Aspect, signal?: AbortSignal) =>
+    api<{ video: Video }>("/api/videos", { method: "POST", json: { prompt, duration, aspect }, signal }),
+  discard: (id: string) =>
+    api<{ ok: boolean }>(`/api/videos/${id}?incomplete=1`, { method: "DELETE", keepalive: true }),
   remove: (id: string) => api<{ ok: boolean }>(`/api/videos/${id}`, { method: "DELETE" }),
 };
 

@@ -1,0 +1,957 @@
+{
+  "version": 2,
+  "presentation": "immersive",
+  "title": "A Day on a Pompeii Street",
+  "subtitle": "How Roman urban engineering solved sanitation and transit.",
+  "dateLabel": "Before 79 CE",
+  "location": "Pompeii, Roman Empire",
+  "coordinates": { "lat": 40.75, "lon": 14.486 },
+  "totalDuration": 60,
+  "seed": 2085027647,
+  "palette": { "primary": "#c45c3d", "secondary": "#a29a8a", "accent": "#e3bc5b" },
+  "factions": [{ "name": "Pompeii Infrastructure", "color": "#e3bc5b" }],
+  "models": [
+    {
+      "id": "roman_pompeii_domus_shop",
+      "name": "Roman Domus and Shop Building",
+      "category": "building",
+      "placement": "ground",
+      "scale": 1,
+      "materials": [
+        { "id": "plaster", "color": "#f2ebd9", "finish": "matte" },
+        { "id": "terracotta", "color": "#b85a3c", "finish": "matte" },
+        { "id": "wood", "color": "#5c4033", "finish": "matte" },
+        { "id": "stone", "color": "#787570", "finish": "matte" },
+        { "id": "interior", "color": "#1a1612", "finish": "matte" }
+      ],
+      "parts": [
+        {
+          "id": "main_structure",
+          "shape": "box",
+          "material": "plaster",
+          "size": [5.8, 6.8, 7.8],
+          "position": [0, 0, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "roof",
+          "shape": "wedge",
+          "material": "terracotta",
+          "size": [6.2, 1.2, 8.2],
+          "position": [0, 6.8, 0],
+          "rotation": [0, 90, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "shop_opening",
+          "shape": "box",
+          "material": "interior",
+          "size": [0.2, 2.8, 4.2],
+          "position": [2.85, 0, -1],
+          "anchor": "bottom"
+        },
+        {
+          "id": "stone_counter",
+          "shape": "box",
+          "material": "stone",
+          "size": [0.6, 1.1, 3.5],
+          "position": [2.85, 0, -1],
+          "anchor": "bottom"
+        },
+        {
+          "id": "side_door",
+          "shape": "box",
+          "material": "wood",
+          "size": [0.1, 2.2, 1.1],
+          "position": [2.86, 0, 2.2],
+          "anchor": "bottom"
+        },
+        {
+          "id": "upper_windows_front",
+          "shape": "box",
+          "material": "wood",
+          "size": [0.15, 1.2, 0.9],
+          "position": [2.85, 3.8, -1.8],
+          "anchor": "bottom",
+          "repeat": { "mode": "linear", "count": 3, "step": [0, 0, 1.8] }
+        },
+        {
+          "id": "upper_window_side",
+          "shape": "box",
+          "material": "wood",
+          "size": [0.9, 1.2, 0.15],
+          "position": [0, 3.8, 3.85],
+          "anchor": "bottom"
+        },
+        {
+          "id": "shop_amphora_1",
+          "shape": "cylinder",
+          "material": "terracotta",
+          "size": [0.35, 0.8, 0.35],
+          "position": [2.7, 1.1, -2.5],
+          "anchor": "bottom",
+          "taper": 0.6
+        },
+        {
+          "id": "shop_amphora_2",
+          "shape": "cylinder",
+          "material": "terracotta",
+          "size": [0.3, 0.7, 0.3],
+          "position": [2.7, 1.1, -1.8],
+          "anchor": "bottom",
+          "taper": 0.6
+        }
+      ],
+      "notes": "Roman domus with ground floor taberna (shop) featuring a stone counter, front portal, side door, shuttered windows, and sloping terracotta roof."
+    },
+    {
+      "id": "roman_cargo_cart",
+      "name": "Roman Commercial Cargo Cart",
+      "category": "vehicle",
+      "placement": "ground",
+      "scale": 1,
+      "materials": [
+        { "id": "wood_rough", "color": "#8c6239", "finish": "matte" },
+        { "id": "wood_light", "color": "#bf9b6c", "finish": "matte" },
+        { "id": "iron", "color": "#4a4a4a", "finish": "metal" },
+        { "id": "terracotta", "color": "#b85c37", "finish": "matte" },
+        { "id": "mule_skin", "color": "#5a4d41", "finish": "matte" },
+        { "id": "mule_mane", "color": "#27221f", "finish": "matte" }
+      ],
+      "parts": [
+        {
+          "id": "chassis",
+          "shape": "box",
+          "material": "wood_rough",
+          "size": [1.8, 0.15, 1.1],
+          "position": [0, 0.75, 0]
+        },
+        {
+          "id": "sideboard",
+          "parent": "chassis",
+          "shape": "box",
+          "material": "wood_rough",
+          "size": [1.8, 0.4, 0.06],
+          "position": [0, 0.25, 0.52],
+          "mirror": "z"
+        },
+        {
+          "id": "backboard",
+          "parent": "chassis",
+          "shape": "box",
+          "material": "wood_rough",
+          "size": [0.06, 0.4, 1.1],
+          "position": [-0.87, 0.25, 0]
+        },
+        {
+          "id": "axle",
+          "shape": "cylinder",
+          "material": "wood_rough",
+          "size": [0.12, 1.4, 0.12],
+          "rotation": [90, 0, 0],
+          "segments": 6,
+          "taper": 1,
+          "animation": [
+            {
+              "property": "rotation",
+              "axis": "y",
+              "wave": "spin",
+              "amplitude": 360,
+              "frequency": 0.4,
+              "when": "always"
+            }
+          ]
+        },
+        {
+          "id": "wheel",
+          "parent": "axle",
+          "shape": "cylinder",
+          "material": "wood_rough",
+          "size": [1.2, 0.08, 1.2],
+          "position": [0, 0.65, 0],
+          "rotation": [0, 0, 90],
+          "segments": 8,
+          "taper": 1,
+          "mirror": "z"
+        },
+        {
+          "id": "wheel_rim",
+          "parent": "wheel",
+          "shape": "torus",
+          "material": "iron",
+          "size": [1.24, 0.05, 1.24],
+          "rotation": [90, 0, 0],
+          "segments": 8,
+          "taper": 1,
+          "mirror": "z"
+        },
+        {
+          "id": "wheel_rotation",
+          "parent": "axle",
+          "shape": "group",
+          "size": [0.1, 0.1, 0.1],
+          "rotation": [0, 0, 0],
+          "segments": 3,
+          "taper": 1
+        },
+        {
+          "id": "shafts",
+          "parent": "chassis",
+          "shape": "box",
+          "material": "wood_rough",
+          "size": [2.2, 0.08, 0.08],
+          "position": [1.5, -0.05, 0.4],
+          "rotation": [0, 0, -5],
+          "mirror": "z"
+        },
+        {
+          "id": "amphora_1",
+          "parent": "chassis",
+          "shape": "capsule",
+          "material": "terracotta",
+          "size": [0.3, 0.8, 0.3],
+          "position": [-0.5, 0.3, -0.25],
+          "rotation": [15, 0, -10]
+        },
+        {
+          "id": "amphora_2",
+          "parent": "chassis",
+          "shape": "capsule",
+          "material": "terracotta",
+          "size": [0.3, 0.8, 0.3],
+          "position": [-0.1, 0.3, 0.25],
+          "rotation": [-10, 0, 15]
+        },
+        {
+          "id": "amphora_3",
+          "parent": "chassis",
+          "shape": "capsule",
+          "material": "terracotta",
+          "size": [0.3, 0.8, 0.3],
+          "position": [0.3, 0.3, -0.1],
+          "rotation": [5, 0, -5]
+        },
+        {
+          "id": "mule_body",
+          "shape": "capsule",
+          "material": "mule_skin",
+          "size": [0.5, 1.1, 0.5],
+          "position": [2.4, 0.9, 0],
+          "rotation": [0, 0, 90],
+          "animation": [
+            {
+              "property": "position",
+              "axis": "y",
+              "wave": "bounce",
+              "amplitude": 0.05,
+              "frequency": 0.8,
+              "when": "always"
+            }
+          ]
+        },
+        {
+          "id": "mule_neck",
+          "parent": "mule_body",
+          "shape": "cylinder",
+          "material": "mule_skin",
+          "size": [0.35, 0.6, 0.3],
+          "position": [0, 0.45, 0.2],
+          "rotation": [0, 0, -35],
+          "segments": 6,
+          "taper": 0.8
+        },
+        {
+          "id": "mule_head",
+          "parent": "mule_neck",
+          "shape": "capsule",
+          "material": "mule_skin",
+          "size": [0.25, 0.45, 0.22],
+          "position": [0, 0.3, 0.1],
+          "rotation": [0, 0, 80],
+          "animation": [
+            { "property": "rotation", "axis": "z", "wave": "sine", "amplitude": 8, "frequency": 0.4, "when": "always" }
+          ]
+        },
+        {
+          "id": "mule_ear",
+          "parent": "mule_head",
+          "shape": "cone",
+          "material": "mule_mane",
+          "size": [0.08, 0.25, 0.08],
+          "position": [0.08, 0.15, 0.08],
+          "rotation": [-10, 0, -15],
+          "segments": 3,
+          "taper": 1,
+          "mirror": "z"
+        },
+        {
+          "id": "mule_leg_front",
+          "parent": "mule_body",
+          "shape": "cylinder",
+          "material": "mule_skin",
+          "size": [0.15, 0.8, 0.15],
+          "position": [0.18, 0.4, 0.15],
+          "rotation": [0, 0, 10],
+          "segments": 4,
+          "taper": 0.7,
+          "mirror": "z"
+        },
+        {
+          "id": "mule_leg_back",
+          "parent": "mule_body",
+          "shape": "cylinder",
+          "material": "mule_skin",
+          "size": [0.15, 0.8, 0.15],
+          "position": [-0.18, -0.4, 0.15],
+          "rotation": [0, 0, -10],
+          "segments": 4,
+          "taper": 0.7,
+          "mirror": "z"
+        }
+      ],
+      "notes": "Roman commercial cart with large iron-rimmed wheels matched to street-stone gauges, a mule harness, and amphorae stack."
+    },
+    {
+      "id": "pompeii_street_fountain",
+      "name": "Public Water Fountain",
+      "category": "structure",
+      "placement": "ground",
+      "scale": 1,
+      "materials": [
+        { "id": "basalt", "color": "#3c3d42", "finish": "matte" },
+        { "id": "limestone", "color": "#8a8c82", "finish": "matte" },
+        { "id": "bronze", "color": "#a88954", "finish": "metal" },
+        { "id": "water", "color": "#4facfe", "finish": "glass" },
+        { "id": "water_foam", "color": "#ffffff", "finish": "emissive" }
+      ],
+      "parts": [
+        {
+          "id": "pavement",
+          "shape": "box",
+          "material": "basalt",
+          "size": [3, 0.1, 2],
+          "position": [0, 0, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "stepping_stone",
+          "shape": "box",
+          "material": "basalt",
+          "size": [0.8, 0.22, 0.5],
+          "position": [0.8, 0.1, 0.6],
+          "rotation": [0, 15, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "basin_front",
+          "shape": "box",
+          "material": "basalt",
+          "size": [0.1, 0.6, 1.2],
+          "position": [0.5, 0.1, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "basin_back",
+          "shape": "box",
+          "material": "basalt",
+          "size": [0.1, 0.6, 1.2],
+          "position": [-0.5, 0.1, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "basin_left",
+          "shape": "box",
+          "material": "basalt",
+          "size": [0.9, 0.6, 0.1],
+          "position": [0, 0.1, -0.55],
+          "anchor": "bottom"
+        },
+        {
+          "id": "basin_right",
+          "shape": "box",
+          "material": "basalt",
+          "size": [0.9, 0.6, 0.1],
+          "position": [0, 0.1, 0.55],
+          "anchor": "bottom"
+        },
+        {
+          "id": "basin_water",
+          "shape": "box",
+          "material": "water",
+          "size": [0.9, 0.05, 1],
+          "position": [0, 0.6, 0],
+          "rotation": [0, 0, 0],
+          "anchor": "center",
+          "segments": 3
+        },
+        {
+          "id": "pillar",
+          "shape": "box",
+          "material": "limestone",
+          "size": [0.3, 1.3, 0.4],
+          "position": [-0.4, 0.1, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "pillar_top",
+          "shape": "wedge",
+          "material": "limestone",
+          "size": [0.3, 0.15, 0.4],
+          "position": [-0.4, 1.4, 0],
+          "rotation": [0, 0, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "gargoyle_head",
+          "shape": "sphere",
+          "material": "limestone",
+          "size": [0.18, 0.22, 0.18],
+          "position": [-0.22, 1, 0],
+          "anchor": "center"
+        },
+        {
+          "id": "bronze_spout",
+          "shape": "cylinder",
+          "material": "bronze",
+          "size": [0.04, 0.12, 0.04],
+          "position": [-0.14, 0.95, 0],
+          "rotation": [0, 0, 90],
+          "anchor": "bottom",
+          "segments": 6
+        },
+        {
+          "id": "water_stream",
+          "shape": "cylinder",
+          "material": "water",
+          "size": [0.03, 0.5, 0.03],
+          "position": [-0.08, 0.94, 0],
+          "rotation": [0, 0, -15],
+          "anchor": "top",
+          "taper": 0.95,
+          "animation": [
+            { "property": "scale", "axis": "y", "wave": "pulse", "amplitude": 0.05, "frequency": 0.5, "when": "always" }
+          ]
+        },
+        {
+          "id": "water_splash",
+          "shape": "ico",
+          "material": "water_foam",
+          "size": [0.12, 0.08, 0.12],
+          "position": [-0.03, 0.62, 0],
+          "rotation": [0, 0, 0],
+          "anchor": "center",
+          "segments": 5,
+          "taper": 1,
+          "animation": [
+            {
+              "property": "scale",
+              "axis": "x",
+              "wave": "bounce",
+              "amplitude": 0.15,
+              "frequency": 0.8,
+              "when": "always"
+            },
+            {
+              "property": "scale",
+              "axis": "z",
+              "wave": "bounce",
+              "amplitude": 0.15,
+              "frequency": 0.8,
+              "phase": 0.5,
+              "when": "always"
+            }
+          ]
+        },
+        {
+          "id": "spill_lip",
+          "shape": "box",
+          "material": "water",
+          "size": [0.12, 0.02, 0.8],
+          "position": [0.5, 0.65, 0],
+          "rotation": [0, 0, 10],
+          "anchor": "bottom"
+        },
+        {
+          "id": "flowing_water_street",
+          "shape": "extrusion",
+          "material": "water",
+          "size": [0.8, 0.02, 0.7],
+          "position": [0.9, 0.11, 0],
+          "anchor": "center",
+          "profile": [
+            [-1, -1],
+            [1, -1],
+            [0.8, 1],
+            [-0.8, 1]
+          ]
+        },
+        {
+          "id": "spill_ripple",
+          "shape": "torus",
+          "material": "water_foam",
+          "size": [0.24, 0.015, 0.24],
+          "position": [-0.03, 0.61, 0],
+          "rotation": [90, 0, 0],
+          "anchor": "center",
+          "segments": 8,
+          "taper": 1,
+          "animation": [
+            { "property": "scale", "axis": "x", "wave": "sine", "amplitude": 0.2, "frequency": 0.6, "when": "always" },
+            { "property": "scale", "axis": "z", "wave": "sine", "amplitude": 0.2, "frequency": 0.6, "when": "always" }
+          ]
+        },
+        {
+          "id": "water_ripple_movement",
+          "shape": "group",
+          "size": [0.1, 0.1, 0.1],
+          "position": [0, 0, 0],
+          "rotation": [0, 0, 0],
+          "segments": 3,
+          "taper": 1
+        },
+        {
+          "id": "street_ripple_1",
+          "parent": "water_ripple_movement",
+          "shape": "box",
+          "material": "water_foam",
+          "size": [0.3, 0.01, 0.4],
+          "position": [0.9, 0.12, 0.1],
+          "rotation": [0, 10, 0],
+          "anchor": "center",
+          "segments": 3,
+          "taper": 1
+        },
+        {
+          "id": "street_ripple_2",
+          "parent": "water_ripple_movement",
+          "shape": "box",
+          "material": "water_foam",
+          "size": [0.2, 0.01, 0.3],
+          "position": [1.1, 0.12, -0.2],
+          "rotation": [0, -15, 0],
+          "anchor": "center",
+          "segments": 3,
+          "taper": 1
+        }
+      ]
+    },
+    {
+      "id": "raised_stepping_stones",
+      "name": "Pedestrian Stepping Stones",
+      "category": "structure",
+      "placement": "ground",
+      "materials": [
+        { "id": "basalt_dark", "color": "#2c2d30", "finish": "matte" },
+        { "id": "basalt_worn", "color": "#515357", "finish": "matte" },
+        { "id": "marble_white", "color": "#e8e8e8", "finish": "emissive", "nightGlow": true },
+        { "id": "water", "color": "#4da6ff", "finish": "glass" }
+      ],
+      "parts": [
+        {
+          "id": "road_base",
+          "shape": "box",
+          "material": "basalt_dark",
+          "size": [2.4, 0.1, 4.6],
+          "position": [0, 0, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "sidewalk_left",
+          "shape": "box",
+          "material": "basalt_worn",
+          "size": [2.4, 0.4, 0.7],
+          "position": [0, 0.1, -1.95],
+          "anchor": "bottom"
+        },
+        {
+          "id": "sidewalk_right",
+          "shape": "box",
+          "material": "basalt_worn",
+          "size": [2.4, 0.4, 0.7],
+          "position": [0, 0.1, 1.95],
+          "anchor": "bottom"
+        },
+        {
+          "id": "stone_center",
+          "shape": "cylinder",
+          "material": "basalt_dark",
+          "size": [0.6, 0.4, 0.85],
+          "position": [0, 0.1, 0],
+          "anchor": "bottom",
+          "segments": 8
+        },
+        {
+          "id": "stone_center_top",
+          "shape": "cylinder",
+          "material": "basalt_worn",
+          "size": [0.54, 0.02, 0.78],
+          "position": [0, 0.5, 0],
+          "anchor": "bottom",
+          "segments": 8
+        },
+        {
+          "id": "stone_outer",
+          "shape": "cylinder",
+          "material": "basalt_dark",
+          "size": [0.6, 0.4, 0.85],
+          "position": [0, 0.1, 1.15],
+          "anchor": "bottom",
+          "segments": 8,
+          "mirror": "z"
+        },
+        {
+          "id": "stone_outer_top",
+          "shape": "cylinder",
+          "material": "basalt_worn",
+          "size": [0.54, 0.02, 0.78],
+          "position": [0, 0.5, 1.15],
+          "anchor": "bottom",
+          "segments": 8,
+          "mirror": "z"
+        },
+        {
+          "id": "kerb_detail_left",
+          "shape": "box",
+          "material": "basalt_dark",
+          "size": [2.4, 0.05, 0.05],
+          "position": [0, 0.5, -1.62],
+          "anchor": "bottom"
+        },
+        {
+          "id": "kerb_detail_right",
+          "shape": "box",
+          "material": "basalt_dark",
+          "size": [2.4, 0.05, 0.05],
+          "position": [0, 0.5, 1.62],
+          "anchor": "bottom"
+        },
+        {
+          "id": "tesserae_grid_left",
+          "shape": "box",
+          "material": "marble_white",
+          "size": [0.04, 0.012, 0.04],
+          "position": [-0.8, 0.1, -0.6],
+          "anchor": "bottom",
+          "repeat": { "mode": "linear", "count": 4, "step": [0.5, 0, -0.1] }
+        },
+        {
+          "id": "tesserae_grid_right",
+          "shape": "box",
+          "material": "marble_white",
+          "size": [0.04, 0.012, 0.04],
+          "position": [-0.6, 0.1, 0.6],
+          "anchor": "bottom",
+          "repeat": { "mode": "linear", "count": 4, "step": [0.4, 0, 0.1] }
+        },
+        {
+          "id": "fountain_basin",
+          "shape": "box",
+          "material": "basalt_dark",
+          "size": [0.6, 0.5, 0.5],
+          "position": [0.6, 0.5, 1.9],
+          "anchor": "bottom"
+        },
+        {
+          "id": "fountain_spout",
+          "shape": "cylinder",
+          "material": "marble_white",
+          "size": [0.06, 0.15, 0.06],
+          "position": [0.6, 1, 1.9],
+          "rotation": [90, 0, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "water_trickle",
+          "shape": "box",
+          "material": "water",
+          "size": [0.04, 0.4, 0.04],
+          "position": [0.6, 1, 1.7],
+          "anchor": "top"
+        }
+      ],
+      "notes": "Roman pedestrian crossing from Pompeii. Features three dark basalt stones spaced precisely for cart axles, raised sidewalks, and reflective marble tesserae."
+    }
+  ],
+  "scenes": [
+    {
+      "kind": "diorama",
+      "duration": 10,
+      "kicker": "Via dell’Abbondanza",
+      "caption": "A bustling avenue in Pompeii is lined with shops, taverns, and homes.",
+      "setting": "city",
+      "timeOfDay": "day",
+      "weather": "clear",
+      "camera": "tracking",
+      "elements": [
+        {
+          "model": "roman_pompeii_domus_shop",
+          "count": 10,
+          "formation": "line",
+          "position": "left",
+          "motion": "idle",
+          "role": "background",
+          "offset": { "x": -10, "z": 0 },
+          "facing": "right",
+          "scale": 1
+        },
+        {
+          "model": "roman_pompeii_domus_shop",
+          "count": 10,
+          "formation": "line",
+          "position": "right",
+          "motion": "idle",
+          "role": "background",
+          "offset": { "x": 10, "z": 0 },
+          "facing": "left",
+          "scale": 1
+        },
+        {
+          "model": "roman_cargo_cart",
+          "count": 1,
+          "formation": "single",
+          "position": "center",
+          "motion": "march",
+          "role": "subject",
+          "offset": { "x": 0, "z": -15 },
+          "facing": "camera",
+          "scale": 1
+        }
+      ]
+    },
+    {
+      "kind": "diorama",
+      "duration": 8,
+      "kicker": "Basalt Paving",
+      "caption": "Heavy carts locked into deep grooves worn into basalt paving stones.",
+      "setting": "city",
+      "timeOfDay": "day",
+      "weather": "clear",
+      "camera": "low_angle",
+      "elements": [
+        {
+          "model": "roman_cargo_cart",
+          "count": 1,
+          "formation": "single",
+          "position": "center",
+          "motion": "march",
+          "role": "subject",
+          "facing": "camera",
+          "scale": 1
+        },
+        {
+          "model": "roman_pompeii_domus_shop",
+          "count": 8,
+          "formation": "line",
+          "position": "left",
+          "motion": "idle",
+          "role": "background",
+          "offset": { "x": -10, "z": -10 },
+          "facing": "right",
+          "scale": 1
+        }
+      ]
+    },
+    {
+      "kind": "diorama",
+      "duration": 8,
+      "kicker": "Sanitation System",
+      "caption": "Lacking sewers, public fountains overflowed to flush waste down the slopes.",
+      "setting": "city",
+      "timeOfDay": "day",
+      "weather": "clear",
+      "camera": "push_in",
+      "elements": [
+        {
+          "model": "pompeii_street_fountain",
+          "count": 1,
+          "formation": "single",
+          "position": "center",
+          "motion": "idle",
+          "role": "subject",
+          "offset": { "x": 4, "z": -5 },
+          "facing": "camera",
+          "scale": 1
+        },
+        {
+          "model": "roman_pompeii_domus_shop",
+          "count": 4,
+          "formation": "line",
+          "position": "back",
+          "motion": "idle",
+          "role": "background",
+          "offset": { "x": 0, "z": -15 },
+          "facing": "camera",
+          "scale": 1
+        }
+      ]
+    },
+    {
+      "kind": "diorama",
+      "duration": 8,
+      "kicker": "Elevated Sidewalks",
+      "caption": "Massive basalt stepping stones serve as elevated crosswalks for pedestrians.",
+      "setting": "city",
+      "timeOfDay": "day",
+      "weather": "clear",
+      "camera": "eye_level",
+      "elements": [
+        {
+          "model": "raised_stepping_stones",
+          "count": 1,
+          "formation": "single",
+          "position": "center",
+          "motion": "idle",
+          "role": "subject",
+          "offset": { "x": 0, "z": -2 },
+          "facing": "camera",
+          "scale": 1
+        },
+        {
+          "model": "pompeii_street_fountain",
+          "count": 1,
+          "formation": "single",
+          "position": "right",
+          "motion": "idle",
+          "role": "background",
+          "offset": { "x": 5, "z": -8 },
+          "facing": "camera",
+          "scale": 1
+        },
+        {
+          "model": "roman_pompeii_domus_shop",
+          "count": 6,
+          "formation": "line",
+          "position": "left",
+          "motion": "idle",
+          "role": "background",
+          "offset": { "x": -10, "z": 0 },
+          "facing": "right",
+          "scale": 1
+        }
+      ]
+    },
+    {
+      "kind": "diorama",
+      "duration": 10,
+      "kicker": "Standardized Axles",
+      "caption": "Precisely spaced stepping stones allow carts to pass through smoothly.",
+      "setting": "city",
+      "timeOfDay": "dusk",
+      "weather": "clear",
+      "camera": "tracking",
+      "elements": [
+        {
+          "model": "roman_cargo_cart",
+          "count": 1,
+          "formation": "single",
+          "position": "center",
+          "motion": "march",
+          "role": "subject",
+          "offset": { "x": 0, "z": -5 },
+          "facing": "camera",
+          "scale": 1
+        },
+        {
+          "model": "raised_stepping_stones",
+          "count": 1,
+          "formation": "single",
+          "position": "center",
+          "motion": "idle",
+          "role": "foreground",
+          "offset": { "x": 0, "z": 2 },
+          "facing": "camera",
+          "scale": 1
+        },
+        {
+          "model": "roman_pompeii_domus_shop",
+          "count": 8,
+          "formation": "line",
+          "position": "left",
+          "motion": "idle",
+          "role": "background",
+          "offset": { "x": -10, "z": -10 },
+          "facing": "right",
+          "scale": 1
+        }
+      ]
+    },
+    {
+      "kind": "diorama",
+      "duration": 8,
+      "kicker": "Roman Reflectors",
+      "caption": "Ancient white marble chips in dark pavement reflect moonlight for safe night travel.",
+      "setting": "city",
+      "timeOfDay": "night",
+      "weather": "clear",
+      "camera": "pan_right",
+      "elements": [
+        {
+          "model": "roman_cargo_cart",
+          "count": 1,
+          "formation": "single",
+          "position": "center",
+          "motion": "march",
+          "role": "subject",
+          "facing": "right",
+          "scale": 1
+        },
+        {
+          "model": "roman_pompeii_domus_shop",
+          "count": 5,
+          "formation": "line",
+          "position": "back",
+          "motion": "idle",
+          "role": "background",
+          "offset": { "x": 0, "z": -12 },
+          "facing": "camera",
+          "scale": 1
+        }
+      ]
+    },
+    {
+      "kind": "diorama",
+      "duration": 8,
+      "kicker": "Urban Engineering",
+      "caption": "Before the eruption, Pompeii's streets demonstrated resilient Roman infrastructure.",
+      "setting": "city",
+      "timeOfDay": "day",
+      "weather": "clear",
+      "camera": "pull_out",
+      "elements": [
+        {
+          "model": "raised_stepping_stones",
+          "count": 1,
+          "formation": "single",
+          "position": "center",
+          "motion": "idle",
+          "role": "subject",
+          "offset": { "x": 0, "z": -4 },
+          "facing": "camera",
+          "scale": 1
+        },
+        {
+          "model": "pompeii_street_fountain",
+          "count": 1,
+          "formation": "single",
+          "position": "right",
+          "motion": "idle",
+          "role": "background",
+          "offset": { "x": 6, "z": -10 },
+          "facing": "camera",
+          "scale": 1
+        },
+        {
+          "model": "roman_pompeii_domus_shop",
+          "count": 12,
+          "formation": "line",
+          "position": "left",
+          "motion": "idle",
+          "role": "background",
+          "offset": { "x": -10, "z": -5 },
+          "facing": "right",
+          "scale": 1
+        }
+      ]
+    }
+  ]
+}

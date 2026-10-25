@@ -12,10 +12,13 @@ export default function Error({ error, retry }: { error: unknown; retry: () => v
   return (
     <div
       className="container"
-      style={{ minHeight: "60vh", display: "grid", placeItems: "center", textAlign: "center", padding: "80px 0" }}
+      style={{ minHeight: "45vh", display: "grid", placeItems: "center", textAlign: "center", padding: "48px 0" }}
     >
       <div className="stack" style={{ gap: 18, justifyItems: "center", maxWidth: 560 }}>
-        <span className="eyebrow">Something went wrong</span>
+        <div className="error-art" aria-hidden="true">
+          !
+        </div>
+        <span className="eyebrow">A pause in the story</span>
         <h1 style={{ fontSize: "clamp(32px, 4vw, 44px)" }}>This page didn’t load properly</h1>
         <p className="lead" style={{ margin: "0 auto" }}>
           It’s not something you did. Please try again — and if it keeps happening, come back in a few minutes.

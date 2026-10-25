@@ -29,20 +29,20 @@ export class Ambience {
   async resume() {
     await this.context.resume();
   }
-  update(scene: Scene, time: number, active: boolean, voice: boolean) {
+  update(scene: Scene, time: number, active: boolean) {
     if (this.context.state === "closed") return;
-    const space = scene.setting === "orbit" || scene.setting === "lunar";
-    const water = ["ocean", "coast", "river"].includes(scene.setting);
-    const rain = ["rain", "storm"].includes(scene.weather);
+    const interior = scene.layout === "interior";
+    const space = !interior && (scene.setting === "orbit" || scene.setting === "lunar");
+    const water = !interior && ["ocean", "coast", "river"].includes(scene.setting);
+    const rain = !interior && ["rain", "storm"].includes(scene.weather);
     const fire = scene.elements.some((e) => e.motion === "burn");
     const level =
       active && !space
-        ? (rain ? 0.22 : water ? 0.18 : fire ? 0.12 : 0.08) *
-          (voice ? 0.45 : 1) *
+        ? (interior ? 0.04 : rain ? 0.22 : water ? 0.18 : fire ? 0.12 : 0.08) *
           (0.85 + 0.15 * Math.sin(time * (water ? 0.65 : 0.23)))
         : 0;
     this.filter.frequency.setTargetAtTime(
-      rain ? 4600 : fire ? 2200 : water ? 1200 : 550,
+      interior ? 350 : rain ? 4600 : fire ? 2200 : water ? 1200 : 550,
       this.context.currentTime,
       0.5,
     );

@@ -5,9 +5,12 @@ export default function NotFound() {
   return (
     <div
       className="container"
-      style={{ minHeight: "60vh", display: "grid", placeItems: "center", textAlign: "center", padding: "80px 0" }}
+      style={{ minHeight: "45vh", display: "grid", placeItems: "center", textAlign: "center", padding: "48px 0" }}
     >
       <div className="stack" style={{ gap: 18, justifyItems: "center" }}>
+        <div className="error-art" aria-hidden="true">
+          ?
+        </div>
         <span className="eyebrow">Error 404</span>
         <FacetText text="Lost in time" style={{ fontSize: "clamp(48px, 8vw, 96px)" }} />
         <p className="lead" style={{ margin: "0 auto" }}>

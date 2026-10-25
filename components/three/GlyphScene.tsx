@@ -99,7 +99,7 @@ function Word({ text, still }: { text: string; still: boolean }) {
   );
 }
 
-export function GlyphScene({ text = "POLYHISTOR" }: { text?: string }) {
+export function GlyphScene({ text = "POLYCHRONICLE" }: { text?: string }) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref);
   const reduce = !!useReducedMotion();

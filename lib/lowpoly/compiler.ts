@@ -10,6 +10,8 @@
  * - Animation channels are pure functions of time (deterministic renders).
  */
 import * as THREE from "three";
+import { channelValue } from "@/lib/lowpoly/motion";
+import { trussGeometry } from "@/lib/lowpoly/truss";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import {
   MODEL_LIMITS,
@@ -26,14 +28,85 @@ const DEG = Math.PI / 180;
 const EFFECT_SHAPES = new Set(["flag", "fire", "smoke", "explosion"]);
 
 // ---------------------------------------------------------------- materials
+export interface GroundShading {
+  /** World y of the local ground plane; surfaces just above it are darkened. */
+  level: { value: number };
+  /** Brightness at ground contact (1 = no darkening). */
+  floor: { value: number };
+  /** Height in metres over which the darkening fades out. */
+  range: { value: number };
+  /** Amplitude of world-space brightness variation (0 = off). */
+  noise: { value: number };
+}
+
 export interface FinishMaterials {
   get(finish: Finish): THREE.Material;
+  ground: GroundShading;
   dispose(): void;
 }
 
+/**
+ * Adds two cheap, deterministic shading terms to the lit materials: contact
+ * darkening near the ground (reads as ambient occlusion and anchors models)
+ * and blocky world-space brightness variation that breaks up large flat faces.
+ * Works for regular and instanced meshes.
+ */
+export function applyGroundShading(material: THREE.MeshStandardMaterial, ground: GroundShading) {
+  material.onBeforeCompile = (shader) => {
+    shader.uniforms.uPhGround = ground.level;
+    shader.uniforms.uPhFloor = ground.floor;
+    shader.uniforms.uPhRange = ground.range;
+    shader.uniforms.uPhNoise = ground.noise;
+    shader.vertexShader = shader.vertexShader
+      .replace("#include <common>", "#include <common>\nvarying vec3 vPhWorld;\nvarying vec3 vPhLocal;")
+      .replace(
+        "#include <project_vertex>",
+        `#include <project_vertex>
+        vec4 phW = vec4(transformed, 1.0);
+        #ifdef USE_INSTANCING
+          phW = instanceMatrix * phW;
+        #endif
+        vPhLocal = phW.xyz;
+        vPhWorld = (modelMatrix * phW).xyz;`,
+      );
+    shader.fragmentShader = shader.fragmentShader
+      .replace(
+        "#include <common>",
+        `#include <common>
+        varying vec3 vPhWorld;
+        varying vec3 vPhLocal;
+        uniform float uPhGround;
+        uniform float uPhFloor;
+        uniform float uPhRange;
+        uniform float uPhNoise;
+        float phHash(vec3 p) {
+          p = fract(p * 0.3183099 + 0.1);
+          p *= 17.0;
+          return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
+        }`,
+      )
+      .replace(
+        "#include <color_fragment>",
+        `#include <color_fragment>
+        float phAO = mix(uPhFloor, 1.0, smoothstep(0.0, uPhRange, vPhWorld.y - uPhGround));
+        float phN = phHash(floor(vPhLocal * 1.35) + 0.5);
+        diffuseColor.rgb *= phAO * (1.0 + uPhNoise * (phN - 0.5));`,
+      );
+  };
+  material.customProgramCacheKey = () => "ph-ground-v2";
+  return material;
+}
+
 export function makeFinishMaterials(): FinishMaterials {
+  // Neutral by default (decorative R3F scenes); PolyEngine enables it per scene.
+  const ground: GroundShading = {
+    level: { value: 0 },
+    floor: { value: 1 },
+    range: { value: 1.4 },
+    noise: { value: 0 },
+  };
   const std = (o: THREE.MeshStandardMaterialParameters) =>
-    new THREE.MeshStandardMaterial({ vertexColors: true, flatShading: true, ...o });
+    applyGroundShading(new THREE.MeshStandardMaterial({ vertexColors: true, flatShading: true, ...o }), ground);
   const table: Record<Finish, THREE.Material> = {
     matte: std({ roughness: 0.9, metalness: 0 }),
     satin: std({ roughness: 0.55, metalness: 0.05 }),
@@ -44,6 +117,7 @@ export function makeFinishMaterials(): FinishMaterials {
   };
   return {
     get: (f) => table[f] ?? table.matte,
+    ground,
     dispose: () => Object.values(table).forEach((m) => m.dispose()),
   };
 }
@@ -139,6 +213,9 @@ function primitiveGeometry(p: ModelPart): THREE.BufferGeometry | null {
   const seg = p.segments;
   let g: THREE.BufferGeometry;
   switch (p.shape) {
+    case "truss":
+      g = trussGeometry([sx, sy, sz], seg ?? 8, p.taper ?? 1, p.beamWidth);
+      break;
     case "box":
       g = new THREE.BoxGeometry(sx, sy, sz);
       break;
@@ -213,6 +290,7 @@ function primitiveGeometry(p: ModelPart): THREE.BufferGeometry | null {
   const flat = g.index ? g.toNonIndexed() : g;
   if (flat !== g) g.dispose();
   for (const name of Object.keys(flat.attributes)) if (name !== "position") flat.deleteAttribute(name);
+  if (p.geometryRotation) flat.applyMatrix4(eulerMatrix(p.geometryRotation));
   flat.computeBoundingBox();
   const bb = flat.boundingBox!;
   const center = bb.getCenter(new THREE.Vector3());
@@ -275,6 +353,57 @@ function expand(def: ModelDefinition): Node[] {
   }
   let budget = MODEL_LIMITS.maxExpandedNodes;
   const all: Node[] = [];
+  const partBounds = new Map<ModelPart, THREE.Box3>();
+  const boundsOf = (part: ModelPart) => {
+    let box = partBounds.get(part);
+    if (!box) {
+      const geometry = primitiveGeometry(part);
+      box = geometry?.boundingBox?.clone() ?? new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
+      geometry?.dispose();
+      partBounds.set(part, box);
+    }
+    return box;
+  };
+  const attach = (part: ModelPart, parent: ModelPart, pos: THREE.Vector3, rot: [number, number, number]) => {
+    const face = part.attachTo!;
+    const parentBox = boundsOf(parent);
+    const point = parentBox.getCenter(new THREE.Vector3());
+    if (face === "center") {
+      pos.add(point);
+      return;
+    }
+    const axis = face === "top" || face === "bottom" ? "y" : face === "front" || face === "back" ? "x" : "z";
+    const positive = face === "top" || face === "front" || face === "right";
+    const childBox = boundsOf(part);
+    const contact = childBox.getCenter(new THREE.Vector3());
+    // Attach mating face centres, not rotated bounding-box extrema. A tilted
+    // hat or limb must rotate around its contact, not hover above its parent
+    // because an unrelated corner became the minimum point of its AABB.
+    point[axis] = positive ? parentBox.max[axis] : parentBox.min[axis];
+    // Bounding faces are only exact for boxes. Trace the actual surface at
+    // the requested tangential offset so curved/tapered joints do not hover.
+    const surface = primitiveGeometry(parent);
+    if (surface) {
+      const origin = point.clone().add(pos);
+      const extent = parentBox.getSize(new THREE.Vector3()).length() + 1;
+      origin[axis] = point[axis] + (positive ? extent : -extent);
+      const direction = new THREE.Vector3();
+      direction[axis] = positive ? -1 : 1;
+      const material = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide });
+      const mesh = new THREE.Mesh(surface, material);
+      mesh.updateMatrixWorld(true);
+      const hit = new THREE.Raycaster(origin, direction).intersectObject(mesh, false)[0];
+      // Out-of-silhouette offsets preserve explicit placement rather than
+      // silently relocating a part to an unrelated side of its parent.
+      if (hit) point[axis] = hit.point[axis];
+      surface.dispose();
+      material.dispose();
+    }
+    contact[axis] = positive ? childBox.min[axis] : childBox.max[axis];
+    contact.applyMatrix4(eulerMatrix(rot));
+    pos[axis] = 0;
+    pos.add(point).sub(contact);
+  };
 
   const visit = (part: ModelPart, parent: Node | null, mirrorMask: [boolean, boolean, boolean], depth: number) => {
     if (depth > MODEL_LIMITS.maxDepth) return;
@@ -286,7 +415,6 @@ function expand(def: ModelDefinition): Node[] {
     }
     const rep = part.repeat;
     const count = rep ? rep.count : 1;
-    let copyIndex = 0;
     for (const extraMirror of mirrors) {
       const mask: [boolean, boolean, boolean] = extraMirror
         ? [mirrorMask[0] !== extraMirror[0], mirrorMask[1] !== extraMirror[1], mirrorMask[2] !== extraMirror[2]]
@@ -316,6 +444,7 @@ function expand(def: ModelDefinition): Node[] {
                 : new THREE.Matrix4().makeRotationZ(a);
           pre = R.multiply(new THREE.Matrix4().makeTranslation(off.x, off.y, off.z));
         }
+        if (part.attachTo && parent) attach(part, parent.part, pos, rot);
         let local = pre.multiply(new THREE.Matrix4().makeTranslation(pos.x, pos.y, pos.z)).multiply(eulerMatrix(rot));
         if (mask[0] || mask[1] || mask[2]) {
           const F = reflection(mask);
@@ -326,10 +455,10 @@ function expand(def: ModelDefinition): Node[] {
           local,
           parent,
           children: [],
-          flip: !!part.animation?.some((c) => c.alternate) && copyIndex % 2 === 1,
+          // Descendants of a mirrored joint inherit its gait phase too.
+          flip: !!part.animation?.some((c) => c.alternate) && (mask.filter(Boolean).length + i) % 2 === 1,
           dynamic: !!part.animation?.length || EFFECT_SHAPES.has(part.shape),
         };
-        copyIndex++;
         parent?.children.push(node);
         all.push(node);
         for (const child of kids.get(part.id) ?? []) visit(child, node, mask, depth + 1);
@@ -345,9 +474,29 @@ interface FrameTemplate {
   parent: number;
   base: THREE.Matrix4;
   channels: ModelChannel[];
+  pivot?: [number, number, number];
   flip: boolean;
   meshes: { geometry: THREE.BufferGeometry; finish: Finish }[];
   effects: { part: ModelPart; matrix: THREE.Matrix4; color: string }[];
+}
+
+/** Resolve a named hinge from actual oriented, anchored primitive geometry. */
+export function resolveAnimationPivot(part: ModelPart): [number, number, number] | undefined {
+  if (!part.animationAnchor) return part.animationPivot;
+  const geometry = primitiveGeometry(part);
+  const bounds = geometry?.boundingBox;
+  if (!bounds) {
+    geometry?.dispose();
+    return [0, 0, 0];
+  }
+  const point = bounds.getCenter(new THREE.Vector3());
+  const face = part.animationAnchor;
+  if (face !== "center") {
+    const axis = face === "top" || face === "bottom" ? "y" : face === "front" || face === "back" ? "x" : "z";
+    point[axis] = face === "top" || face === "front" || face === "right" ? bounds.max[axis] : bounds.min[axis];
+  }
+  geometry.dispose();
+  return point.toArray();
 }
 
 export interface CompiledTemplate {
@@ -361,6 +510,42 @@ export interface ModelBounds {
   height: number;
   minY: number;
   center: THREE.Vector3;
+  /** Axis-aligned extent at rest (x = depth along the model's front, z = width). */
+  size: THREE.Vector3;
+}
+
+/** Camera bounds are centred on geometry; collision bounds remain origin-relative. */
+export function framingBounds(bounds: ModelBounds, scale: number) {
+  return {
+    offset: new THREE.Vector3(bounds.center.x * scale, 0, bounds.center.z * scale),
+    radius: Math.max(0.15, (Math.hypot(bounds.size.x, bounds.size.z) * scale) / 2),
+  };
+}
+
+/** Align the lowest authored vertex to the floor, regardless of model origin. */
+export function groundPlacement(bounds: ModelBounds, scale: number) {
+  const height = Math.max(0.1, bounds.size.y * scale);
+  return { height, lift: -bounds.minY * scale - Math.min(0.03, height * 0.012) };
+}
+
+/** Usable floor rectangle inside a room shell, in model space (scaled). */
+export interface InteriorBounds {
+  minX: number;
+  maxX: number;
+  minZ: number;
+  maxZ: number;
+  /** Top of the walls. */
+  height: number;
+  /** Top of the floor slab (0 when the shell has no floor). */
+  floor: number;
+  /** Sides with no wall (candidates for the camera's viewing side). */
+  open: { minX: boolean; maxX: boolean; minZ: boolean; maxZ: boolean };
+}
+
+export interface InstancedSet {
+  object: THREE.Group;
+  count: number;
+  dispose(): void;
 }
 
 export interface ModelInstance {
@@ -375,11 +560,43 @@ function resolveColor(mat: ModelMaterial, tint: string | undefined, variant: num
   return palette[variant % palette.length];
 }
 
+/** Break the supplied structural geometry, never substitute a named ruin model.
+ * Work in world-rest coordinates so parent transforms and repeats remain correct.
+ */
+function ruinGeometry(g: THREE.BufferGeometry, rng: Rng) {
+  g.computeBoundingBox();
+  const box = g.boundingBox!;
+  const center = box.getCenter(new THREE.Vector3());
+  const size = box.getSize(new THREE.Vector3());
+  if (box.min.y > 1.1) {
+    // Detached roof/upper-floor pieces settle onto the ground as tilted debris.
+    g.translate(-center.x, -center.y, -center.z);
+    g.rotateX((rng() - 0.5) * 1.3);
+    g.rotateZ((rng() - 0.5) * 1.1);
+    g.scale(0.75, Math.min(1, 0.65 / Math.max(0.1, size.y)), 0.75);
+    g.computeBoundingBox();
+    g.translate(center.x + (rng() - 0.5) * 1.8, -g.boundingBox!.min.y + rng() * 0.25, center.z + (rng() - 0.5) * 1.8);
+  } else {
+    // Lower walls remain as uneven stumps instead of intact facades.
+    const positions = g.getAttribute("position");
+    for (let i = 0; i < positions.count; i++) {
+      const x = positions.getX(i),
+        z = positions.getZ(i);
+      const edge = 0.7 + 0.65 * (0.5 + 0.5 * Math.sin(x * 2.1 + z * 1.7));
+      positions.setY(i, Math.min(positions.getY(i), edge));
+    }
+    positions.needsUpdate = true;
+  }
+  g.computeVertexNormals();
+  g.computeBoundingBox();
+}
+
 function compileTemplate(
   def: ModelDefinition,
   tint: string | undefined,
   variant: number,
   night: boolean,
+  ruined = false,
 ): CompiledTemplate {
   const nodes = expand(def);
   const mats = new Map(def.materials.map((m) => [m.id, m]));
@@ -419,18 +636,27 @@ function compileTemplate(
     const world = n.parent ? worldRest.get(n.parent)!.clone().multiply(n.local) : n.local.clone();
     worldRest.set(n, world);
     let owner = ownerFrame(n.parent);
-    if (n.dynamic) {
+    if (n.dynamic && !ruined) {
       const base = relativeTo(n, frameNode[owner]);
-      frames.push({ parent: owner, base, channels: n.part.animation ?? [], flip: n.flip, meshes: [], effects: [] });
+      frames.push({
+        parent: owner,
+        base,
+        channels: n.part.animation ?? [],
+        pivot: resolveAnimationPivot(n.part),
+        flip: n.flip,
+        meshes: [],
+        effects: [],
+      });
       frameNode.push(n);
       owner = frames.length - 1;
       frameOf.set(n, owner);
     }
-    const rel = n.dynamic ? new THREE.Matrix4() : relativeTo(n, frameNode[owner]);
+    const rel = ruined ? world : n.dynamic ? new THREE.Matrix4() : relativeTo(n, frameNode[owner]);
     const mat = n.part.material ? mats.get(n.part.material) : undefined;
     const color = mat ? resolveColor(mat, tint, variant) : "#9a958e";
 
     if (EFFECT_SHAPES.has(n.part.shape)) {
+      if (ruined) continue;
       frames[owner].effects.push({ part: n.part, matrix: rel, color });
       const s = n.part.size;
       const pt = new THREE.Vector3().setFromMatrixPosition(world);
@@ -446,19 +672,26 @@ function compileTemplate(
       n.part.size,
       n.part.segments,
       n.part.taper,
+      n.part.beamWidth,
       n.part.detail,
       n.part.profile,
       n.part.anchor,
+      n.part.geometryRotation,
     ]);
     if (!geoCache.has(key)) geoCache.set(key, primitiveGeometry(n.part));
     const proto = geoCache.get(key);
     if (!proto) continue;
     const g = proto.clone();
     g.applyMatrix4(rel);
+    if (ruined) ruinGeometry(g, rng);
 
     let finish: Finish = mat.finish;
     let c = new THREE.Color(color);
-    if (mat.nightGlow) {
+    if (ruined) {
+      c.lerp(new THREE.Color("#49433d"), 0.6);
+      finish = "matte";
+    }
+    if (mat.nightGlow && !ruined) {
       if (night) finish = "emissive";
       else {
         finish = "satin";
@@ -482,7 +715,10 @@ function compileTemplate(
     pieces.get(pkey)!.push(g);
 
     if (!proto.boundingBox) proto.computeBoundingBox();
-    bounds.union(_box.copy(proto.boundingBox!).applyMatrix4(world));
+    if (ruined) {
+      g.computeBoundingBox();
+      bounds.union(g.boundingBox!);
+    } else bounds.union(_box.copy(proto.boundingBox!).applyMatrix4(world));
   }
 
   for (const [key, list] of pieces) {
@@ -509,26 +745,11 @@ function compileTemplate(
   };
 }
 
-function waveValue(c: ModelChannel, t: number, flip: boolean) {
-  const ph = ((c.phase ?? 0) + (flip ? 180 : 0)) * DEG;
-  const w = 2 * Math.PI * c.frequency;
-  switch (c.wave) {
-    case "spin":
-      return c.property === "rotation" ? c.amplitude * t : c.amplitude * Math.sin(w * t + ph);
-    case "pulse": {
-      const s = 0.5 + 0.5 * Math.sin(w * t + ph);
-      return c.amplitude * s * s;
-    }
-    case "bounce":
-      return c.amplitude * Math.abs(Math.sin((w / 2) * t + ph));
-    default:
-      return c.amplitude * Math.sin(w * t + ph);
-  }
-}
-
 const _e = new THREE.Euler();
 const _q = new THREE.Quaternion();
 const _v = new THREE.Vector3();
+const _pivotBefore = new THREE.Vector3();
+const _pivotAfter = new THREE.Vector3();
 
 function instantiate(def: ModelDefinition, tpl: CompiledTemplate, fm: FinishMaterials, seed: number): ModelInstance {
   const rng = makeRng(seed);
@@ -603,7 +824,7 @@ function instantiate(def: ModelDefinition, tpl: CompiledTemplate, fm: FinishMate
         for (const c of a.f.channels) {
           const when = c.when ?? "always";
           if ((when === "moving" && !s.moving) || (when === "idle" && s.moving)) continue;
-          const v = waveValue(c, s.time + s.phase * 0.1, a.f.flip);
+          const v = channelValue(c, s.time + s.phase * 0.1, s.progress, a.f.flip);
           if (c.property === "rotation") {
             if (c.axis === "x") rx += v * DEG;
             else if (c.axis === "y") ry += v * DEG;
@@ -621,6 +842,17 @@ function instantiate(def: ModelDefinition, tpl: CompiledTemplate, fm: FinishMate
         a.obj.quaternion.copy(a.quat).multiply(_q.setFromEuler(_e.set(rx, ry, rz)));
         a.obj.position.copy(a.pos).add(_v.set(px, py, pz).applyQuaternion(a.quat));
         a.obj.scale.set(a.scl.x * (1 + sx), a.scl.y * (1 + sy), a.scl.z * (1 + sz));
+        if (a.f.pivot) {
+          _pivotBefore
+            .set(...a.f.pivot)
+            .multiply(a.scl)
+            .applyQuaternion(a.quat);
+          _pivotAfter
+            .set(...a.f.pivot)
+            .multiply(a.obj.scale)
+            .applyQuaternion(a.obj.quaternion);
+          a.obj.position.add(_pivotBefore).sub(_pivotAfter);
+        }
       }
       for (const fx of effects) fx.update(s);
     },
@@ -638,9 +870,14 @@ function instantiate(def: ModelDefinition, tpl: CompiledTemplate, fm: FinishMate
 export class ModelLibrary {
   private defs = new Map<string, ModelDefinition>();
   private templates = new Map<string, CompiledTemplate>();
+  private interiors = new Map<string, InteriorBounds | null>();
   readonly materials: FinishMaterials;
 
-  constructor(models: ModelDefinition[], materials?: FinishMaterials) {
+  constructor(
+    models: ModelDefinition[],
+    materials?: FinishMaterials,
+    private ruinedStructures = false,
+  ) {
     models.forEach((m) => this.defs.set(m.id, m));
     this.materials = materials ?? makeFinishMaterials();
   }
@@ -664,7 +901,13 @@ export class ModelLibrary {
     const key = `${id}|${tint ?? ""}|${variant}|${night ? 1 : 0}`;
     let t = this.templates.get(key);
     if (!t) {
-      t = compileTemplate(def, tint, variant, night);
+      t = compileTemplate(
+        def,
+        tint,
+        variant,
+        night,
+        this.ruinedStructures && (def.category === "building" || def.category === "structure"),
+      );
       this.templates.set(key, t);
     }
     return t;
@@ -678,7 +921,124 @@ export class ModelLibrary {
       0.3,
       Math.hypot(Math.max(Math.abs(b.min.x), Math.abs(b.max.x)), Math.max(Math.abs(b.min.z), Math.abs(b.max.z))),
     );
-    return { radius, height: Math.max(0.2, b.max.y), minY: b.min.y, center };
+    return { radius, height: Math.max(0.2, b.max.y), minY: b.min.y, center, size: b.getSize(new THREE.Vector3()) };
+  }
+
+  /**
+   * Measures a room shell from its actual parts: the largest floor slab,
+   * clipped to the inner faces of thin, tall walls standing on it. Null when
+   * the model has no recognisable floor or walls.
+   */
+  interior(id: string): InteriorBounds | null {
+    if (this.interiors.has(id)) return this.interiors.get(id)!;
+    const def = this.defs.get(id);
+    let result: InteriorBounds | null = null;
+    if (def) {
+      const world = new Map<Node, THREE.Matrix4>();
+      const boxes: THREE.Box3[] = [];
+      for (const n of expand(def)) {
+        const w = n.parent ? world.get(n.parent)!.clone().multiply(n.local) : n.local.clone();
+        world.set(n, w);
+        if (n.part.shape === "group" || EFFECT_SHAPES.has(n.part.shape)) continue;
+        const g = primitiveGeometry(n.part);
+        if (!g) continue;
+        g.computeBoundingBox();
+        boxes.push(g.boundingBox!.clone().applyMatrix4(w));
+        g.dispose();
+      }
+      const s = def.scale ?? 1;
+      for (const b of boxes) {
+        b.min.multiplyScalar(s);
+        b.max.multiplyScalar(s);
+      }
+      const size = (b: THREE.Box3) => b.getSize(new THREE.Vector3());
+      let floor: THREE.Box3 | null = null;
+      for (const b of boxes) {
+        const z = size(b);
+        if (z.y <= 0.5 && b.min.y < 0.6 && z.x * z.z >= 16 && (!floor || z.x * z.z > size(floor).x * size(floor).z))
+          floor = b;
+      }
+      const walls = boxes.filter((b) => {
+        const z = size(b);
+        return z.y >= 2 && Math.min(z.x, z.z) <= 0.8 && Math.max(z.x, z.z) >= 3;
+      });
+      if (floor || walls.length >= 2) {
+        const base = floor ?? walls.reduce((u, w) => u.union(w), new THREE.Box3());
+        const rect = { minX: base.min.x, maxX: base.max.x, minZ: base.min.z, maxZ: base.max.z };
+        const midX = (rect.minX + rect.maxX) / 2,
+          midZ = (rect.minZ + rect.maxZ) / 2;
+        const open = { minX: true, maxX: true, minZ: true, maxZ: true };
+        for (const w of walls) {
+          const z = size(w);
+          if (z.x <= z.z) {
+            if ((w.min.x + w.max.x) / 2 < midX) {
+              rect.minX = Math.max(rect.minX, w.max.x);
+              open.minX = false;
+            } else {
+              rect.maxX = Math.min(rect.maxX, w.min.x);
+              open.maxX = false;
+            }
+          } else if ((w.min.z + w.max.z) / 2 < midZ) {
+            rect.minZ = Math.max(rect.minZ, w.max.z);
+            open.minZ = false;
+          } else {
+            rect.maxZ = Math.min(rect.maxZ, w.min.z);
+            open.maxZ = false;
+          }
+        }
+        if (rect.maxX - rect.minX >= 2 && rect.maxZ - rect.minZ >= 2)
+          result = {
+            ...rect,
+            height: walls.length ? Math.max(...walls.map((w) => w.max.y)) : 3.5,
+            floor: floor ? Math.max(0, floor.max.y) : 0,
+            open,
+          };
+      }
+    }
+    this.interiors.set(id, result);
+    return result;
+  }
+
+  /**
+   * Static GPU-instanced copies of a model for set dressing: one draw call per
+   * surface finish regardless of count. Animated pivots are frozen at rest and
+   * effects are omitted, so use it for scenery, not for acting subjects.
+   */
+  instancedSet(
+    id: string,
+    matrices: THREE.Matrix4[],
+    o: { tint?: string; variant?: number; night?: boolean; colors?: THREE.Color[]; shadows?: boolean } = {},
+  ): InstancedSet | null {
+    const def = this.defs.get(id);
+    if (!def || !matrices.length) return null;
+    const tpl = this.template(id, o.tint, o.variant ?? 0, !!o.night);
+    const s = def.scale ?? 1;
+    const rootScale = new THREE.Matrix4().makeScale(s, s, s);
+    const frameWorld: THREE.Matrix4[] = [];
+    tpl.frames.forEach((f, i) => {
+      frameWorld[i] = i === 0 ? new THREE.Matrix4() : frameWorld[f.parent].clone().multiply(f.base);
+    });
+    const group = new THREE.Group();
+    const meshes: THREE.InstancedMesh[] = [];
+    const m4 = new THREE.Matrix4();
+    tpl.frames.forEach((f, i) => {
+      for (const m of f.meshes) {
+        const im = new THREE.InstancedMesh(m.geometry, this.materials.get(m.finish), matrices.length);
+        matrices.forEach((M, k) => {
+          im.setMatrixAt(k, m4.copy(M).multiply(rootScale).multiply(frameWorld[i]));
+          if (o.colors?.[k]) im.setColorAt(k, o.colors[k]);
+        });
+        im.instanceMatrix.needsUpdate = true;
+        if (im.instanceColor) im.instanceColor.needsUpdate = true;
+        im.computeBoundingSphere();
+        const lit = m.finish !== "emissive";
+        im.castShadow = (o.shadows ?? true) && lit && m.finish !== "glass";
+        im.receiveShadow = lit;
+        group.add(im);
+        meshes.push(im);
+      }
+    });
+    return { object: group, count: matrices.length, dispose: () => meshes.forEach((im) => im.dispose()) };
   }
 
   instance(

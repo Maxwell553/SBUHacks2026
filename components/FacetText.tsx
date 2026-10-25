@@ -42,7 +42,7 @@ export function FacetText({
               <motion.span
                 key={`${wi}-${i}`}
                 style={{ display: "inline-block", transformOrigin: "50% 100%" }}
-                initial={reduce ? false : { opacity: 0, y: "0.3em", rotateX: -35 }}
+                initial={reduce ? false : { opacity: 1, y: "0.3em", rotateX: -35 }}
                 whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
                 viewport={{ once: true, margin: "-40px" }}
                 transition={{ delay: d, duration: 0.6, ease: [0.25, 0.8, 0.25, 1] }}
@@ -77,7 +77,7 @@ export function Reveal({
     <motion.div
       className={className}
       style={style}
-      initial={reduce ? false : { opacity: 0, y }}
+      initial={reduce ? false : { opacity: 1, y }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-60px" }}
       transition={{ delay, duration: 0.7, ease: [0.25, 0.8, 0.25, 1] }}

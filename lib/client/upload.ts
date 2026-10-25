@@ -3,10 +3,10 @@ import { api, ApiError } from "@/lib/client/api";
 
 export const CHUNK_SIZE = 1024 * 1024;
 
-export type UploadMime = "image/gif" | "image/jpeg";
+export type UploadMime = "image/gif" | "image/jpeg" | "video/mp4" | "video/webm";
 
 /**
- * Chunked upload matching BACKEND_UPLOAD_CONTRACT.txt:
+ * Authenticated chunked upload:
  * init -> PUT chunks (<= 2 in flight, retried) -> complete.
  */
 export async function uploadAsset(

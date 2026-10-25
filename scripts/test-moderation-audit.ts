@@ -87,6 +87,13 @@ async function main() {
     });
     ok("keyword-declined storyboard recorded (stage=output, rule=graphic_gore)");
 
+    for (const prompt of ["nude avatars", "ＮＵＤＥ avatars", "na\u200bked people"]) {
+      v = await expectRejected(prompt, false);
+      assert.equal(v.source, "keyword");
+      assertRow(await lastRow(), prompt, { stage: "input", outcome: "rejected", source: "keyword", rule: "nudity" });
+    }
+    ok("nudity and Unicode variants rejected immediately and audited");
+
     if (live) {
       // 3. Classifier approves a legitimate prompt.
       const allowedInput = "The opening of the Brooklyn Bridge in New York in 1883";
@@ -116,7 +123,7 @@ async function main() {
 
     // 6. History is complete, ordered and free of checked text.
     const history = await moderationHistory(userId, videoId);
-    assert.equal(history.length, live ? 5 : 2, "one audit row per decision");
+    assert.equal(history.length, live ? 8 : 5, "one audit row per decision");
     const raw = JSON.stringify(history);
     for (const t of checked) assert(!raw.includes(t), "no checked text anywhere in audit history");
     ok(`audit history has ${history.length} rows, none containing checked text`);
