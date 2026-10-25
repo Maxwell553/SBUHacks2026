@@ -84,9 +84,9 @@ flowchart LR
 
 1. **Check.** The question passes keyword and classifier moderation before anything is made.
 2. **Research.** Gemini 3.8 Flash, grounded with Google Search, writes a short briefing and keeps every source it used.
-3. **Plan, build and direct.** Gemini 3.8 Flash lists the models the story needs (up to ten). Gemini 4 Argon builds every model at once and, at the same time, writes the storyboard: shots, camera moves, captions, maps and timing. All three steps study the example films in [`references/`](references) for their look; the director writes it as a documentary, with an informative narrator, a running on-screen clock and a story that builds in scale.
+3. **Plan, build and direct.** Gemini 3.8 Flash lists the models the story needs (up to ten). Gemini 4 Argon builds every model at once, following a construction strategy for each kind of object, and checks that it holds together and moves as its plan says. At the same time it writes the storyboard: shots, camera moves, captions, maps and timing. All three steps study the example films in [`references/`](references) for their look; the director writes it as a documentary, with an informative narrator, a running on-screen clock and a story that builds in scale.
 4. **Check again.** The finished storyboard is moderated too.
-5. **Review.** Your browser renders a draft of every shot and measures it: objects passing through each other, the camera inside a model, subjects out of frame or too small. The server checks every model for loose parts. Gemini 4 Argon reviews the draft with those measurements, then shots are re-blocked and broken models repaired, in one pass. Every change is moderated again.
+5. **Review.** Your browser renders a draft of every shot and measures it: objects passing through each other, the camera inside a model, subjects out of frame or too small. The server checks every model for loose parts. Gemini 4 Argon reviews the draft with those measurements, then shots are re-blocked and broken models repaired, in one pass. Every change is moderated again. Meanwhile Gemini text-to-speech records the narration, each caption read aloud over its shot.
 6. **Render.** The browser draws every frame with a deterministic Three.js engine and encodes a 720p, 30 fps MP4 with WebCodecs.
 7. **Keep.** The film and a poster image upload in 1 MiB chunks and appear in your library, with the sources listed beside them.
 
@@ -99,7 +99,7 @@ A film usually takes three to five minutes from question to library. The full li
 - **Research you can check.** Every film is built from a grounded briefing, and its source list stays with the video.
 - **A film made in code.** Procedural terrain, water and weather; streets, waterfronts, settlements and interiors; camera moves, captions, transitions and a faceted globe with real coastlines.
 - **Reviewed while it's made.** A draft of every shot is rendered, measured and reviewed before the final encode, so overlapping objects, floating parts and badly framed shots get fixed.
-- **Rendered and encoded in the browser.** Frames are drawn offscreen and saved as an HD MP4 (WebM as a fallback) with a synthesized ambient soundtrack and a JPEG poster.
+- **Rendered and encoded in the browser.** Frames are drawn offscreen and saved as an HD MP4 (WebM as a fallback) with a soundtrack (narration over an original score and the sounds of each shot, at −16 LUFS) and a JPEG poster.
 - **Safe by design.** Prompts and storyboards both pass moderation, and every decision is written to an audit log that's deleted with the account.
 - **Private accounts.** Email and password sign-up with hashed sessions, a private library, HD downloads and full account deletion.
 - **An original look.** The Facet, Tessera and Tessera Mono typefaces are generated in this repository from hand-designed glyph skeletons. The UI is warm and friendly, and honours reduced motion everywhere, including WebGL scenes.
@@ -141,7 +141,7 @@ Every environment variable is described in [docs/DEPLOYMENT.md](docs/DEPLOYMENT.
 | `npm run dev` / `build` / `start`                | Next.js development server, production build, production server                                                 |
 | `npm run check`                                  | Type check, lint, format check and unit checks: run before every PR                                             |
 | `npm run lint` / `format`                        | ESLint (Next.js config) / Prettier                                                                              |
-| `npm run test:unit`                              | Schema, model, renderer, soundtrack and redirect-safety checks (no network)                                     |
+| `npm run test:unit`                              | Schema, model, renderer, soundtrack, narration and redirect-safety checks (no network)                          |
 | `npm run test:audit [-- --live]`                 | Moderation audit and account-deletion checks against the database                                               |
 | `npm run test:backend [-- --live]`               | HTTP integration suite against a local server                                                                   |
 | `npm run test:film -- script.json`               | Validates a generated script and checks its models animate                                                      |
@@ -162,7 +162,7 @@ Every environment variable is described in [docs/DEPLOYMENT.md](docs/DEPLOYMENT.
 app/            Pages, API routes, metadata (robots, sitemap, Open Graph image)
 components/     UI components; components/three/ holds the 3D scenes
 lib/
-  audio/        Synthesized ambience (player) and soundtrack (saved films)
+  audio/        Film soundtrack: score, effects, narration and loudness (player and saved films)
   client/       Browser API client, chunked upload, render-and-save
   content/      Site config, topic ideas, example models, sample reel, landmark reel
   lowpoly/      Renderer: model compiler, engine, layout, environments, globe, overlay

@@ -80,6 +80,10 @@ The body can be up to 6.5 MB.
 
 The server checks every model for loose parts, reviews the sheet with Gemini 4 Argon, applies shot fixes and model repairs, re-moderates, and saves. It responds `200 { video, review: { verdict: "pass" | "revise", summary, shotsChanged, modelsRepaired } }`, where `video.script` is the updated script. It returns **409** when the video isn't waiting to be rendered. A round finishes within 200 seconds: the reviewer call gets 80 seconds, and repairs stop in time to moderate and save. The studio runs one round per film (`REVIEW_ROUNDS`), and renders the film as it stands if a review fails.
 
+## Narration
+
+`POST /api/videos/:id/narrate` (no body) records the narration of a video whose status is `ready`: each caption read aloud by the speech model (`GEMINI_TTS_MODEL`, voice `GEMINI_TTS_VOICE`), laid out on the film's timeline and stored as a WAV asset. It responds `200 { video }` with `video.narrationUrl` set, and returns **409** when the video isn't waiting to be rendered and **502** when the recording fails, in which case the film is made without narration. The studio calls it while the review runs, since the review never changes captions. Recording again replaces the earlier narration.
+
 ## Media upload (browser renders)
 
 Uploads use chunks of 1 MiB or less so each request stays under serverless body limits. The client is in `lib/client/upload.ts`.
