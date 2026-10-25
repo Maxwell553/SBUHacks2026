@@ -59,9 +59,9 @@ export function HeroScene() {
       {/* A real frame from the diorama keeps first paint light; WebGL loads when the page is idle and fades in over it. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src="/images/apollo-11-diorama.webp"
-        width={900}
-        height={900}
+        src="/images/apollo-11-diorama.webp?v=2"
+        width={1192}
+        height={1076}
         alt="Apollo 11: the gold lunar module Eagle, an astronaut and a flag on the Moon"
         aria-hidden={ready || undefined}
         fetchPriority="high"

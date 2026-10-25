@@ -6,7 +6,7 @@
 // full pipeline (writeScript) once per builder for end-to-end timing and
 // renderable films.
 //
-//   npm run bench:builder -- [--builders=gemini-3.5-flash,gemini-3.1-pro-preview] [--films] [--prompts=0,2]
+//   npm run bench:builder -- [--builders=gemini-3.8-flash,gemini-4-argon] [--films] [--prompts=0,2]
 //
 // Writes tmp/bench/builder-<stamp>/ (git-ignored): results.json, summary.txt,
 // plan-<n>.json, models-<n>-<builder>.json and film-<n>-<builder>.json.
@@ -28,7 +28,7 @@ const PROMPTS = [
 const DURATION = 20;
 
 const arg = (name: string) => process.argv.find((a) => a.startsWith(`--${name}=`))?.split("=")[1];
-const builders = (arg("builders") ?? "gemini-3.5-flash,gemini-3.1-pro-preview").split(",");
+const builders = (arg("builders") ?? "gemini-3.8-flash,gemini-4-argon").split(",");
 const films = process.argv.includes("--films");
 const chosen = arg("prompts") ? arg("prompts")!.split(",").map(Number) : PROMPTS.map((_, i) => i);
 const stamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);

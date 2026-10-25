@@ -1,9 +1,10 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
 import { useEffect, useState } from "react";
 import { ApiError, videos, type Video } from "@/lib/client/api";
+import { useSettledReducedMotion } from "@/components/MotionRoot";
 
 export const STATUS_LABEL: Record<string, { text: string; cls: string }> = {
   rendered: { text: "Saved", cls: "ok" },
@@ -20,7 +21,7 @@ export const niceDate = (iso: string) =>
 
 export function Library() {
   const router = useRouter();
-  const reduce = useReducedMotion();
+  const reduce = useSettledReducedMotion();
   const [list, setList] = useState<Video[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 

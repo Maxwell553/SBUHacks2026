@@ -158,10 +158,11 @@ export default function PrivacyPage() {
 
       <h2 id="ai">4. AI research and your questions</h2>
       <p>
-        To make a video, we send your question — and, at later steps, the research text and storyboard — to Google’s
-        Gemini models on Google Cloud (Vertex AI), including Google Search grounding to find public sources. Google
-        processes this content to return results to us under its cloud terms. We do not send your name, email or
-        password. Please don’t put personal information in your questions.
+        To make a video, we send your question — and, at later steps, the research text, the storyboard and draft frames
+        of the film rendered in your browser for a quality review — to Google’s Gemini models on Google Cloud (Vertex
+        AI), including Google Search grounding to find public sources. Google processes this content to return results
+        to us under its cloud terms. We do not send your name, email or password. Please don’t put personal information
+        in your questions.
       </p>
       <p>
         We use the results to write captions and design the scenes, and we keep the list of sources with your video so

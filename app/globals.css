@@ -2184,3 +2184,58 @@ input[type="range"].duration::-moz-range-thumb {
 .studio-result .sources .domain {
   font-size: 12px;
 }
+
+/* Shown while a film is being made, so leaving the tab is an obvious choice. */
+.stay-banner {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 70;
+  padding: 12px 18px;
+  background: var(--teal-deep);
+  color: #fbf7ef;
+  text-align: center;
+  font-size: 16px;
+  line-height: 1.45;
+  box-shadow: 0 8px 20px rgba(27, 86, 77, 0.22);
+}
+body[data-producing="true"] {
+  padding-top: var(--stay-h, 52px);
+}
+body[data-producing="true"] .site-header {
+  top: var(--stay-h, 52px);
+}
+.leave-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(37, 59, 56, 0.46);
+}
+.leave-dialog {
+  width: min(460px, 100%);
+  display: grid;
+  gap: 14px;
+  padding: 28px 26px;
+  border-radius: 18px;
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: 0 24px 60px rgba(37, 59, 56, 0.24);
+}
+.leave-dialog h2 {
+  margin: 0;
+  font-size: 28px;
+}
+.leave-dialog p {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 17px;
+  line-height: 1.5;
+}
+.leave-dialog .row {
+  justify-content: flex-end;
+  margin-top: 6px;
+}

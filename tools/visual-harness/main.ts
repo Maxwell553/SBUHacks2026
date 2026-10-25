@@ -8,6 +8,7 @@
 //   ?p=1                portrait (9:16)          ?big=1  larger frames
 //   ?scene=<i>          only scene i             ?at=0.55 sample point within each scene
 //   ?check=1            collision audit          ?perf=0  skip timing   ?full=1 time the whole film
+//   ?audit=1            shot audit used by the in-studio review (result.shotIssues)
 //   ?debug=<i>&deep=<k> object report for scene i (meshes of scene child k)
 //   ?set=field:value    override a field on every scene (A/B checks), repeatable
 // Model mode: ?models=<a.json>&vs=<b.json> renders the same model ids from two
@@ -15,6 +16,7 @@
 // Results: window.__result (JSON) and window.__sheet (JPEG data URL of the sheet).
 import { PolyEngine } from "@/lib/lowpoly/engine";
 import { ModelLibrary } from "@/lib/lowpoly/compiler";
+import { shotIssues, type ShotSnapshot } from "@/lib/lowpoly/shot-audit";
 import { SHOWCASE_SCRIPT } from "@/lib/content/showcase";
 import type { VideoScript } from "@/lib/schema/video";
 import { normalizeModelDefinition } from "@/lib/schema/model";
@@ -252,6 +254,22 @@ async function renderFilm() {
       });
     result.debug = { cam: b.camera.position.toArray().map((v) => +v.toFixed(2)), fov: b.camera.fov, rows, meshes };
     dbg.dispose();
+  }
+
+  if (q.get("audit") === "1") {
+    // The shot audit the in-studio review uses: overlaps, camera inside a model, subject framing.
+    const audit = new PolyEngine(script, { width: w, height: h, pixelRatio: 1 });
+    const snapshots: ShotSnapshot[] = [];
+    let start = 0;
+    for (const sc of script.scenes) {
+      for (const k of [0.08, 0.3, 0.5, 0.7, 0.92]) {
+        const snap = audit.inspect(start + sc.duration * k);
+        if (snap) snapshots.push(snap);
+      }
+      start += sc.duration;
+    }
+    audit.dispose();
+    result.shotIssues = shotIssues(snapshots);
   }
 
   if (q.get("check") === "1") {

@@ -1,0 +1,3214 @@
+{
+  "version": 2,
+  "presentation": "immersive",
+  "title": "Kitty Hawk, 1903",
+  "subtitle": "Four flights on the North Carolina dunes prove controlled, powered aviation is possible.",
+  "dateLabel": "December 17, 1903",
+  "location": "Kill Devil Hills, North Carolina",
+  "coordinates": {
+    "lat": 36.017,
+    "lon": -75.668
+  },
+  "totalDuration": 30,
+  "seed": 1248490930,
+  "palette": {
+    "primary": "#c4b293",
+    "secondary": "#3b4d5e",
+    "accent": "#d97b29"
+  },
+  "models": [
+    {
+      "id": "wright_flyer_1903",
+      "name": "Wright Flyer 1903",
+      "category": "aircraft",
+      "instancePolicy": "unique",
+      "placement": "air",
+      "scale": 1,
+      "materials": [
+        {
+          "id": "canvas",
+          "color": "#b8b0a0",
+          "finish": "cloth"
+        },
+        {
+          "id": "spruce",
+          "color": "#b8b0a0",
+          "finish": "satin"
+        },
+        {
+          "id": "dark_wood",
+          "color": "#b8b0a0",
+          "finish": "satin"
+        },
+        {
+          "id": "metal_dark",
+          "color": "#b8b0a0",
+          "finish": "metal"
+        },
+        {
+          "id": "aluminum",
+          "color": "#b8b0a0",
+          "finish": "metal"
+        },
+        {
+          "id": "copper",
+          "color": "#b8b0a0",
+          "finish": "metal"
+        },
+        {
+          "id": "suit",
+          "color": "#b8b0a0",
+          "finish": "cloth"
+        },
+        {
+          "id": "skin",
+          "color": "#b8b0a0",
+          "finish": "matte"
+        }
+      ],
+      "parts": [
+        {
+          "id": "root_frame",
+          "shape": "group",
+          "size": [0.1, 0.1, 0.1],
+          "position": [0, 0.45, 0],
+          "anchor": "center",
+          "animation": [
+            {
+              "property": "rotation",
+              "axis": "x",
+              "wave": "sine",
+              "amplitude": 2.5,
+              "frequency": 0.45,
+              "when": "always"
+            },
+            {
+              "property": "rotation",
+              "axis": "z",
+              "wave": "sine",
+              "amplitude": 1.2,
+              "frequency": 0.3,
+              "phase": 1.5,
+              "when": "always"
+            }
+          ]
+        },
+        {
+          "id": "skid_beam",
+          "parent": "root_frame",
+          "shape": "box",
+          "material": "spruce",
+          "size": [4.4, 0.09, 0.06],
+          "position": [0.7, -0.4, 0.6],
+          "anchor": "bottom",
+          "mirror": "z"
+        },
+        {
+          "id": "skid_front_tip",
+          "parent": "skid_beam",
+          "shape": "box",
+          "material": "spruce",
+          "size": [0.9, 0.08, 0.06],
+          "position": [2.55, 0.22, 0],
+          "rotation": [0, 0, 28],
+          "anchor": "center"
+        },
+        {
+          "id": "skid_rear_strut",
+          "parent": "skid_beam",
+          "shape": "box",
+          "material": "spruce",
+          "size": [0.06, 0.42, 0.06],
+          "position": [-0.8, 0.05, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "skid_mid_strut",
+          "parent": "skid_beam",
+          "shape": "box",
+          "material": "spruce",
+          "size": [0.06, 0.42, 0.06],
+          "position": [0.7, 0.05, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "skid_crossbar",
+          "parent": "root_frame",
+          "shape": "box",
+          "material": "spruce",
+          "size": [0.07, 0.07, 1.26],
+          "position": [-0.1, -0.36, 0],
+          "anchor": "center",
+          "repeat": {
+            "mode": "linear",
+            "count": 3,
+            "step": [1.45, 0, 0]
+          }
+        },
+        {
+          "id": "lower_wing_center",
+          "parent": "root_frame",
+          "shape": "box",
+          "material": "canvas",
+          "size": [1.98, 0.06, 5.2],
+          "position": [0, 0, 0],
+          "anchor": "center"
+        },
+        {
+          "id": "upper_wing_center",
+          "parent": "root_frame",
+          "shape": "box",
+          "material": "canvas",
+          "size": [1.98, 0.06, 5.2],
+          "position": [0, 1.82, 0],
+          "anchor": "center"
+        },
+        {
+          "id": "lower_wing_outer",
+          "parent": "lower_wing_center",
+          "shape": "box",
+          "material": "canvas",
+          "size": [1.96, 0.055, 3.55],
+          "position": [0, 0, 4.375],
+          "anchor": "center",
+          "mirror": "z",
+          "animation": [
+            {
+              "property": "rotation",
+              "axis": "z",
+              "wave": "sine",
+              "amplitude": 2.5,
+              "frequency": 0.45,
+              "alternate": true,
+              "when": "always"
+            }
+          ],
+          "animationAnchor": "left"
+        },
+        {
+          "id": "upper_wing_outer",
+          "parent": "upper_wing_center",
+          "shape": "box",
+          "material": "canvas",
+          "size": [1.96, 0.055, 3.55],
+          "position": [0, 0, 4.375],
+          "anchor": "center",
+          "mirror": "z",
+          "animation": [
+            {
+              "property": "rotation",
+              "axis": "z",
+              "wave": "sine",
+              "amplitude": 2.5,
+              "frequency": 0.45,
+              "alternate": true,
+              "when": "always"
+            }
+          ],
+          "animationAnchor": "left"
+        },
+        {
+          "id": "lower_spar_front",
+          "parent": "lower_wing_center",
+          "shape": "box",
+          "material": "spruce",
+          "size": [0.07, 0.08, 12.26],
+          "position": [0.85, 0.01, 0],
+          "anchor": "center"
+        },
+        {
+          "id": "lower_spar_rear",
+          "parent": "lower_wing_center",
+          "shape": "box",
+          "material": "spruce",
+          "size": [0.07, 0.08, 12.26],
+          "position": [-0.55, 0.01, 0],
+          "anchor": "center"
+        },
+        {
+          "id": "upper_spar_front",
+          "parent": "upper_wing_center",
+          "shape": "box",
+          "material": "spruce",
+          "size": [0.07, 0.08, 12.26],
+          "position": [0.85, -0.01, 0],
+          "anchor": "center"
+        },
+        {
+          "id": "upper_spar_rear",
+          "parent": "upper_wing_center",
+          "shape": "box",
+          "material": "spruce",
+          "size": [0.07, 0.08, 12.26],
+          "position": [-0.55, -0.01, 0],
+          "anchor": "center"
+        },
+        {
+          "id": "wing_ribs_lower",
+          "parent": "lower_wing_center",
+          "shape": "box",
+          "material": "spruce",
+          "size": [2, 0.075, 0.03],
+          "position": [0, 0.01, -5.9],
+          "anchor": "center",
+          "repeat": {
+            "mode": "linear",
+            "count": 25,
+            "step": [0, 0, 0.49]
+          }
+        },
+        {
+          "id": "wing_ribs_upper",
+          "parent": "upper_wing_center",
+          "shape": "box",
+          "material": "spruce",
+          "size": [2, 0.075, 0.03],
+          "position": [0, 0.01, -5.9],
+          "anchor": "center",
+          "repeat": {
+            "mode": "linear",
+            "count": 25,
+            "step": [0, 0, 0.49]
+          }
+        },
+        {
+          "id": "interplane_struts_front",
+          "parent": "root_frame",
+          "shape": "box",
+          "material": "spruce",
+          "size": [0.05, 1.82, 0.05],
+          "position": [0.82, 0, -6],
+          "anchor": "bottom",
+          "repeat": {
+            "mode": "linear",
+            "count": 9,
+            "step": [0, 0, 1.5]
+          }
+        },
+        {
+          "id": "interplane_struts_rear",
+          "parent": "root_frame",
+          "shape": "box",
+          "material": "spruce",
+          "size": [0.05, 1.82, 0.05],
+          "position": [-0.55, 0, -6],
+          "anchor": "bottom",
+          "repeat": {
+            "mode": "linear",
+            "count": 9,
+            "step": [0, 0, 1.5]
+          }
+        },
+        {
+          "id": "rigging_brace_1",
+          "parent": "root_frame",
+          "shape": "cylinder",
+          "material": "metal_dark",
+          "size": [0.016, 2.35, 0.016],
+          "position": [0.82, 0.91, 2.25],
+          "rotation": [39, 0, 0],
+          "anchor": "center",
+          "segments": 4,
+          "mirror": "z"
+        },
+        {
+          "id": "rigging_brace_2",
+          "parent": "root_frame",
+          "shape": "cylinder",
+          "material": "metal_dark",
+          "size": [0.016, 2.35, 0.016],
+          "position": [0.82, 0.91, 2.25],
+          "rotation": [-39, 0, 0],
+          "anchor": "center",
+          "segments": 4,
+          "mirror": "z"
+        },
+        {
+          "id": "rigging_brace_3",
+          "parent": "root_frame",
+          "shape": "cylinder",
+          "material": "metal_dark",
+          "size": [0.016, 2.35, 0.016],
+          "position": [0.82, 0.91, 5.25],
+          "rotation": [39, 0, 0],
+          "anchor": "center",
+          "segments": 4,
+          "mirror": "z"
+        },
+        {
+          "id": "rigging_brace_4",
+          "parent": "root_frame",
+          "shape": "cylinder",
+          "material": "metal_dark",
+          "size": [0.016, 2.35, 0.016],
+          "position": [0.82, 0.91, 5.25],
+          "rotation": [-39, 0, 0],
+          "anchor": "center",
+          "segments": 4,
+          "mirror": "z"
+        },
+        {
+          "id": "canard_boom_upper",
+          "parent": "root_frame",
+          "shape": "box",
+          "material": "spruce",
+          "size": [2.25, 0.05, 0.05],
+          "position": [1.85, 0.42, 0.6],
+          "rotation": [0, 0, -12],
+          "anchor": "center",
+          "mirror": "z"
+        },
+        {
+          "id": "canard_post",
+          "parent": "root_frame",
+          "shape": "box",
+          "material": "spruce",
+          "size": [0.06, 0.92, 0.06],
+          "position": [2.85, -0.25, 0.6],
+          "anchor": "bottom",
+          "mirror": "z"
+        },
+        {
+          "id": "canard_assembly",
+          "parent": "root_frame",
+          "shape": "group",
+          "size": [0.1, 0.1, 0.1],
+          "position": [2.85, 0.2, 0],
+          "anchor": "center",
+          "animation": [
+            {
+              "property": "rotation",
+              "axis": "z",
+              "wave": "sine",
+              "amplitude": 5,
+              "frequency": 0.55,
+              "when": "always"
+            }
+          ]
+        },
+        {
+          "id": "canard_lower_surface",
+          "parent": "canard_assembly",
+          "shape": "box",
+          "material": "canvas",
+          "size": [0.76, 0.04, 3.6],
+          "position": [0, -0.38, 0],
+          "anchor": "center"
+        },
+        {
+          "id": "canard_upper_surface",
+          "parent": "canard_assembly",
+          "shape": "box",
+          "material": "canvas",
+          "size": [0.76, 0.04, 3.6],
+          "position": [0, 0.38, 0],
+          "anchor": "center"
+        },
+        {
+          "id": "canard_struts",
+          "parent": "canard_assembly",
+          "shape": "box",
+          "material": "spruce",
+          "size": [0.04, 0.76, 0.04],
+          "position": [0, 0, -1.6],
+          "anchor": "center",
+          "repeat": {
+            "mode": "linear",
+            "count": 5,
+            "step": [0, 0, 0.8]
+          }
+        },
+        {
+          "id": "tail_boom_upper",
+          "parent": "root_frame",
+          "shape": "box",
+          "material": "spruce",
+          "size": [2.15, 0.05, 0.05],
+          "position": [-1.55, 1.45, 0.52],
+          "rotation": [0, 0, 10],
+          "anchor": "center",
+          "mirror": "z"
+        },
+        {
+          "id": "tail_boom_lower",
+          "parent": "root_frame",
+          "shape": "box",
+          "material": "spruce",
+          "size": [2.15, 0.05, 0.05],
+          "position": [-1.55, 0.35, 0.52],
+          "rotation": [0, 0, -9],
+          "anchor": "center",
+          "mirror": "z"
+        },
+        {
+          "id": "rudder_assembly",
+          "parent": "root_frame",
+          "shape": "group",
+          "size": [0.1, 0.1, 0.1],
+          "position": [-2.58, 0.9, 0],
+          "anchor": "center",
+          "animation": [
+            {
+              "property": "rotation",
+              "axis": "y",
+              "wave": "sine",
+              "amplitude": 6,
+              "frequency": 0.4,
+              "when": "always"
+            }
+          ]
+        },
+        {
+          "id": "rudder_vane",
+          "parent": "rudder_assembly",
+          "shape": "box",
+          "material": "canvas",
+          "size": [0.72, 2.05, 0.04],
+          "position": [-0.25, 0, 0.48],
+          "anchor": "center",
+          "mirror": "z"
+        },
+        {
+          "id": "rudder_crossbar_top",
+          "parent": "rudder_assembly",
+          "shape": "box",
+          "material": "spruce",
+          "size": [0.72, 0.05, 1.02],
+          "position": [-0.25, 1.02, 0],
+          "anchor": "center"
+        },
+        {
+          "id": "rudder_crossbar_bottom",
+          "parent": "rudder_assembly",
+          "shape": "box",
+          "material": "spruce",
+          "size": [0.72, 0.05, 1.02],
+          "position": [-0.25, -1.02, 0],
+          "anchor": "center"
+        },
+        {
+          "id": "engine_block",
+          "parent": "root_frame",
+          "shape": "box",
+          "material": "aluminum",
+          "size": [0.72, 0.36, 0.44],
+          "position": [0.05, 0.04, 0.42],
+          "anchor": "bottom"
+        },
+        {
+          "id": "engine_cylinders",
+          "parent": "engine_block",
+          "shape": "cylinder",
+          "material": "metal_dark",
+          "size": [0.14, 0.22, 0.14],
+          "position": [-0.22, 0.22, 0],
+          "geometryRotation": [0, 0, 90],
+          "anchor": "center",
+          "segments": 8,
+          "repeat": {
+            "mode": "linear",
+            "count": 4,
+            "step": [0.15, 0, 0]
+          }
+        },
+        {
+          "id": "flywheel",
+          "parent": "engine_block",
+          "shape": "cylinder",
+          "material": "metal_dark",
+          "size": [0.42, 0.05, 0.42],
+          "position": [-0.4, 0.18, 0],
+          "geometryRotation": [0, 0, 90],
+          "anchor": "center",
+          "segments": 12
+        },
+        {
+          "id": "radiator",
+          "parent": "root_frame",
+          "shape": "box",
+          "material": "copper",
+          "size": [0.08, 1.25, 0.26],
+          "position": [0.78, 0.25, 0.05],
+          "anchor": "bottom"
+        },
+        {
+          "id": "fuel_tank",
+          "parent": "root_frame",
+          "shape": "cylinder",
+          "material": "copper",
+          "size": [0.18, 0.52, 0.18],
+          "position": [0.78, 1.52, -0.55],
+          "anchor": "center",
+          "segments": 10
+        },
+        {
+          "id": "prop_shaft_housing",
+          "parent": "root_frame",
+          "shape": "cylinder",
+          "material": "metal_dark",
+          "size": [0.06, 0.95, 0.06],
+          "position": [-0.75, 0.88, 1.58],
+          "geometryRotation": [0, 0, 90],
+          "anchor": "center",
+          "segments": 6,
+          "mirror": "z"
+        },
+        {
+          "id": "chain_guide_left",
+          "parent": "root_frame",
+          "shape": "cylinder",
+          "material": "metal_dark",
+          "size": [0.045, 1.28, 0.045],
+          "position": [-0.55, 0.55, 1],
+          "rotation": [-28, 0, 0],
+          "geometryRotation": [90, 0, 0],
+          "anchor": "center",
+          "segments": 6
+        },
+        {
+          "id": "chain_guide_right",
+          "parent": "root_frame",
+          "shape": "cylinder",
+          "material": "metal_dark",
+          "size": [0.045, 2.15, 0.045],
+          "position": [-0.55, 0.55, -0.58],
+          "rotation": [18, 0, 0],
+          "geometryRotation": [90, 0, 0],
+          "anchor": "center",
+          "segments": 6
+        },
+        {
+          "id": "propeller_spinner",
+          "parent": "root_frame",
+          "shape": "group",
+          "size": [0.1, 0.1, 0.1],
+          "position": [-1.24, 0.88, 1.58],
+          "anchor": "center",
+          "mirror": "z",
+          "animation": [
+            {
+              "property": "rotation",
+              "axis": "x",
+              "wave": "spin",
+              "amplitude": 720,
+              "frequency": 1,
+              "alternate": true,
+              "when": "always"
+            }
+          ]
+        },
+        {
+          "id": "propeller_blade",
+          "parent": "propeller_spinner",
+          "shape": "box",
+          "material": "dark_wood",
+          "size": [0.07, 2.55, 0.26],
+          "position": [0, 0, 0],
+          "rotation": [16, 0, 0],
+          "anchor": "center"
+        },
+        {
+          "id": "propeller_hub",
+          "parent": "propeller_spinner",
+          "shape": "cylinder",
+          "material": "metal_dark",
+          "size": [0.16, 0.16, 0.16],
+          "position": [0, 0, 0],
+          "geometryRotation": [0, 0, 90],
+          "anchor": "center",
+          "segments": 8
+        },
+        {
+          "id": "hip_cradle",
+          "parent": "root_frame",
+          "shape": "box",
+          "material": "spruce",
+          "size": [0.45, 0.08, 0.48],
+          "position": [-0.05, 0.04, -0.38],
+          "anchor": "bottom"
+        },
+        {
+          "id": "pilot_torso",
+          "parent": "root_frame",
+          "shape": "box",
+          "material": "suit",
+          "size": [0.85, 0.24, 0.38],
+          "position": [0.15, 0.08, -0.38],
+          "anchor": "bottom"
+        },
+        {
+          "id": "pilot_head",
+          "parent": "pilot_torso",
+          "shape": "box",
+          "material": "skin",
+          "size": [0.22, 0.24, 0.2],
+          "position": [0.5, 0.18, 0],
+          "anchor": "center"
+        }
+      ]
+    },
+    {
+      "id": "wilbur_wright",
+      "name": "Wilbur Wright",
+      "category": "figure",
+      "instancePolicy": "unique",
+      "placement": "ground",
+      "scale": 1,
+      "materials": [
+        {
+          "id": "wool_suit",
+          "color": "#b8b0a0",
+          "finish": "cloth"
+        },
+        {
+          "id": "wool_trousers",
+          "color": "#b8b0a0",
+          "finish": "cloth"
+        },
+        {
+          "id": "skin",
+          "color": "#b8b0a0",
+          "finish": "matte"
+        },
+        {
+          "id": "cap",
+          "color": "#b8b0a0",
+          "finish": "cloth"
+        },
+        {
+          "id": "shirt_white",
+          "color": "#b8b0a0",
+          "finish": "cloth"
+        },
+        {
+          "id": "tie_red",
+          "color": "#b8b0a0",
+          "finish": "satin"
+        },
+        {
+          "id": "leather_dark",
+          "color": "#b8b0a0",
+          "finish": "satin"
+        },
+        {
+          "id": "hair_brown",
+          "color": "#b8b0a0",
+          "finish": "matte"
+        }
+      ],
+      "parts": [
+        {
+          "id": "pelvis",
+          "shape": "box",
+          "material": "wool_trousers",
+          "size": [0.24, 0.16, 0.34],
+          "position": [0, 0.9, 0],
+          "rotation": [0, 0, -12],
+          "anchor": "center",
+          "segments": 4,
+          "taper": 1
+        },
+        {
+          "id": "torso",
+          "parent": "pelvis",
+          "shape": "box",
+          "material": "wool_suit",
+          "size": [0.24, 0.46, 0.38],
+          "position": [0, 0, 0],
+          "rotation": [0, 0, -14],
+          "anchor": "bottom",
+          "attachTo": "top",
+          "segments": 4,
+          "taper": 1
+        },
+        {
+          "id": "coat_skirt",
+          "parent": "pelvis",
+          "shape": "box",
+          "material": "wool_suit",
+          "size": [0.26, 0.2, 0.38],
+          "position": [-0.02, 0.02, 0],
+          "rotation": [0, 0, 10],
+          "anchor": "top",
+          "attachTo": "bottom",
+          "segments": 4,
+          "taper": 1
+        },
+        {
+          "id": "collar",
+          "parent": "torso",
+          "shape": "cylinder",
+          "material": "shirt_white",
+          "size": [0.14, 0.06, 0.15],
+          "position": [0.01, 0, 0],
+          "rotation": [0, 0, 8],
+          "anchor": "bottom",
+          "attachTo": "top",
+          "segments": 12,
+          "taper": 0.75
+        },
+        {
+          "id": "tie",
+          "parent": "torso",
+          "shape": "box",
+          "material": "tie_red",
+          "size": [0.03, 0.26, 0.07],
+          "position": [0, 0.12, 0],
+          "rotation": [0, 0, 2],
+          "anchor": "top",
+          "attachTo": "front",
+          "segments": 4,
+          "taper": 1
+        },
+        {
+          "id": "neck",
+          "parent": "collar",
+          "shape": "cylinder",
+          "material": "skin",
+          "size": [0.11, 0.07, 0.11],
+          "position": [0, 0, 0],
+          "rotation": [0, 0, 12],
+          "anchor": "bottom",
+          "attachTo": "top",
+          "segments": 10,
+          "taper": 1
+        },
+        {
+          "id": "head",
+          "parent": "neck",
+          "shape": "ico",
+          "material": "skin",
+          "size": [0.2, 0.23, 0.18],
+          "position": [0.01, 0, 0],
+          "rotation": [-5, -10, 6],
+          "anchor": "bottom",
+          "attachTo": "top",
+          "segments": 8,
+          "taper": 1
+        },
+        {
+          "id": "nose",
+          "parent": "head",
+          "shape": "wedge",
+          "material": "skin",
+          "size": [0.04, 0.05, 0.03],
+          "position": [0, 0.01, 0],
+          "rotation": [0, 0, 0],
+          "anchor": "back",
+          "attachTo": "front",
+          "segments": 4,
+          "taper": 1
+        },
+        {
+          "id": "hair_back",
+          "parent": "head",
+          "shape": "box",
+          "material": "hair_brown",
+          "size": [0.16, 0.1, 0.185],
+          "position": [-0.03, 0.02, 0],
+          "rotation": [0, 0, 0],
+          "anchor": "center",
+          "attachTo": "center",
+          "segments": 4,
+          "taper": 1
+        },
+        {
+          "id": "cap_crown",
+          "parent": "head",
+          "shape": "sphere",
+          "material": "cap",
+          "size": [0.23, 0.1, 0.21],
+          "position": [0.01, -0.01, 0],
+          "rotation": [0, 0, -5],
+          "anchor": "bottom",
+          "attachTo": "top",
+          "segments": 10,
+          "taper": 1
+        },
+        {
+          "id": "cap_visor",
+          "parent": "cap_crown",
+          "shape": "box",
+          "material": "cap",
+          "size": [0.09, 0.015, 0.15],
+          "position": [0, -0.02, 0],
+          "rotation": [0, 0, -12],
+          "anchor": "back",
+          "attachTo": "front",
+          "segments": 4,
+          "taper": 1
+        },
+        {
+          "id": "thigh_l",
+          "parent": "pelvis",
+          "shape": "capsule",
+          "material": "wool_trousers",
+          "size": [0.15, 0.44, 0.15],
+          "position": [0, 0.02, -0.1],
+          "rotation": [0, 0, 32],
+          "anchor": "top",
+          "attachTo": "bottom",
+          "segments": 10,
+          "taper": 1
+        },
+        {
+          "id": "shin_l",
+          "parent": "thigh_l",
+          "shape": "capsule",
+          "material": "wool_trousers",
+          "size": [0.12, 0.42, 0.12],
+          "position": [0, 0.04, 0],
+          "rotation": [0, 0, -40],
+          "anchor": "top",
+          "attachTo": "bottom",
+          "segments": 10,
+          "taper": 1
+        },
+        {
+          "id": "boot_l",
+          "parent": "shin_l",
+          "shape": "box",
+          "material": "leather_dark",
+          "size": [0.24, 0.1, 0.1],
+          "position": [0.05, 0.02, 0],
+          "rotation": [0, 0, 15],
+          "anchor": "top",
+          "attachTo": "bottom",
+          "segments": 4,
+          "taper": 1
+        },
+        {
+          "id": "thigh_r",
+          "parent": "pelvis",
+          "shape": "capsule",
+          "material": "wool_trousers",
+          "size": [0.15, 0.44, 0.15],
+          "position": [0, 0.02, 0.1],
+          "rotation": [0, 0, -18],
+          "anchor": "top",
+          "attachTo": "bottom",
+          "segments": 10,
+          "taper": 1
+        },
+        {
+          "id": "shin_r",
+          "parent": "thigh_r",
+          "shape": "capsule",
+          "material": "wool_trousers",
+          "size": [0.12, 0.42, 0.12],
+          "position": [0, 0.04, 0],
+          "rotation": [0, 0, -45],
+          "anchor": "top",
+          "attachTo": "bottom",
+          "segments": 10,
+          "taper": 1
+        },
+        {
+          "id": "boot_r",
+          "parent": "shin_r",
+          "shape": "box",
+          "material": "leather_dark",
+          "size": [0.24, 0.1, 0.1],
+          "position": [0.05, 0.02, 0],
+          "rotation": [0, 0, 10],
+          "anchor": "top",
+          "attachTo": "bottom",
+          "segments": 4,
+          "taper": 1
+        },
+        {
+          "id": "upper_arm_l",
+          "parent": "torso",
+          "shape": "capsule",
+          "material": "wool_suit",
+          "size": [0.12, 0.32, 0.12],
+          "position": [0, 0.16, -0.02],
+          "rotation": [18, 10, 65],
+          "anchor": "top",
+          "attachTo": "left",
+          "segments": 10,
+          "taper": 1
+        },
+        {
+          "id": "forearm_l",
+          "parent": "upper_arm_l",
+          "shape": "capsule",
+          "material": "wool_suit",
+          "size": [0.1, 0.28, 0.1],
+          "position": [0, 0.03, 0],
+          "rotation": [0, 0, 35],
+          "anchor": "top",
+          "attachTo": "bottom",
+          "segments": 10,
+          "taper": 1
+        },
+        {
+          "id": "cuff_l",
+          "parent": "forearm_l",
+          "shape": "cylinder",
+          "material": "shirt_white",
+          "size": [0.09, 0.04, 0.09],
+          "position": [0, 0.01, 0],
+          "rotation": [0, 0, 0],
+          "anchor": "top",
+          "attachTo": "bottom",
+          "segments": 8,
+          "taper": 1
+        },
+        {
+          "id": "hand_l",
+          "parent": "cuff_l",
+          "shape": "sphere",
+          "material": "skin",
+          "size": [0.08, 0.1, 0.06],
+          "position": [0, 0, 0],
+          "rotation": [0, 0, 15],
+          "anchor": "top",
+          "attachTo": "bottom",
+          "segments": 8,
+          "taper": 1
+        },
+        {
+          "id": "upper_arm_r",
+          "parent": "torso",
+          "shape": "capsule",
+          "material": "wool_suit",
+          "size": [0.12, 0.32, 0.12],
+          "position": [0, 0.16, 0.02],
+          "rotation": [0, 0, -20],
+          "anchor": "top",
+          "attachTo": "right",
+          "segments": 10,
+          "taper": 1
+        },
+        {
+          "id": "forearm_r",
+          "parent": "upper_arm_r",
+          "shape": "capsule",
+          "material": "wool_suit",
+          "size": [0.1, 0.28, 0.1],
+          "position": [0, 0.03, 0],
+          "rotation": [0, 0, 55],
+          "anchor": "top",
+          "attachTo": "bottom",
+          "segments": 10,
+          "taper": 1
+        },
+        {
+          "id": "cuff_r",
+          "parent": "forearm_r",
+          "shape": "cylinder",
+          "material": "shirt_white",
+          "size": [0.09, 0.04, 0.09],
+          "position": [0, 0.01, 0],
+          "rotation": [0, 0, 0],
+          "anchor": "top",
+          "attachTo": "bottom",
+          "segments": 8,
+          "taper": 1
+        },
+        {
+          "id": "hand_r",
+          "parent": "cuff_r",
+          "shape": "sphere",
+          "material": "skin",
+          "size": [0.08, 0.1, 0.06],
+          "position": [0, 0, 0],
+          "rotation": [0, 0, 0],
+          "anchor": "top",
+          "attachTo": "bottom",
+          "segments": 8,
+          "taper": 1
+        }
+      ]
+    },
+    {
+      "id": "witness_john_daniels",
+      "name": "Witness John T Daniels",
+      "category": "figure",
+      "instancePolicy": "unique",
+      "placement": "ground",
+      "scale": 1,
+      "materials": [
+        {
+          "id": "coat_navy",
+          "color": "#212936",
+          "finish": "cloth",
+          "tint": true,
+          "variants": ["#1d2430", "#283242"]
+        },
+        {
+          "id": "trousers_dark",
+          "color": "#2c313a",
+          "finish": "cloth"
+        },
+        {
+          "id": "boots_leather",
+          "color": "#1c1613",
+          "finish": "satin"
+        },
+        {
+          "id": "skin",
+          "color": "#e0b294",
+          "finish": "matte"
+        },
+        {
+          "id": "hat_felt",
+          "color": "#383028",
+          "finish": "cloth"
+        },
+        {
+          "id": "hat_band",
+          "color": "#1a1612",
+          "finish": "satin"
+        },
+        {
+          "id": "hair_brown",
+          "color": "#4a3525",
+          "finish": "matte"
+        },
+        {
+          "id": "scarf_wool",
+          "color": "#6e2b23",
+          "finish": "cloth"
+        },
+        {
+          "id": "brass_button",
+          "color": "#c9a24b",
+          "finish": "metal"
+        },
+        {
+          "id": "rubber_bulb",
+          "color": "#8c382d",
+          "finish": "matte"
+        }
+      ],
+      "parts": [
+        {
+          "id": "pelvis",
+          "shape": "box",
+          "material": "trousers_dark",
+          "size": [0.24, 0.16, 0.34],
+          "position": [0, 0.78, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "coat_skirt",
+          "parent": "pelvis",
+          "shape": "cylinder",
+          "material": "coat_navy",
+          "size": [0.3, 0.36, 0.4],
+          "position": [0, 0.12, 0],
+          "anchor": "top",
+          "segments": 8,
+          "taper": 0.75
+        },
+        {
+          "id": "torso",
+          "parent": "pelvis",
+          "shape": "box",
+          "material": "coat_navy",
+          "size": [0.28, 0.48, 0.38],
+          "position": [0, 0, 0],
+          "anchor": "bottom",
+          "attachTo": "top",
+          "animation": [
+            {
+              "property": "rotation",
+              "axis": "y",
+              "wave": "sine",
+              "amplitude": 6,
+              "frequency": 1,
+              "keyframes": [
+                {
+                  "at": 0,
+                  "value": 0
+                },
+                {
+                  "at": 0.35,
+                  "value": 0
+                },
+                {
+                  "at": 0.55,
+                  "value": -1
+                },
+                {
+                  "at": 1,
+                  "value": -0.5
+                }
+              ],
+              "interpolation": "smooth"
+            }
+          ],
+          "animationAnchor": "bottom"
+        },
+        {
+          "id": "coat_lapel_left",
+          "parent": "torso",
+          "shape": "box",
+          "material": "coat_navy",
+          "size": [0.04, 0.28, 0.1],
+          "position": [0.14, 0.18, -0.07],
+          "rotation": [0, 0, -8],
+          "anchor": "bottom",
+          "segments": 4,
+          "taper": 1
+        },
+        {
+          "id": "coat_lapel_right",
+          "parent": "torso",
+          "shape": "box",
+          "material": "coat_navy",
+          "size": [0.04, 0.28, 0.1],
+          "position": [0.14, 0.18, 0.07],
+          "rotation": [0, 0, 8],
+          "anchor": "bottom"
+        },
+        {
+          "id": "coat_buttons",
+          "parent": "torso",
+          "shape": "cylinder",
+          "material": "brass_button",
+          "size": [0.025, 0.015, 0.025],
+          "position": [0.145, 0.1, -0.05],
+          "geometryRotation": [0, 0, 90],
+          "anchor": "center",
+          "segments": 6,
+          "mirror": "z",
+          "repeat": {
+            "mode": "linear",
+            "count": 3,
+            "step": [0, 0.1, 0]
+          }
+        },
+        {
+          "id": "scarf",
+          "parent": "torso",
+          "shape": "torus",
+          "material": "scarf_wool",
+          "size": [0.22, 0.055, 0.24],
+          "position": [0.01, 0.47, 0],
+          "anchor": "center",
+          "segments": 8
+        },
+        {
+          "id": "coat_collar",
+          "parent": "torso",
+          "shape": "cylinder",
+          "material": "coat_navy",
+          "size": [0.24, 0.1, 0.28],
+          "position": [-0.01, 0.44, 0],
+          "anchor": "bottom",
+          "segments": 8,
+          "taper": 1.25
+        },
+        {
+          "id": "neck",
+          "parent": "torso",
+          "shape": "cylinder",
+          "material": "skin",
+          "size": [0.12, 0.09, 0.12],
+          "position": [0, 0, 0],
+          "anchor": "bottom",
+          "attachTo": "top",
+          "segments": 8
+        },
+        {
+          "id": "head",
+          "parent": "neck",
+          "shape": "box",
+          "material": "skin",
+          "size": [0.2, 0.22, 0.19],
+          "position": [0, 0, 0],
+          "anchor": "bottom",
+          "attachTo": "top",
+          "animation": [
+            {
+              "property": "rotation",
+              "axis": "y",
+              "wave": "sine",
+              "amplitude": 10,
+              "frequency": 1,
+              "keyframes": [
+                {
+                  "at": 0,
+                  "value": 0
+                },
+                {
+                  "at": 0.35,
+                  "value": 0.2
+                },
+                {
+                  "at": 0.6,
+                  "value": 1
+                },
+                {
+                  "at": 1,
+                  "value": 0.8
+                }
+              ],
+              "interpolation": "smooth"
+            },
+            {
+              "property": "rotation",
+              "axis": "z",
+              "wave": "sine",
+              "amplitude": 6,
+              "frequency": 1,
+              "keyframes": [
+                {
+                  "at": 0,
+                  "value": 0
+                },
+                {
+                  "at": 0.45,
+                  "value": 0
+                },
+                {
+                  "at": 0.65,
+                  "value": 1
+                },
+                {
+                  "at": 1,
+                  "value": 1
+                }
+              ],
+              "interpolation": "smooth"
+            }
+          ],
+          "animationAnchor": "bottom"
+        },
+        {
+          "id": "nose",
+          "parent": "head",
+          "shape": "box",
+          "material": "skin",
+          "size": [0.04, 0.05, 0.035],
+          "position": [0.1, 0.1, 0],
+          "anchor": "center",
+          "attachTo": "front"
+        },
+        {
+          "id": "mustache",
+          "parent": "head",
+          "shape": "box",
+          "material": "hair_brown",
+          "size": [0.035, 0.03, 0.1],
+          "position": [0.1, 0.06, 0],
+          "anchor": "center",
+          "attachTo": "front"
+        },
+        {
+          "id": "hair_back",
+          "parent": "head",
+          "shape": "box",
+          "material": "hair_brown",
+          "size": [0.16, 0.1, 0.2],
+          "position": [-0.03, 0.13, 0],
+          "anchor": "center"
+        },
+        {
+          "id": "hat_brim",
+          "parent": "head",
+          "shape": "cylinder",
+          "material": "hat_felt",
+          "size": [0.38, 0.02, 0.36],
+          "position": [0, 0.19, 0],
+          "rotation": [-3, 0, 0],
+          "anchor": "bottom",
+          "segments": 12
+        },
+        {
+          "id": "hat_band_ring",
+          "parent": "hat_brim",
+          "shape": "cylinder",
+          "material": "hat_band",
+          "size": [0.215, 0.03, 0.205],
+          "position": [0, 0, 0],
+          "anchor": "bottom",
+          "attachTo": "top",
+          "segments": 10
+        },
+        {
+          "id": "hat_crown",
+          "parent": "hat_brim",
+          "shape": "cylinder",
+          "material": "hat_felt",
+          "size": [0.21, 0.11, 0.2],
+          "position": [0, 0, 0],
+          "anchor": "bottom",
+          "attachTo": "top",
+          "segments": 10,
+          "taper": 0.75
+        },
+        {
+          "id": "left_upper_arm",
+          "parent": "torso",
+          "shape": "box",
+          "material": "coat_navy",
+          "size": [0.12, 0.3, 0.12],
+          "position": [0, 0.44, -0.25],
+          "rotation": [8, 0, -6],
+          "anchor": "top",
+          "animation": [
+            {
+              "property": "rotation",
+              "axis": "z",
+              "wave": "sine",
+              "amplitude": 15,
+              "frequency": 0.8,
+              "keyframes": [
+                {
+                  "at": 0,
+                  "value": 0
+                },
+                {
+                  "at": 0.4,
+                  "value": 0.2
+                },
+                {
+                  "at": 0.6,
+                  "value": 0.8
+                },
+                {
+                  "at": 1,
+                  "value": 0.5
+                }
+              ],
+              "interpolation": "smooth"
+            }
+          ],
+          "animationAnchor": "top"
+        },
+        {
+          "id": "left_forearm",
+          "parent": "left_upper_arm",
+          "shape": "box",
+          "material": "coat_navy",
+          "size": [0.11, 0.26, 0.11],
+          "position": [0, -0.28, 0],
+          "rotation": [0, 0, 18],
+          "anchor": "top"
+        },
+        {
+          "id": "left_hand",
+          "parent": "left_forearm",
+          "shape": "box",
+          "material": "skin",
+          "size": [0.08, 0.09, 0.07],
+          "position": [0, 0, 0],
+          "anchor": "top",
+          "attachTo": "bottom"
+        },
+        {
+          "id": "right_upper_arm",
+          "parent": "torso",
+          "shape": "box",
+          "material": "coat_navy",
+          "size": [0.12, 0.3, 0.12],
+          "position": [0, 0.44, 0.25],
+          "rotation": [6, -10, 12],
+          "anchor": "top",
+          "animation": [
+            {
+              "property": "rotation",
+              "axis": "z",
+              "wave": "sine",
+              "amplitude": 38,
+              "frequency": 1,
+              "keyframes": [
+                {
+                  "at": 0,
+                  "value": 0.1
+                },
+                {
+                  "at": 0.35,
+                  "value": 0.15
+                },
+                {
+                  "at": 0.5,
+                  "value": 1
+                },
+                {
+                  "at": 0.65,
+                  "value": 1
+                },
+                {
+                  "at": 0.85,
+                  "value": 0.7
+                },
+                {
+                  "at": 1,
+                  "value": 0.6
+                }
+              ],
+              "interpolation": "smooth"
+            }
+          ],
+          "animationAnchor": "top"
+        },
+        {
+          "id": "right_forearm",
+          "parent": "right_upper_arm",
+          "shape": "box",
+          "material": "coat_navy",
+          "size": [0.11, 0.26, 0.11],
+          "position": [0, -0.28, 0],
+          "rotation": [0, 0, 35],
+          "anchor": "top",
+          "animation": [
+            {
+              "property": "rotation",
+              "axis": "z",
+              "wave": "sine",
+              "amplitude": 45,
+              "frequency": 1,
+              "keyframes": [
+                {
+                  "at": 0,
+                  "value": 0.3
+                },
+                {
+                  "at": 0.35,
+                  "value": 0.4
+                },
+                {
+                  "at": 0.48,
+                  "value": 1
+                },
+                {
+                  "at": 0.65,
+                  "value": 1
+                },
+                {
+                  "at": 0.85,
+                  "value": 0.6
+                },
+                {
+                  "at": 1,
+                  "value": 0.5
+                }
+              ],
+              "interpolation": "smooth"
+            }
+          ],
+          "animationAnchor": "top"
+        },
+        {
+          "id": "right_hand",
+          "parent": "right_forearm",
+          "shape": "box",
+          "material": "skin",
+          "size": [0.08, 0.09, 0.08],
+          "position": [0, 0, 0],
+          "anchor": "top",
+          "attachTo": "bottom"
+        },
+        {
+          "id": "shutter_bulb",
+          "parent": "right_hand",
+          "shape": "sphere",
+          "material": "rubber_bulb",
+          "size": [0.065, 0.095, 0.065],
+          "position": [0.04, -0.05, 0],
+          "anchor": "center",
+          "segments": 8,
+          "animation": [
+            {
+              "property": "scale",
+              "axis": "x",
+              "wave": "sine",
+              "amplitude": -0.3,
+              "frequency": 1,
+              "keyframes": [
+                {
+                  "at": 0,
+                  "value": 0
+                },
+                {
+                  "at": 0.48,
+                  "value": 0
+                },
+                {
+                  "at": 0.53,
+                  "value": 1
+                },
+                {
+                  "at": 0.62,
+                  "value": 1
+                },
+                {
+                  "at": 0.7,
+                  "value": 0
+                },
+                {
+                  "at": 1,
+                  "value": 0
+                }
+              ],
+              "interpolation": "smooth"
+            },
+            {
+              "property": "scale",
+              "axis": "z",
+              "wave": "sine",
+              "amplitude": -0.3,
+              "frequency": 1,
+              "keyframes": [
+                {
+                  "at": 0,
+                  "value": 0
+                },
+                {
+                  "at": 0.48,
+                  "value": 0
+                },
+                {
+                  "at": 0.53,
+                  "value": 1
+                },
+                {
+                  "at": 0.62,
+                  "value": 1
+                },
+                {
+                  "at": 0.7,
+                  "value": 0
+                },
+                {
+                  "at": 1,
+                  "value": 0
+                }
+              ],
+              "interpolation": "smooth"
+            }
+          ],
+          "animationAnchor": "center"
+        },
+        {
+          "id": "shutter_cord",
+          "parent": "shutter_bulb",
+          "shape": "cylinder",
+          "material": "hat_band",
+          "size": [0.015, 0.32, 0.015],
+          "position": [0, -0.04, 0],
+          "rotation": [15, 0, -20],
+          "anchor": "top",
+          "segments": 6
+        },
+        {
+          "id": "thigh",
+          "parent": "pelvis",
+          "shape": "box",
+          "material": "trousers_dark",
+          "size": [0.14, 0.4, 0.14],
+          "position": [0, 0, -0.09],
+          "anchor": "top",
+          "attachTo": "bottom",
+          "mirror": "z"
+        },
+        {
+          "id": "shin",
+          "parent": "thigh",
+          "shape": "box",
+          "material": "boots_leather",
+          "size": [0.13, 0.38, 0.13],
+          "position": [0, 0, 0],
+          "anchor": "top",
+          "attachTo": "bottom",
+          "mirror": "z"
+        },
+        {
+          "id": "boot_foot",
+          "parent": "shin",
+          "shape": "box",
+          "material": "boots_leather",
+          "size": [0.22, 0.09, 0.13],
+          "position": [0.04, -0.38, 0],
+          "anchor": "bottom",
+          "mirror": "z"
+        }
+      ],
+      "notes": "1903 Kill Devil Hills Lifesaving Service witness John T. Daniels in heavy winter peacoat, wool scarf, wide-brimmed felt hat, and tall boots, squeezing the pneumatic shutter bulb to capture the first flight."
+    },
+    {
+      "id": "wooden_monorail_track",
+      "name": "Launch Rail",
+      "category": "structure",
+      "instancePolicy": "unique",
+      "placement": "ground",
+      "scale": 1,
+      "materials": [
+        {
+          "id": "spruce_wood",
+          "color": "#b8b0a0",
+          "finish": "matte"
+        },
+        {
+          "id": "dark_wood",
+          "color": "#b8b0a0",
+          "finish": "matte"
+        },
+        {
+          "id": "iron_clad",
+          "color": "#b8b0a0",
+          "finish": "metal"
+        },
+        {
+          "id": "rusty_iron",
+          "color": "#b8b0a0",
+          "finish": "matte"
+        },
+        {
+          "id": "sand_mound",
+          "color": "#b8b0a0",
+          "finish": "matte"
+        }
+      ],
+      "parts": [
+        {
+          "id": "rail_root",
+          "shape": "group",
+          "size": [0.1, 0.1, 0.1],
+          "position": [0, 0, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "cross_ties",
+          "parent": "rail_root",
+          "shape": "box",
+          "material": "dark_wood",
+          "size": [0.2, 0.04, 0.36],
+          "position": [-9, 0, 0],
+          "anchor": "bottom",
+          "repeat": {
+            "mode": "linear",
+            "count": 16,
+            "step": [1.2, 0, 0]
+          }
+        },
+        {
+          "id": "tie_sand_mounds",
+          "parent": "rail_root",
+          "shape": "dome",
+          "material": "sand_mound",
+          "size": [0.34, 0.03, 0.44],
+          "position": [-9, 0, 0],
+          "anchor": "bottom",
+          "segments": 6,
+          "taper": 1.25
+        },
+        {
+          "id": "tie_sand_mounds_rep",
+          "parent": "rail_root",
+          "shape": "dome",
+          "material": "sand_mound",
+          "size": [0.3, 0.025, 0.42],
+          "position": [-7.8, 0, 0],
+          "anchor": "bottom",
+          "segments": 6,
+          "repeat": {
+            "mode": "linear",
+            "count": 15,
+            "step": [1.2, 0, 0]
+          }
+        },
+        {
+          "id": "anchor_stakes",
+          "parent": "rail_root",
+          "shape": "wedge",
+          "material": "rusty_iron",
+          "size": [0.03, 0.09, 0.03],
+          "position": [-9, 0, 0.15],
+          "anchor": "bottom",
+          "mirror": "z",
+          "repeat": {
+            "mode": "linear",
+            "count": 16,
+            "step": [1.2, 0, 0]
+          }
+        },
+        {
+          "id": "base_plank",
+          "parent": "rail_root",
+          "shape": "box",
+          "material": "dark_wood",
+          "size": [18.3, 0.03, 0.12],
+          "position": [0, 0.03, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "vertical_beam",
+          "parent": "base_plank",
+          "shape": "box",
+          "material": "spruce_wood",
+          "size": [18.28, 0.09, 0.05],
+          "position": [0, 0, 0],
+          "anchor": "bottom",
+          "attachTo": "top"
+        },
+        {
+          "id": "iron_running_strip",
+          "parent": "vertical_beam",
+          "shape": "box",
+          "material": "iron_clad",
+          "size": [18.28, 0.012, 0.054],
+          "position": [0, 0, 0],
+          "anchor": "bottom",
+          "attachTo": "top"
+        },
+        {
+          "id": "splice_plates",
+          "parent": "vertical_beam",
+          "shape": "box",
+          "material": "iron_clad",
+          "size": [0.38, 0.07, 0.064],
+          "position": [-4.57, 0.01, 0],
+          "anchor": "bottom",
+          "attachTo": "bottom",
+          "repeat": {
+            "mode": "linear",
+            "count": 3,
+            "step": [4.57, 0, 0]
+          }
+        },
+        {
+          "id": "splice_bolts_left",
+          "parent": "vertical_beam",
+          "shape": "box",
+          "material": "rusty_iron",
+          "size": [0.02, 0.02, 0.074],
+          "position": [-4.7, 0.035, 0],
+          "anchor": "bottom",
+          "attachTo": "bottom",
+          "repeat": {
+            "mode": "linear",
+            "count": 3,
+            "step": [4.57, 0, 0]
+          }
+        },
+        {
+          "id": "splice_bolts_inner_left",
+          "parent": "vertical_beam",
+          "shape": "box",
+          "material": "rusty_iron",
+          "size": [0.02, 0.02, 0.074],
+          "position": [-4.61, 0.035, 0],
+          "anchor": "bottom",
+          "attachTo": "bottom",
+          "repeat": {
+            "mode": "linear",
+            "count": 3,
+            "step": [4.57, 0, 0]
+          }
+        },
+        {
+          "id": "splice_bolts_inner_right",
+          "parent": "vertical_beam",
+          "shape": "box",
+          "material": "rusty_iron",
+          "size": [0.02, 0.02, 0.074],
+          "position": [-4.53, 0.035, 0],
+          "anchor": "bottom",
+          "attachTo": "bottom",
+          "repeat": {
+            "mode": "linear",
+            "count": 3,
+            "step": [4.57, 0, 0]
+          }
+        },
+        {
+          "id": "splice_bolts_right",
+          "parent": "vertical_beam",
+          "shape": "box",
+          "material": "rusty_iron",
+          "size": [0.02, 0.02, 0.074],
+          "position": [-4.44, 0.035, 0],
+          "anchor": "bottom",
+          "attachTo": "bottom",
+          "repeat": {
+            "mode": "linear",
+            "count": 3,
+            "step": [4.57, 0, 0]
+          }
+        },
+        {
+          "id": "side_cleats",
+          "parent": "base_plank",
+          "shape": "wedge",
+          "material": "dark_wood",
+          "size": [0.14, 0.05, 0.03],
+          "position": [-9, 0, 0.04],
+          "anchor": "bottom",
+          "attachTo": "top",
+          "mirror": "z",
+          "repeat": {
+            "mode": "linear",
+            "count": 16,
+            "step": [1.2, 0, 0]
+          }
+        },
+        {
+          "id": "rear_end_stop",
+          "parent": "base_plank",
+          "shape": "box",
+          "material": "rusty_iron",
+          "size": [0.08, 0.11, 0.1],
+          "position": [-9.11, 0, 0],
+          "anchor": "bottom",
+          "attachTo": "top"
+        },
+        {
+          "id": "rear_release_ring",
+          "parent": "rear_end_stop",
+          "shape": "torus",
+          "material": "iron_clad",
+          "size": [0.08, 0.015, 0.08],
+          "position": [-0.04, 0.05, 0],
+          "anchor": "center"
+        },
+        {
+          "id": "front_nose_ramp",
+          "parent": "base_plank",
+          "shape": "wedge",
+          "material": "iron_clad",
+          "size": [0.18, 0.1, 0.054],
+          "position": [9.06, 0, 0],
+          "geometryRotation": [0, 90, 0],
+          "anchor": "bottom",
+          "attachTo": "top"
+        }
+      ],
+      "notes": "60-foot (18.3m) wooden monorail launch track ('Jumbo') made of four 15-foot 2x4 spruce sections laid end-to-end on cross-ties, joined with bolted iron splice plates and topped with an iron running strip."
+    },
+    {
+      "id": "lifesaving_station_shed",
+      "name": "Kill Devil Hills Shed",
+      "category": "building",
+      "instancePolicy": "repeatable",
+      "placement": "ground",
+      "scale": 1,
+      "materials": [
+        {
+          "id": "wood_planks",
+          "color": "#8b6f4e",
+          "finish": "matte"
+        },
+        {
+          "id": "wood_trim",
+          "color": "#6e5539",
+          "finish": "matte"
+        },
+        {
+          "id": "roof_tarpaper",
+          "color": "#3d3a36",
+          "finish": "matte"
+        },
+        {
+          "id": "interior_dark",
+          "color": "#1f1b17",
+          "finish": "matte"
+        },
+        {
+          "id": "window_glass",
+          "color": "#526878",
+          "finish": "glass",
+          "nightGlow": true
+        },
+        {
+          "id": "sand_drift",
+          "color": "#d6c498",
+          "finish": "matte"
+        },
+        {
+          "id": "metal_hardware",
+          "color": "#2b2b2b",
+          "finish": "metal"
+        }
+      ],
+      "parts": [
+        {
+          "id": "foundation_skids",
+          "shape": "box",
+          "material": "wood_trim",
+          "size": [10.2, 0.18, 0.22],
+          "position": [0, 0, -2.35],
+          "anchor": "bottom",
+          "mirror": "z"
+        },
+        {
+          "id": "floor_deck",
+          "shape": "box",
+          "material": "wood_trim",
+          "size": [10.1, 0.12, 5.1],
+          "position": [0, 0.12, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "main_body",
+          "parent": "floor_deck",
+          "shape": "box",
+          "material": "wood_planks",
+          "size": [10, 2.2, 5],
+          "position": [0, 0, 0],
+          "anchor": "bottom",
+          "attachTo": "top"
+        },
+        {
+          "id": "roof_gable",
+          "parent": "main_body",
+          "shape": "wedge",
+          "material": "roof_tarpaper",
+          "size": [10.3, 1.15, 5.35],
+          "position": [0, 0, 0],
+          "anchor": "bottom",
+          "attachTo": "top"
+        },
+        {
+          "id": "gable_infill_front",
+          "parent": "main_body",
+          "shape": "wedge",
+          "material": "wood_planks",
+          "size": [0.15, 1.08, 5],
+          "position": [4.94, 0, 0],
+          "anchor": "bottom",
+          "attachTo": "top"
+        },
+        {
+          "id": "gable_infill_back",
+          "parent": "main_body",
+          "shape": "wedge",
+          "material": "wood_planks",
+          "size": [0.15, 1.08, 5],
+          "position": [-4.94, 0, 0],
+          "anchor": "bottom",
+          "attachTo": "top"
+        },
+        {
+          "id": "ridge_cap",
+          "parent": "roof_gable",
+          "shape": "box",
+          "material": "wood_trim",
+          "size": [10.35, 0.1, 0.22],
+          "position": [0, -0.02, 0],
+          "anchor": "bottom",
+          "attachTo": "top"
+        },
+        {
+          "id": "roof_batten",
+          "parent": "roof_gable",
+          "shape": "wedge",
+          "material": "wood_trim",
+          "size": [0.06, 1.17, 5.39],
+          "position": [-4.6, 0, 0],
+          "anchor": "bottom",
+          "attachTo": "bottom",
+          "repeat": {
+            "mode": "linear",
+            "count": 10,
+            "step": [1.02, 0, 0]
+          }
+        },
+        {
+          "id": "wall_batten",
+          "parent": "main_body",
+          "shape": "box",
+          "material": "wood_trim",
+          "size": [0.08, 2.2, 5.08],
+          "position": [-4.5, 0, 0],
+          "anchor": "bottom",
+          "attachTo": "bottom",
+          "repeat": {
+            "mode": "linear",
+            "count": 10,
+            "step": [1, 0, 0]
+          }
+        },
+        {
+          "id": "corner_post_front",
+          "parent": "main_body",
+          "shape": "box",
+          "material": "wood_trim",
+          "size": [0.16, 2.22, 0.16],
+          "position": [4.95, 0, 2.45],
+          "anchor": "bottom",
+          "attachTo": "bottom",
+          "mirror": "z"
+        },
+        {
+          "id": "corner_post_back",
+          "parent": "main_body",
+          "shape": "box",
+          "material": "wood_trim",
+          "size": [0.16, 2.22, 0.16],
+          "position": [-4.95, 0, 2.45],
+          "anchor": "bottom",
+          "attachTo": "bottom",
+          "mirror": "z"
+        },
+        {
+          "id": "eave_fascia",
+          "parent": "main_body",
+          "shape": "box",
+          "material": "wood_trim",
+          "size": [10.32, 0.14, 0.08],
+          "position": [0, -0.05, 2.64],
+          "anchor": "top",
+          "attachTo": "top",
+          "mirror": "z"
+        },
+        {
+          "id": "front_opening_void",
+          "parent": "main_body",
+          "shape": "box",
+          "material": "interior_dark",
+          "size": [0.1, 1.95, 3.8],
+          "position": [4.97, -0.12, 0],
+          "anchor": "center"
+        },
+        {
+          "id": "door_header_track",
+          "parent": "main_body",
+          "shape": "box",
+          "material": "wood_trim",
+          "size": [0.16, 0.16, 4.2],
+          "position": [5.04, 0.92, 0],
+          "anchor": "center"
+        },
+        {
+          "id": "door_hinge_left",
+          "parent": "main_body",
+          "shape": "group",
+          "size": [0.1, 0.1, 0.1],
+          "position": [5.02, -1.1, -1.9],
+          "rotation": [0, 28, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "door_panel_left",
+          "parent": "door_hinge_left",
+          "shape": "box",
+          "material": "wood_planks",
+          "size": [0.1, 1.95, 1.9],
+          "position": [0, 0, 0.95],
+          "anchor": "bottom"
+        },
+        {
+          "id": "door_brace_top_left",
+          "parent": "door_panel_left",
+          "shape": "box",
+          "material": "wood_trim",
+          "size": [0.14, 0.14, 1.86],
+          "position": [0, 1.65, 0],
+          "anchor": "bottom",
+          "attachTo": "bottom"
+        },
+        {
+          "id": "door_brace_bot_left",
+          "parent": "door_panel_left",
+          "shape": "box",
+          "material": "wood_trim",
+          "size": [0.14, 0.14, 1.86],
+          "position": [0, 0.2, 0],
+          "anchor": "bottom",
+          "attachTo": "bottom"
+        },
+        {
+          "id": "door_diag_left",
+          "parent": "door_panel_left",
+          "shape": "box",
+          "material": "wood_trim",
+          "size": [0.13, 1.9, 0.12],
+          "position": [0, 0.97, 0],
+          "rotation": [45, 0, 0],
+          "anchor": "center"
+        },
+        {
+          "id": "door_hinge_right",
+          "parent": "main_body",
+          "shape": "group",
+          "size": [0.1, 0.1, 0.1],
+          "position": [5.02, -1.1, 1.9],
+          "rotation": [0, -42, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "door_panel_right",
+          "parent": "door_hinge_right",
+          "shape": "box",
+          "material": "wood_planks",
+          "size": [0.1, 1.95, 1.9],
+          "position": [0, 0, -0.95],
+          "anchor": "bottom"
+        },
+        {
+          "id": "door_brace_top_right",
+          "parent": "door_panel_right",
+          "shape": "box",
+          "material": "wood_trim",
+          "size": [0.14, 0.14, 1.86],
+          "position": [0, 1.65, 0],
+          "anchor": "bottom",
+          "attachTo": "bottom"
+        },
+        {
+          "id": "door_brace_bot_right",
+          "parent": "door_panel_right",
+          "shape": "box",
+          "material": "wood_trim",
+          "size": [0.14, 0.14, 1.86],
+          "position": [0, 0.2, 0],
+          "anchor": "bottom",
+          "attachTo": "bottom"
+        },
+        {
+          "id": "door_diag_right",
+          "parent": "door_panel_right",
+          "shape": "box",
+          "material": "wood_trim",
+          "size": [0.13, 1.9, 0.12],
+          "position": [0, 0.97, 0],
+          "rotation": [-45, 0, 0],
+          "anchor": "center"
+        },
+        {
+          "id": "side_window_frame",
+          "parent": "main_body",
+          "shape": "box",
+          "material": "wood_trim",
+          "size": [0.85, 0.95, 0.1],
+          "position": [-2, 0.15, 2.51],
+          "anchor": "center",
+          "mirror": "z",
+          "repeat": {
+            "mode": "linear",
+            "count": 2,
+            "step": [4, 0, 0]
+          }
+        },
+        {
+          "id": "side_window_glass",
+          "parent": "main_body",
+          "shape": "box",
+          "material": "window_glass",
+          "size": [0.7, 0.8, 0.12],
+          "position": [-2, 0.15, 2.51],
+          "anchor": "center",
+          "mirror": "z",
+          "repeat": {
+            "mode": "linear",
+            "count": 2,
+            "step": [4, 0, 0]
+          }
+        },
+        {
+          "id": "side_window_mullion_h",
+          "parent": "main_body",
+          "shape": "box",
+          "material": "wood_trim",
+          "size": [0.76, 0.06, 0.14],
+          "position": [-2, 0.15, 2.51],
+          "anchor": "center",
+          "mirror": "z",
+          "repeat": {
+            "mode": "linear",
+            "count": 2,
+            "step": [4, 0, 0]
+          }
+        },
+        {
+          "id": "side_window_mullion_v",
+          "parent": "main_body",
+          "shape": "box",
+          "material": "wood_trim",
+          "size": [0.06, 0.86, 0.14],
+          "position": [-2, 0.15, 2.51],
+          "anchor": "center",
+          "mirror": "z",
+          "repeat": {
+            "mode": "linear",
+            "count": 2,
+            "step": [4, 0, 0]
+          }
+        },
+        {
+          "id": "back_door_frame",
+          "parent": "main_body",
+          "shape": "box",
+          "material": "wood_trim",
+          "size": [0.1, 1.85, 0.95],
+          "position": [-5.01, -0.17, -1],
+          "anchor": "center"
+        },
+        {
+          "id": "back_door_panel",
+          "parent": "back_door_frame",
+          "shape": "box",
+          "material": "wood_planks",
+          "size": [0.12, 1.75, 0.82],
+          "position": [0, 0, 0],
+          "anchor": "center",
+          "attachTo": "center"
+        },
+        {
+          "id": "back_window_frame",
+          "parent": "main_body",
+          "shape": "box",
+          "material": "wood_trim",
+          "size": [0.1, 0.9, 0.8],
+          "position": [-5.01, 0.15, 1.1],
+          "anchor": "center"
+        },
+        {
+          "id": "back_window_glass",
+          "parent": "back_window_frame",
+          "shape": "box",
+          "material": "window_glass",
+          "size": [0.12, 0.75, 0.65],
+          "position": [0, 0, 0],
+          "anchor": "center",
+          "attachTo": "center"
+        },
+        {
+          "id": "stove_pipe",
+          "parent": "roof_gable",
+          "shape": "cylinder",
+          "material": "metal_hardware",
+          "size": [0.2, 1.1, 0.2],
+          "position": [-3.2, 0.45, -1.1],
+          "anchor": "bottom",
+          "segments": 8
+        },
+        {
+          "id": "stove_pipe_cap",
+          "parent": "stove_pipe",
+          "shape": "cone",
+          "material": "metal_hardware",
+          "size": [0.36, 0.15, 0.36],
+          "position": [0, 0.05, 0],
+          "anchor": "bottom",
+          "attachTo": "top",
+          "segments": 8
+        },
+        {
+          "id": "sand_bank_side",
+          "shape": "wedge",
+          "material": "sand_drift",
+          "size": [9.6, 0.35, 0.9],
+          "position": [0, 0, 2.6],
+          "anchor": "bottom",
+          "mirror": "z"
+        },
+        {
+          "id": "sand_bank_back",
+          "shape": "wedge",
+          "material": "sand_drift",
+          "size": [0.9, 0.4, 4.8],
+          "position": [-5.1, 0, 0],
+          "anchor": "bottom"
+        },
+        {
+          "id": "water_barrel",
+          "shape": "cylinder",
+          "material": "wood_trim",
+          "size": [0.65, 0.9, 0.65],
+          "position": [-4.5, 0, 2.95],
+          "anchor": "bottom",
+          "segments": 10
+        },
+        {
+          "id": "barrel_hoop_top",
+          "parent": "water_barrel",
+          "shape": "cylinder",
+          "material": "metal_hardware",
+          "size": [0.68, 0.06, 0.68],
+          "position": [0, 0.7, 0],
+          "anchor": "bottom",
+          "attachTo": "bottom",
+          "segments": 10
+        },
+        {
+          "id": "barrel_hoop_bot",
+          "parent": "water_barrel",
+          "shape": "cylinder",
+          "material": "metal_hardware",
+          "size": [0.68, 0.06, 0.68],
+          "position": [0, 0.15, 0],
+          "anchor": "bottom",
+          "attachTo": "bottom",
+          "segments": 10
+        },
+        {
+          "id": "lean_plank",
+          "shape": "box",
+          "material": "wood_planks",
+          "size": [0.06, 2.1, 0.28],
+          "position": [-3.4, 0, -2.75],
+          "rotation": [-14, 5, 0],
+          "anchor": "bottom"
+        }
+      ],
+      "notes": "1903 Wright Brothers Kill Devil Hills wooden hangar and camp shed. Board-and-batten rough pine siding, tarpaper gable roof, stove pipe, and large braced hangar doors posed ajar revealing the dark interior."
+    },
+    {
+      "id": "vintage_tripod_camera",
+      "name": "Gundlach Korona Camera",
+      "category": "prop",
+      "instancePolicy": "unique",
+      "placement": "ground",
+      "scale": 1,
+      "materials": [
+        {
+          "id": "mahogany",
+          "color": "#b8b0a0",
+          "finish": "satin"
+        },
+        {
+          "id": "ash_wood",
+          "color": "#b8b0a0",
+          "finish": "matte"
+        },
+        {
+          "id": "brass",
+          "color": "#b8b0a0",
+          "finish": "metal"
+        },
+        {
+          "id": "black_leather",
+          "color": "#b8b0a0",
+          "finish": "matte"
+        },
+        {
+          "id": "bellows_cloth",
+          "color": "#b8b0a0",
+          "finish": "cloth"
+        },
+        {
+          "id": "lens_glass",
+          "color": "#b8b0a0",
+          "finish": "glass"
+        },
+        {
+          "id": "ground_glass",
+          "color": "#b8b0a0",
+          "finish": "glass"
+        },
+        {
+          "id": "rubber_bulb",
+          "color": "#b8b0a0",
+          "finish": "matte"
+        }
+      ],
+      "parts": [
+        {
+          "id": "tripod_hub",
+          "shape": "cylinder",
+          "material": "mahogany",
+          "size": [0.16, 0.035, 0.16],
+          "position": [0, 1.18, 0],
+          "anchor": "bottom",
+          "segments": 12
+        },
+        {
+          "id": "hub_brass_ring",
+          "parent": "tripod_hub",
+          "shape": "cylinder",
+          "material": "brass",
+          "size": [0.17, 0.015, 0.17],
+          "position": [0, -0.005, 0],
+          "anchor": "center",
+          "attachTo": "center",
+          "segments": 12
+        },
+        {
+          "id": "center_screw",
+          "parent": "tripod_hub",
+          "shape": "cylinder",
+          "material": "brass",
+          "size": [0.05, 0.06, 0.05],
+          "position": [0, 0, 0],
+          "anchor": "top",
+          "attachTo": "bottom",
+          "segments": 8
+        },
+        {
+          "id": "leg_mount",
+          "parent": "tripod_hub",
+          "shape": "group",
+          "size": [0.01, 0.01, 0.01],
+          "position": [0, 0.01, 0],
+          "rotation": [0, 0, -18.5],
+          "anchor": "center",
+          "repeat": {
+            "mode": "radial",
+            "count": 3,
+            "radius": 0.068,
+            "axis": "y",
+            "startAngle": 0
+          }
+        },
+        {
+          "id": "leg_hinge_bracket",
+          "parent": "leg_mount",
+          "shape": "box",
+          "material": "brass",
+          "size": [0.025, 0.03, 0.055],
+          "position": [0, 0, 0],
+          "anchor": "top"
+        },
+        {
+          "id": "leg_rail_left",
+          "parent": "leg_hinge_bracket",
+          "shape": "box",
+          "material": "ash_wood",
+          "size": [0.018, 0.75, 0.012],
+          "position": [0, -0.01, 0.018],
+          "rotation": [0.9, 0, 0],
+          "anchor": "top",
+          "mirror": "z"
+        },
+        {
+          "id": "leg_mid_clamp",
+          "parent": "leg_hinge_bracket",
+          "shape": "box",
+          "material": "brass",
+          "size": [0.026, 0.035, 0.048],
+          "position": [0, -0.74, 0],
+          "anchor": "center"
+        },
+        {
+          "id": "leg_lower_shaft",
+          "parent": "leg_mid_clamp",
+          "shape": "box",
+          "material": "ash_wood",
+          "size": [0.016, 0.52, 0.016],
+          "position": [0, 0, 0],
+          "anchor": "top",
+          "attachTo": "bottom"
+        },
+        {
+          "id": "leg_foot_spike",
+          "parent": "leg_lower_shaft",
+          "shape": "cone",
+          "material": "brass",
+          "size": [0.018, 0.04, 0.018],
+          "position": [0, 0, 0],
+          "geometryRotation": [180, 0, 0],
+          "anchor": "bottom",
+          "attachTo": "bottom",
+          "segments": 6
+        },
+        {
+          "id": "camera_bed_rear",
+          "parent": "tripod_hub",
+          "shape": "box",
+          "material": "mahogany",
+          "size": [0.24, 0.024, 0.22],
+          "position": [-0.02, 0, 0],
+          "anchor": "bottom",
+          "attachTo": "top"
+        },
+        {
+          "id": "camera_bed_front",
+          "parent": "camera_bed_rear",
+          "shape": "box",
+          "material": "mahogany",
+          "size": [0.18, 0.02, 0.19],
+          "position": [0, 0.002, 0],
+          "anchor": "back",
+          "attachTo": "front"
+        },
+        {
+          "id": "bed_brass_track",
+          "parent": "camera_bed_rear",
+          "shape": "box",
+          "material": "brass",
+          "size": [0.39, 0.01, 0.012],
+          "position": [0.08, 0, 0.075],
+          "anchor": "bottom",
+          "attachTo": "top",
+          "mirror": "z"
+        },
+        {
+          "id": "focus_knob_shaft",
+          "parent": "camera_bed_front",
+          "shape": "cylinder",
+          "material": "brass",
+          "size": [0.01, 0.23, 0.01],
+          "position": [0.04, 0, 0],
+          "geometryRotation": [90, 0, 0],
+          "anchor": "center",
+          "attachTo": "center",
+          "segments": 8
+        },
+        {
+          "id": "focus_knob",
+          "parent": "focus_knob_shaft",
+          "shape": "cylinder",
+          "material": "brass",
+          "size": [0.036, 0.012, 0.036],
+          "position": [0, 0, 0.12],
+          "geometryRotation": [90, 0, 0],
+          "anchor": "center",
+          "segments": 12
+        },
+        {
+          "id": "rear_case",
+          "parent": "camera_bed_rear",
+          "shape": "box",
+          "material": "black_leather",
+          "size": [0.11, 0.23, 0.22],
+          "position": [-0.065, 0, 0],
+          "anchor": "bottom",
+          "attachTo": "top"
+        },
+        {
+          "id": "rear_mahogany_frame",
+          "parent": "rear_case",
+          "shape": "box",
+          "material": "mahogany",
+          "size": [0.022, 0.215, 0.205],
+          "position": [0, 0, 0],
+          "anchor": "front",
+          "attachTo": "back"
+        },
+        {
+          "id": "ground_glass_pane",
+          "parent": "rear_mahogany_frame",
+          "shape": "box",
+          "material": "ground_glass",
+          "size": [0.01, 0.165, 0.155],
+          "position": [0, 0, 0],
+          "anchor": "front",
+          "attachTo": "back"
+        },
+        {
+          "id": "plate_holder_tab",
+          "parent": "rear_mahogany_frame",
+          "shape": "box",
+          "material": "mahogany",
+          "size": [0.012, 0.03, 0.14],
+          "position": [0, 0.005, 0],
+          "anchor": "bottom",
+          "attachTo": "top"
+        },
+        {
+          "id": "corner_bracket_top",
+          "parent": "rear_case",
+          "shape": "box",
+          "material": "brass",
+          "size": [0.114, 0.025, 0.025],
+          "position": [0, 0.105, 0.1],
+          "anchor": "center",
+          "attachTo": "center",
+          "mirror": "z"
+        },
+        {
+          "id": "rear_tilt_strut",
+          "parent": "rear_case",
+          "shape": "box",
+          "material": "brass",
+          "size": [0.01, 0.17, 0.016],
+          "position": [0.03, -0.02, 0.113],
+          "rotation": [0, 0, -14],
+          "anchor": "center",
+          "mirror": "z"
+        },
+        {
+          "id": "handle_mount_f",
+          "parent": "rear_case",
+          "shape": "box",
+          "material": "brass",
+          "size": [0.018, 0.012, 0.025],
+          "position": [0.035, 0, 0],
+          "anchor": "bottom",
+          "attachTo": "top"
+        },
+        {
+          "id": "handle_mount_b",
+          "parent": "rear_case",
+          "shape": "box",
+          "material": "brass",
+          "size": [0.018, 0.012, 0.025],
+          "position": [-0.035, 0, 0],
+          "anchor": "bottom",
+          "attachTo": "top"
+        },
+        {
+          "id": "carry_strap",
+          "parent": "rear_case",
+          "shape": "box",
+          "material": "black_leather",
+          "size": [0.085, 0.01, 0.022],
+          "position": [0, 0.012, 0],
+          "anchor": "bottom",
+          "attachTo": "top"
+        },
+        {
+          "id": "viewfinder_box",
+          "parent": "rear_case",
+          "shape": "box",
+          "material": "black_leather",
+          "size": [0.04, 0.032, 0.032],
+          "position": [0.03, 0, 0.08],
+          "anchor": "bottom",
+          "attachTo": "top"
+        },
+        {
+          "id": "viewfinder_hood",
+          "parent": "viewfinder_box",
+          "shape": "box",
+          "material": "brass",
+          "size": [0.025, 0.015, 0.025],
+          "position": [0, 0, 0],
+          "anchor": "bottom",
+          "attachTo": "top"
+        },
+        {
+          "id": "bellows_main",
+          "parent": "rear_case",
+          "shape": "cone",
+          "material": "bellows_cloth",
+          "size": [0.21, 0.23, 0.2],
+          "position": [0, 0, 0],
+          "geometryRotation": [0, 0, -90],
+          "anchor": "bottom",
+          "attachTo": "front",
+          "segments": 4
+        },
+        {
+          "id": "bellows_pleat",
+          "parent": "rear_case",
+          "shape": "box",
+          "material": "bellows_cloth",
+          "size": [0.014, 0.185, 0.175],
+          "position": [0.02, 0, 0],
+          "anchor": "back",
+          "attachTo": "front",
+          "repeat": {
+            "mode": "linear",
+            "count": 8,
+            "step": [0.025, 0, 0]
+          }
+        },
+        {
+          "id": "front_standard_base",
+          "parent": "camera_bed_front",
+          "shape": "box",
+          "material": "brass",
+          "size": [0.04, 0.012, 0.15],
+          "position": [0.035, 0, 0],
+          "anchor": "bottom",
+          "attachTo": "top"
+        },
+        {
+          "id": "front_upright",
+          "parent": "front_standard_base",
+          "shape": "box",
+          "material": "brass",
+          "size": [0.016, 0.155, 0.01],
+          "position": [0, 0, 0.068],
+          "anchor": "bottom",
+          "attachTo": "top",
+          "mirror": "z"
+        },
+        {
+          "id": "front_top_arch",
+          "parent": "front_standard_base",
+          "shape": "box",
+          "material": "brass",
+          "size": [0.016, 0.012, 0.146],
+          "position": [0, 0.155, 0],
+          "anchor": "bottom",
+          "attachTo": "top"
+        },
+        {
+          "id": "lens_board",
+          "parent": "front_standard_base",
+          "shape": "box",
+          "material": "mahogany",
+          "size": [0.014, 0.125, 0.12],
+          "position": [0, 0.02, 0],
+          "anchor": "bottom",
+          "attachTo": "top"
+        },
+        {
+          "id": "shutter_housing",
+          "parent": "lens_board",
+          "shape": "cylinder",
+          "material": "brass",
+          "size": [0.088, 0.02, 0.088],
+          "position": [0, 0, 0],
+          "geometryRotation": [0, 0, -90],
+          "anchor": "bottom",
+          "attachTo": "front",
+          "segments": 16
+        },
+        {
+          "id": "shutter_faceplate",
+          "parent": "shutter_housing",
+          "shape": "box",
+          "material": "black_leather",
+          "size": [0.015, 0.095, 0.075],
+          "position": [0.005, 0, 0],
+          "anchor": "center",
+          "attachTo": "center"
+        },
+        {
+          "id": "shutter_cylinder_piston",
+          "parent": "shutter_housing",
+          "shape": "cylinder",
+          "material": "brass",
+          "size": [0.018, 0.055, 0.018],
+          "position": [0.01, 0.01, 0.048],
+          "anchor": "center",
+          "segments": 8
+        },
+        {
+          "id": "lens_barrel",
+          "parent": "shutter_housing",
+          "shape": "cylinder",
+          "material": "brass",
+          "size": [0.064, 0.038, 0.064],
+          "position": [0.02, 0, 0],
+          "geometryRotation": [0, 0, -90],
+          "anchor": "bottom",
+          "segments": 16
+        },
+        {
+          "id": "lens_rim",
+          "parent": "lens_barrel",
+          "shape": "torus",
+          "material": "brass",
+          "size": [0.068, 0.01, 0.068],
+          "position": [0.036, 0, 0],
+          "geometryRotation": [0, 0, -90],
+          "anchor": "center",
+          "segments": 16
+        },
+        {
+          "id": "front_lens_element",
+          "parent": "lens_barrel",
+          "shape": "dome",
+          "material": "lens_glass",
+          "size": [0.056, 0.014, 0.056],
+          "position": [0.032, 0, 0],
+          "geometryRotation": [0, 0, -90],
+          "anchor": "bottom",
+          "segments": 14
+        },
+        {
+          "id": "cable_hose_upper",
+          "parent": "shutter_housing",
+          "shape": "cylinder",
+          "material": "rubber_bulb",
+          "size": [0.01, 0.22, 0.01],
+          "position": [0.008, -0.03, -0.04],
+          "rotation": [8, 0, -16],
+          "anchor": "top",
+          "segments": 6
+        },
+        {
+          "id": "cable_hose_lower",
+          "parent": "cable_hose_upper",
+          "shape": "cylinder",
+          "material": "rubber_bulb",
+          "size": [0.01, 0.18, 0.01],
+          "position": [0, -0.215, 0],
+          "rotation": [-5, 0, 12],
+          "anchor": "top",
+          "segments": 6
+        },
+        {
+          "id": "squeeze_bulb",
+          "parent": "cable_hose_lower",
+          "shape": "sphere",
+          "material": "rubber_bulb",
+          "size": [0.044, 0.075, 0.044],
+          "position": [0, -0.175, 0],
+          "anchor": "top",
+          "segments": 10
+        }
+      ],
+      "notes": "1903 Gundlach Korona 5x7 glass-plate field camera on a tall split-rail ash and mahogany wooden tripod with brass hardware, pleated red-mahogany bellows, brass lens assembly, and pneumatic rubber shutter bulb."
+    }
+  ],
+  "scenes": [
+    {
+      "kind": "diorama",
+      "duration": 6,
+      "kicker": "10:30 AM - KILL DEVIL HILLS",
+      "caption": "December 17, 1903: the Wrights ready their Flyer on the Carolina dunes.",
+      "setting": "coast",
+      "layout": "open",
+      "settlement": "wild",
+      "shotSize": "wide",
+      "timeOfDay": "day",
+      "weather": "clear",
+      "camera": "push_in",
+      "elements": [
+        {
+          "model": "wright_flyer_1903",
+          "count": 1,
+          "formation": "single",
+          "position": "center",
+          "motion": "idle",
+          "role": "subject",
+          "offset": {
+            "x": 0,
+            "z": 0
+          },
+          "facing": "left"
+        },
+        {
+          "model": "wooden_monorail_track",
+          "count": 1,
+          "formation": "single",
+          "position": "center",
+          "motion": "idle",
+          "role": "background",
+          "offset": {
+            "x": -5,
+            "z": 0
+          },
+          "facing": "left"
+        },
+        {
+          "model": "wilbur_wright",
+          "count": 1,
+          "formation": "single",
+          "position": "center",
+          "motion": "idle",
+          "role": "subject",
+          "offset": {
+            "x": 0,
+            "z": 7.5
+          },
+          "facing": "left"
+        },
+        {
+          "model": "witness_john_daniels",
+          "count": 1,
+          "formation": "single",
+          "position": "front_right",
+          "motion": "idle",
+          "role": "foreground",
+          "offset": {
+            "x": 6,
+            "z": 11
+          },
+          "facing": "left"
+        },
+        {
+          "model": "vintage_tripod_camera",
+          "count": 1,
+          "formation": "single",
+          "position": "front_right",
+          "motion": "idle",
+          "role": "foreground",
+          "offset": {
+            "x": 5,
+            "z": 11
+          },
+          "facing": "left"
+        },
+        {
+          "model": "lifesaving_station_shed",
+          "count": 2,
+          "formation": "line",
+          "position": "back",
+          "motion": "idle",
+          "role": "background",
+          "offset": {
+            "x": 12,
+            "z": -28
+          },
+          "facing": "camera"
+        }
+      ],
+      "counter": {
+        "label": "FIRST FLIGHT TIME",
+        "from": 0,
+        "to": 0,
+        "format": "duration",
+        "decimals": 1,
+        "note": "12 HP ENGINE WARMING UP"
+      }
+    },
+    {
+      "kind": "diorama",
+      "duration": 5,
+      "kicker": "THREE-AXIS CONTROL",
+      "caption": "They invented three-axis control: wing warping, an elevator and a rudder.",
+      "setting": "coast",
+      "layout": "open",
+      "settlement": "wild",
+      "shotSize": "medium",
+      "timeOfDay": "day",
+      "weather": "clear",
+      "camera": "orbit",
+      "elements": [
+        {
+          "model": "wright_flyer_1903",
+          "count": 1,
+          "formation": "single",
+          "position": "center",
+          "motion": "idle",
+          "role": "subject",
+          "offset": {
+            "x": 0,
+            "z": 0
+          },
+          "facing": "left"
+        },
+        {
+          "model": "wooden_monorail_track",
+          "count": 1,
+          "formation": "single",
+          "position": "center",
+          "motion": "idle",
+          "role": "background",
+          "offset": {
+            "x": -5,
+            "z": 0
+          },
+          "facing": "left"
+        }
+      ],
+      "counter": {
+        "label": "FIRST FLIGHT TIME",
+        "from": 0,
+        "to": 0,
+        "format": "duration",
+        "decimals": 1,
+        "note": "PILOT: ORVILLE WRIGHT"
+      }
+    },
+    {
+      "kind": "diorama",
+      "duration": 6,
+      "kicker": "10:35 AM - LIFTOFF",
+      "caption": "At 10:35 Wilbur steadies the wing as Daniels snaps the shutter.",
+      "setting": "coast",
+      "layout": "open",
+      "settlement": "wild",
+      "shotSize": "medium",
+      "timeOfDay": "day",
+      "weather": "clear",
+      "camera": "tracking",
+      "elements": [
+        {
+          "model": "wright_flyer_1903",
+          "count": 1,
+          "formation": "single",
+          "position": "center",
+          "motion": "launch",
+          "role": "subject",
+          "offset": {
+            "x": 0,
+            "z": 0
+          },
+          "facing": "left"
+        },
+        {
+          "model": "wilbur_wright",
+          "count": 1,
+          "formation": "single",
+          "position": "center",
+          "motion": "march",
+          "role": "subject",
+          "offset": {
+            "x": 2,
+            "z": 7.5
+          },
+          "facing": "left"
+        },
+        {
+          "model": "wooden_monorail_track",
+          "count": 1,
+          "formation": "single",
+          "position": "center",
+          "motion": "idle",
+          "role": "background",
+          "offset": {
+            "x": 0,
+            "z": 0
+          },
+          "facing": "left"
+        },
+        {
+          "model": "witness_john_daniels",
+          "count": 1,
+          "formation": "single",
+          "position": "front_right",
+          "motion": "wave",
+          "role": "foreground",
+          "offset": {
+            "x": 8,
+            "z": 10
+          },
+          "facing": "left"
+        },
+        {
+          "model": "vintage_tripod_camera",
+          "count": 1,
+          "formation": "single",
+          "position": "front_right",
+          "motion": "idle",
+          "role": "foreground",
+          "offset": {
+            "x": 7,
+            "z": 10
+          },
+          "facing": "left"
+        }
+      ],
+      "counter": {
+        "label": "FIRST FLIGHT TIME",
+        "from": 0,
+        "to": 6,
+        "format": "duration",
+        "decimals": 1,
+        "note": "FIRST POWERED FLIGHT"
+      }
+    },
+    {
+      "kind": "diorama",
+      "duration": 6,
+      "kicker": "120 FEET IN 12 SECONDS",
+      "caption": "Orville flies 120 feet in 12 seconds: the first powered, controlled flight.",
+      "setting": "coast",
+      "layout": "open",
+      "settlement": "wild",
+      "shotSize": "wide",
+      "timeOfDay": "day",
+      "weather": "clear",
+      "camera": "pan_left",
+      "elements": [
+        {
+          "model": "wright_flyer_1903",
+          "count": 1,
+          "formation": "single",
+          "position": "center",
+          "motion": "fly",
+          "role": "subject",
+          "offset": {
+            "x": -8,
+            "z": 0
+          },
+          "facing": "left"
+        },
+        {
+          "model": "wilbur_wright",
+          "count": 1,
+          "formation": "single",
+          "position": "right",
+          "motion": "idle",
+          "role": "background",
+          "offset": {
+            "x": 10,
+            "z": 6
+          },
+          "facing": "left"
+        },
+        {
+          "model": "lifesaving_station_shed",
+          "count": 2,
+          "formation": "line",
+          "position": "back",
+          "motion": "idle",
+          "role": "background",
+          "offset": {
+            "x": 18,
+            "z": -30
+          },
+          "facing": "camera"
+        }
+      ],
+      "counter": {
+        "label": "FIRST FLIGHT TIME",
+        "from": 6,
+        "to": 12,
+        "format": "duration",
+        "decimals": 1,
+        "note": "DISTANCE: 120 FEET"
+      }
+    },
+    {
+      "kind": "diorama",
+      "duration": 7,
+      "kicker": "FOURTH FLIGHT - NOON",
+      "caption": "By noon Wilbur flies 852 feet in 59 seconds and proves controlled flight.",
+      "setting": "coast",
+      "layout": "open",
+      "settlement": "wild",
+      "shotSize": "wide",
+      "timeOfDay": "day",
+      "weather": "clear",
+      "camera": "flyover",
+      "elements": [
+        {
+          "model": "wright_flyer_1903",
+          "count": 1,
+          "formation": "single",
+          "position": "center",
+          "motion": "fly",
+          "role": "subject",
+          "offset": {
+            "x": -12,
+            "z": 0
+          },
+          "facing": "left"
+        },
+        {
+          "model": "wooden_monorail_track",
+          "count": 1,
+          "formation": "single",
+          "position": "right",
+          "motion": "idle",
+          "role": "background",
+          "offset": {
+            "x": 20,
+            "z": 4
+          },
+          "facing": "left"
+        },
+        {
+          "model": "witness_john_daniels",
+          "count": 1,
+          "formation": "single",
+          "position": "right",
+          "motion": "idle",
+          "role": "background",
+          "offset": {
+            "x": 22,
+            "z": 10
+          },
+          "facing": "left"
+        },
+        {
+          "model": "lifesaving_station_shed",
+          "count": 2,
+          "formation": "line",
+          "position": "back",
+          "motion": "idle",
+          "role": "background",
+          "offset": {
+            "x": 25,
+            "z": -35
+          },
+          "facing": "camera"
+        }
+      ],
+      "counter": {
+        "label": "DISTANCE FLOWN",
+        "from": 120,
+        "to": 852,
+        "format": "number",
+        "decimals": 0,
+        "unit": "ft",
+        "note": "FOURTH FLIGHT: 59 SECONDS"
+      }
+    }
+  ]
+}

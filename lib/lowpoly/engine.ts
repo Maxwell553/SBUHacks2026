@@ -17,6 +17,7 @@ import { type Effect, makeExplosion, makeFire, makeSmoke } from "@/lib/lowpoly/e
 import { buildEnvironment, type Environment } from "@/lib/lowpoly/environment";
 import { buildGlobe, latLonToVec3 } from "@/lib/lowpoly/globe";
 import { resolveLayout, sweptCircles, type Body } from "@/lib/lowpoly/layout";
+import type { ShotSnapshot, UnitSnapshot } from "@/lib/lowpoly/shot-audit";
 import { drawOverlay, loadFonts, type OverlayLabel } from "@/lib/lowpoly/overlay";
 import { buildScatter } from "@/lib/lowpoly/scatter";
 import { contactShadowTexture, glowTexture } from "@/lib/lowpoly/textures";
@@ -38,6 +39,8 @@ interface BuiltScene {
   labels(): OverlayLabel[];
   pin?(): { x: number; y: number; visible: boolean; label: string };
   flash(local: number): number;
+  /** Where every placed model is after the last update(), for the shot audit. */
+  inspect?(): Pick<ShotSnapshot, "camera" | "units">;
   dispose(): void;
 }
 
@@ -298,6 +301,16 @@ export class PolyEngine {
   /** Pre-builds a scene (e.g. while the previous one is playing). */
   prepare(index: number) {
     if (index >= 0 && index < this.script.scenes.length) this.get(index);
+  }
+
+  /** Positions every model at time t without drawing, and reports where they are; null for map shots. */
+  inspect(t: number): ShotSnapshot | null {
+    const { index, local } = this.sceneAt(t);
+    const b = this.get(index);
+    if (!b.inspect) return null;
+    b.update(local);
+    const sc = this.script.scenes[index];
+    return { scene: index, at: local / sc.duration, shotSize: sc.shotSize, ...b.inspect() };
   }
 
   renderAt(t: number) {
@@ -1490,6 +1503,61 @@ export class PolyEngine {
           return { ...pr, text };
         }),
       flash: (local) => env.flash(local),
+      inspect: () => {
+        const view = new THREE.Vector3();
+        const units_: UnitSnapshot[] = units
+          .filter((u) => !u.ghost)
+          .map((u) => {
+            const e = sc.elements[u.element];
+            const b = lib.bounds(e.model);
+            const s = u.group.scale.x;
+            const heading = u.group.rotation.y;
+            const x = u.group.position.x + u.centre[0],
+              z = u.group.position.z + u.centre[1];
+            const hx = (b.size.x * s) / 2,
+              hz = (b.size.z * s) / 2;
+            const y0 = u.group.position.y + b.minY * s,
+              y1 = u.group.position.y + b.height * s;
+            const cos = Math.cos(heading),
+              sin = Math.sin(heading);
+            let screen: UnitSnapshot["screen"] = null;
+            for (const lx of [-hx, hx])
+              for (const lz of [-hz, hz])
+                for (const y of [y0, y1]) {
+                  view.set(x + lx * cos + lz * sin, y, z - lx * sin + lz * cos).applyMatrix4(camera.matrixWorldInverse);
+                  if (view.z > -camera.near) continue;
+                  view.applyMatrix4(camera.projectionMatrix);
+                  const px = (view.x + 1) / 2,
+                    py = (1 - view.y) / 2;
+                  screen = screen
+                    ? {
+                        x0: Math.min(screen.x0, px),
+                        y0: Math.min(screen.y0, py),
+                        x1: Math.max(screen.x1, px),
+                        y1: Math.max(screen.y1, py),
+                      }
+                    : { x0: px, y0: py, x1: px, y1: py };
+                }
+            return {
+              element: u.element,
+              model: e.model,
+              role: e.role ?? "subject",
+              solid: !u.shell && u.height > LOW_COVER,
+              placement: u.placement,
+              span: u.fixed,
+              x,
+              z,
+              heading,
+              hx,
+              hz,
+              y0,
+              y1,
+              screen,
+            };
+          });
+        const c = camera.position;
+        return { camera: { x: c.x, y: c.y, z: c.z }, units: units_ };
+      },
       dispose: () => {
         units.forEach((u) => {
           u.inst.dispose();

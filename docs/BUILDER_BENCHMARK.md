@@ -1,8 +1,8 @@
 # Builder model benchmark
 
-> **Status: historical.** This comparison predates the current configuration. Gemini 4 Argon (`GEMINI_CREATIVE_MODEL`) now plans, builds and directs every film, and a Flash model is used only for research, safety checks and as the fallback for a timed-out build (`lib/server/models.ts`). The motion-quality check and repair step described below is no longer part of the pipeline; `lib/server/motion-quality.ts` is kept for the unit checks. The benchmark script still works for comparing any builders.
+> **Status: historical record of the 24 October 2026 run.** Production no longer uses these builders. Gemini 3.8 Flash (`gemini-3.8-flash`) researches, moderates, plans models and is the fallback when a build times out. Gemini 4 Argon (`gemini-4-argon`) builds geometry, writes the storyboard and reviews the draft. Routing lives in `lib/server/models.ts`. The motion-quality gate described below is no longer part of the pipeline; `lib/server/motion-quality.ts` remains for the unit checks. The benchmark script still compares any builders you pass.
 
-Which model should build the 3D geometry: the fast default (`gemini-3.5-flash`), or the strongest available (`gemini-3.1-pro-preview`)? Run on 2026-10-24 with `npm run bench:builder -- --films` ([`scripts/bench/bench-builder.ts`](../scripts/bench/bench-builder.ts)).
+This run asked which model should build the 3D geometry: `gemini-3.5-flash` or `gemini-3.1-pro-preview`. Those ids are not the current defaults. The command was `npm run bench:builder -- --films` ([`scripts/bench/bench-builder.ts`](../scripts/bench/bench-builder.ts)), which at the time defaulted to that pair.
 
 ## Method
 
@@ -25,7 +25,7 @@ The prompts were Tower Bridge (a lifting mechanism over a river), Gutenberg's pr
 | Wright Flyer | Flash   | **ok, 20.6 s**   | 0                        | failed, 36.0 s |
 |              | Pro     | **ok, 62.5 s**   | 0                        | failed, 53.0 s |
 
-All but one of the failures reported "The mechanism animation could not be completed". The model's motion, after the automatic repair step, still failed the pipeline's motion-quality rules (`hasUsefulMotion` / `hasProgressiveMotion`). This happens with **both** builders, so it isn't a builder-quality difference. It is currently the biggest cause of failed generations.
+All but one of the failures reported "The mechanism animation could not be completed". The model's motion, after the automatic repair step, still failed the pipeline's motion-quality rules (`hasUsefulMotion` / `hasProgressiveMotion`). This happened with **both** builders, so it was not a builder-quality difference. In this run it was the biggest cause of failed generations.
 
 Measured on the Wright plan, the one built successfully by both:
 
@@ -78,10 +78,13 @@ On six full 20–40 s films from the topic ideas (Magellan, the Sistine Chapel, 
 ## Reproduce
 
 ```bash
-npm run bench:builder -- --films              # live; costs Gemini calls; ~10 min
+# Current defaults: gemini-3.8-flash against gemini-4-argon. Live; costs Gemini calls.
+npm run bench:builder -- --films
+# This historical pair:
+npm run bench:builder -- --builders=gemini-3.5-flash,gemini-3.1-pro-preview --films
 npm run visual:build && npm run visual:serve
 # then open the model comparison for any prompt n of the run:
 # http://127.0.0.1:4601/tools/visual-harness/?models=tmp/bench/<run>/models-<n>-gemini-3.5-flash.json&vs=tmp/bench/<run>/models-<n>-gemini-3.1-pro-preview.json
 ```
 
-Outputs land in `tmp/bench/builder-<stamp>/`. This run's data is `tmp/bench/builder-2026-10-25T02-03-04/` (`summary.txt`, `results.json`, plans, models, films).
+Outputs land in `tmp/bench/builder-<stamp>/`, which is git-ignored and is not part of the published tree. The 24 October run wrote `tmp/bench/builder-2026-10-25T02-03-04/` (`summary.txt`, `results.json`, plans, models, films) on the machine that ran it.

@@ -11,9 +11,10 @@ Read the schema files for the exact field lists and limits. This page explains h
 
 ## VideoScript
 
-- **Top level:** title, subtitle, date label, location, coordinates, palette, optional factions, a `seed`, `totalDuration` (20–60 s), the `models` used by the film, and 3–12 `scenes`.
+- **Top level:** title, subtitle, date label, location, coordinates, palette, optional factions, a `seed`, `totalDuration` (20–60 s), the `models` used by the film, and 3–16 `scenes`.
 - **Scenes:** `kind` (`diorama` or `map`), duration (2.5–10 s), kicker and caption text, plus the environment (setting, time of day, weather) and a camera move. Optional direction fields are `layout` (`open`, `street`, `interior`), `shotSize` (`wide`, `medium`, `close`), `settlement`, `waterWidth`, `banks` and `structureState` (`intact` or `ruined`). [CINEMATIC_RENDERER.md](CINEMATIC_RENDERER.md) explains how each one is read.
 - **Elements:** each diorama scene places up to 16 elements. An element references a model **by id** and adds a count, formation, position, motion, optional facing, colour (tint), scale and label. Immersive films can also give an element a `role` (`subject`, `background`, `foreground`) and an absolute `offset` in metres.
+- **Counter:** an optional `scene.counter` draws a running clock or tally under the heading of immersive films, moving steadily from `from` to `to` across the shot. `format` is `number` (a tally, with optional `unit` and `decimals`), `duration` (seconds shown as m:ss, with `decimals: 3` for milliseconds) or `clock` (hour of day, so 13.5 shows 13:30). `label` says what is measured and `note` is a small readout under it. Consecutive shots continue one clock by starting where the previous one stopped.
 - **Map scenes:** these carry `lat`, `lon`, a label, a zoom level and an optional route, which is drawn as a great-circle arc on the faceted globe.
 
 `normalizeVideoScript()` is lenient by design. It maps aliases, clamps ranges, resolves model references by id or name, scales element counts to the per-scene budget, prunes unused models, limits text to glyphs the custom fonts contain (`sanitizeText`), and rescales scene durations so they sum exactly to the requested length. After repair it validates strictly.
@@ -30,7 +31,7 @@ There is **no fixed catalogue** of models. For every request Gemini designs new 
 
 Conventions: units are metres, +y is up, +x is the model's front, and the origin sits on the ground (or the waterline) at the centre of the footprint. `MODEL_LIMITS` sets hard caps on parts, expanded nodes, triangles, rig depth, channels and JSON size. `analyzeModel()` enforces them, and `normalizeModelDefinition()` trims trailing parts until a model fits.
 
-The builder prompt documents the format (`MODEL_FORMAT_GUIDE` in `lib/schema/model.ts`) and attaches the example films in `references/`; it gives no construction rules. `lib/content/model-examples.ts` holds a few hand-written definitions for the home page, the sign-in screen and the sample reel. They are never sent to Gemini.
+The builder prompt documents the format (`MODEL_FORMAT_GUIDE` in `lib/schema/model.ts`) and attaches the stills in `references/stills/`; it gives no construction rules. Geometry is built by Gemini 4 Argon unless `GEMINI_BUILDER_MODEL` overrides it. `lib/content/model-examples.ts` holds a few hand-written definitions for the home page, the sign-in screen and the sample reel. They are never sent to Gemini.
 
 ## Compiler
 
@@ -46,10 +47,12 @@ The builder prompt documents the format (`MODEL_FORMAT_GUIDE` in `lib/schema/mod
 
 `PolyEngine` (`lib/lowpoly/engine.ts`) renders a script:
 
+- **Inspection.** `inspect(t)` places every model at time `t` without drawing. It reports each one's oriented footprint, height range, role and projected bounds in the frame. `shotIssues()` in `lib/lowpoly/shot-audit.ts` turns those snapshots into measured problems: objects passing into each other, the camera inside a model, and subjects out of frame or too small for the shot size. `ModelLibrary.structure(id)` in the compiler finds groups of parts that touch neither the model's body nor the ground. Together they feed the review that runs while each film is made (see [ARCHITECTURE.md](ARCHITECTURE.md)).
+
 - **Scene building.** Scenes are built lazily, at most two at a time. Each one combines a procedural environment (`environment.ts`) with element instances laid out in formations.
 - **Placement.** Ground models follow the terrain height, water models float at the waterline (water is added when needed), and air models fly above the subject. `layout.ts` keeps placed footprints apart and stops moving units short of anything in their path.
 - **Camera.** Framing comes from the real bounds of the placed models. Distance, clipping planes, spacing, speeds and effect sizes scale with the subject, so a printing press and an army both fill the frame.
-- **Output.** `renderAt(t)` renders the WebGL frame and composites the 2D overlay (`overlay.ts`) onto an output canvas. The live `Player` component and the exporter share the same engine.
+- **Output.** `renderAt(t)` renders the WebGL frame and composites the 2D overlay (`overlay.ts`) onto an output canvas. Immersive films cut between shots with a 0.3 s faceted flash; classic films keep the slower 0.9 s wipe. The live `Player` component and the exporter share the same engine.
 
 ## Export
 

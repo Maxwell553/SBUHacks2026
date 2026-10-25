@@ -26,7 +26,7 @@ export const MAX_INSTANCES_PER_SCENE = 160;
 export const MIN_TOTAL_SECONDS = 20;
 export const MAX_TOTAL_SECONDS = 60;
 export const MIN_SCENES = 3;
-export const MAX_SCENES = 12;
+export const MAX_SCENES = 16;
 export const MIN_SCENE_SECONDS = 2.5;
 export const MAX_SCENE_SECONDS = 10;
 export const MAX_ELEMENTS_PER_SCENE = 16;
@@ -101,6 +101,9 @@ export const MOTIONS = [
 ] as const;
 export const FACINGS = ["left", "right", "camera", "away", "center"] as const;
 export const SCENE_KINDS = ["diorama", "map"] as const;
+/** number: a tally; duration: seconds shown as m:ss; clock: hour of day shown as HH:MM. */
+export const COUNTER_FORMATS = ["number", "duration", "clock"] as const;
+export const MAX_COUNTER_VALUE = 1e12;
 export const MAP_ZOOMS = ["world", "region", "local"] as const;
 export const ASPECTS = ["landscape", "portrait"] as const;
 
@@ -144,6 +147,18 @@ export const mapSpecSchema = z.object({
   route: z.array(z.object({ lat, lon })).max(12).optional(),
 });
 
+const counterValue = z.number().min(-MAX_COUNTER_VALUE).max(MAX_COUNTER_VALUE);
+/** On-screen running clock or tally that moves from `from` to `to` across the shot. */
+export const counterSchema = z.object({
+  label: z.string().min(1).max(32),
+  from: counterValue,
+  to: counterValue,
+  format: z.enum(COUNTER_FORMATS),
+  decimals: z.number().int().min(0).max(3).optional(),
+  unit: z.string().max(16).optional(),
+  note: z.string().max(40).optional(),
+});
+
 export const sceneSchema = z.object({
   kind: z.enum(SCENE_KINDS),
   duration: z.number().min(MIN_SCENE_SECONDS).max(MAX_SCENE_SECONDS),
@@ -163,6 +178,7 @@ export const sceneSchema = z.object({
   camera: z.enum(CAMERA_MOVES),
   elements: z.array(sceneElementSchema).max(MAX_ELEMENTS_PER_SCENE),
   map: mapSpecSchema.optional(),
+  counter: counterSchema.optional(),
   palette: z.object({ sky: hex.optional(), ground: hex.optional(), accent: hex.optional() }).optional(),
 });
 
@@ -229,6 +245,7 @@ export const videoScriptSchema = z
 
 export type SceneElement = z.infer<typeof sceneElementSchema>;
 export type MapSpec = z.infer<typeof mapSpecSchema>;
+export type SceneCounter = z.infer<typeof counterSchema>;
 export type Scene = z.infer<typeof sceneSchema>;
 export type Faction = z.infer<typeof factionSchema>;
 export type VideoScript = z.infer<typeof videoScriptSchema>;
@@ -345,6 +362,25 @@ function normalizeMap(raw: unknown, fallbackLabel: string, coords?: { lat: numbe
   };
 }
 
+function normalizeCounter(raw: unknown): SceneCounter | undefined {
+  const c = obj(raw);
+  const label = text(c.label, 32);
+  const from = num(c.from, -MAX_COUNTER_VALUE, MAX_COUNTER_VALUE, NaN);
+  const to = num(c.to ?? c.from, -MAX_COUNTER_VALUE, MAX_COUNTER_VALUE, NaN);
+  if (!label || !Number.isFinite(from) || !Number.isFinite(to)) return undefined;
+  const unit = typeof c.unit === "string" ? text(c.unit, 16) : "";
+  const note = typeof c.note === "string" ? text(c.note, 40) : "";
+  return {
+    label,
+    from,
+    to,
+    format: pick(COUNTER_FORMATS, c.format, "number"),
+    ...(c.decimals !== undefined ? { decimals: Math.round(num(c.decimals, 0, 3, 0)) } : {}),
+    ...(unit ? { unit } : {}),
+    ...(note ? { note } : {}),
+  };
+}
+
 /**
  * Repairs near-miss model output into a valid VideoScript: maps aliases,
  * clamps ranges, sanitises text and rescales scene durations so they sum to
@@ -393,6 +429,7 @@ export function normalizeVideoScript(raw: unknown, opts: { targetDuration?: numb
     let kind = pick(SCENE_KINDS, s.kind, "diorama");
     const map = s.map || kind === "map" ? normalizeMap(s.map, location, coordinates) : undefined;
     if (kind === "map" && !map) kind = "diorama";
+    const counter = s.counter ? normalizeCounter(s.counter) : undefined;
     const pal = obj(s.palette);
     const palette = {
       ...(hexOr(pal.sky) ? { sky: hexOr(pal.sky) } : {}),
@@ -424,6 +461,7 @@ export function normalizeVideoScript(raw: unknown, opts: { targetDuration?: numb
       camera: pick(CAMERA_MOVES, s.camera, kind === "map" ? "push_in" : "orbit"),
       elements,
       ...(map ? { map } : {}),
+      ...(counter ? { counter } : {}),
       ...(Object.keys(palette).length ? { palette } : {}),
     };
   });
@@ -503,7 +541,15 @@ export function scriptText(s: VideoScript): string {
     s.location,
     ...(s.factions ?? []).map((f) => f.name),
     ...s.models.map(modelText),
-    ...s.scenes.flatMap((sc) => [sc.kicker, sc.caption, sc.map?.label, ...sc.elements.map((e) => e.label)]),
+    ...s.scenes.flatMap((sc) => [
+      sc.kicker,
+      sc.caption,
+      sc.map?.label,
+      sc.counter?.label,
+      sc.counter?.unit,
+      sc.counter?.note,
+      ...sc.elements.map((e) => e.label),
+    ]),
   ]
     .filter(Boolean)
     .join("\n");
@@ -550,7 +596,7 @@ export function geminiVideoScriptJsonSchema(
     properties: {
       version: { type: "integer", enum: [VIDEO_SCHEMA_VERSION] },
       presentation: en(["immersive"], "Connected world with unobtrusive cinematic captions"),
-      title: str("Short punchy title of the event", 60),
+      title: str("The film's title, shown large over the first shot", 60),
       subtitle: str("One-line context", 90),
       dateLabel: str("Human date, e.g. 'October 14, 1066'", 40),
       location: str("Place name, e.g. 'Hastings, England'", 60),
@@ -666,6 +712,28 @@ export function geminiVideoScriptJsonSchema(
               },
               required: ["lat", "lon", "label", "zoom"],
             },
+            counter: {
+              type: "object",
+              description: "Optional on-screen running clock or tally that moves from `from` to `to` across the shot",
+              properties: {
+                label: str("What is measured, e.g. 'Fire has burned for'", 32),
+                from: { type: "number", description: "Value at the start of the shot" },
+                to: { type: "number", description: "Value at the end of the shot" },
+                format: en(
+                  COUNTER_FORMATS,
+                  "number = a tally; duration = seconds shown as m:ss; clock = hour of day (13.5 = 13:30)",
+                ),
+                decimals: {
+                  type: "integer",
+                  minimum: 0,
+                  maximum: 3,
+                  description: "Fraction digits (3 = milliseconds)",
+                },
+                unit: str("Suffix for a number, e.g. 'homes'", 16),
+                note: str("Small line under the value, e.g. 'Sunday, 2 September'", 40),
+              },
+              required: ["label", "from", "to", "format"],
+            },
             palette: {
               type: "object",
               properties: {
@@ -723,6 +791,13 @@ How the renderer reads a shot:
 - layout: street (a built corridor), open (land, water or flight), interior (inside a room-shell model that is an element of
   the shot). settlement, waterWidth, banks and structureState describe the place; shotSize and camera choose the coverage.
 - kind=map flies a faceted globe to map.lat/lon, with an optional route.
+- counter draws a running clock or tally under the heading, moving steadily from \`from\` to \`to\` over the shot: format
+  number (a count, with unit and decimals), duration (seconds as m:ss; decimals 3 shows milliseconds) or clock (hour of
+  day, 13.5 = 13:30). label says what is measured; note is a small line under it. To keep one clock running through
+  the film, give consecutive shots a counter whose \`from\` is the previous shot's \`to\`.
+- Shots change with a quick cut. title is shown large on the first shot and kicker on the others; caption is the line
+  of narration along the bottom. A closing title card covers the last 2 seconds of the final shot, so give that shot
+  enough extra time for its caption to be read first.
 
 Contract: ${MIN_SCENES}-${MAX_SCENES} scenes of ${MIN_SCENE_SECONDS}-${MAX_SCENE_SECONDS}s whose durations sum exactly to totalDuration; only model ids from the
 provided set; at most ${MAX_ELEMENTS_PER_SCENE} elements and ${MAX_INSTANCES_PER_SCENE} instances (sum of counts) per scene; captions of at most 160

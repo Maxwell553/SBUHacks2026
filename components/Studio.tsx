@@ -1,19 +1,22 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { createPortal } from "react-dom";
 import { ApiError, videos, type Video } from "@/lib/client/api";
 import { saveRender, type SaveProgress } from "@/lib/client/save";
+import { reviewRender, type ReviewProgress } from "@/lib/client/review";
+import { produceFilm, type ProduceProgress } from "@/lib/client/produce";
 import type { Aspect } from "@/lib/schema/video";
 import { TOPIC_IDEAS } from "@/lib/content/topics";
-import { SITE } from "@/lib/content/site";
 import dynamic from "next/dynamic";
 import { StudioPreview } from "@/components/StudioPreview";
 const Player = dynamic(() => import("@/components/Player").then((m) => m.Player));
 import { VideoDetails } from "@/components/VideoDetails";
+import { useSettledReducedMotion } from "@/components/MotionRoot";
 
-type StepKey = "check" | "research" | "build" | "animate" | "save";
+type StepKey = "check" | "research" | "build" | "review" | "animate" | "save";
 type StepState = "idle" | "active" | "done" | "error";
 
 const STEPS: { key: StepKey; label: string; hint: string }[] = [
@@ -28,21 +31,51 @@ const STEPS: { key: StepKey; label: string; hint: string }[] = [
     hint: "Gathering facts from public websites and noting every source.",
   },
   { key: "build", label: "Building your scenes", hint: "Designing the people, places and machines of the time." },
+  {
+    key: "review",
+    label: "Reviewing every shot",
+    hint: "Drawing a draft, then fixing anything that overlaps, floats or falls out of frame.",
+  },
   { key: "animate", label: "Bringing history to life", hint: "Animating every frame right here in your browser." },
   { key: "save", label: "Saving to your library", hint: "Storing your video, your question and its sources." },
 ];
+
+/** Where an in-app link would navigate, or null when the click can go through. */
+function leavingTo(anchor: HTMLAnchorElement): string | null {
+  const raw = anchor.getAttribute("href");
+  if (!raw || raw.startsWith("mailto:") || raw.startsWith("tel:")) return null;
+  if (anchor.target === "_blank" || anchor.hasAttribute("download")) return null;
+  let url: URL;
+  try {
+    url = new URL(anchor.href, location.href);
+  } catch {
+    return null;
+  }
+  if (url.origin !== location.origin) return null;
+  if (url.pathname === location.pathname && url.search === location.search) return null;
+  return `${url.pathname}${url.search}${url.hash}`;
+}
+
+function reviewNote(p: ReviewProgress) {
+  const round = p.rounds > 1 ? `Pass ${p.round} · ` : "";
+  if (p.stage === "rendering") return `${round}drawing a draft`;
+  if (p.stage === "reviewing") return `${round}checking`;
+  const fixes = (p.shotsChanged ?? 0) + (p.modelsRepaired ?? 0);
+  return `${round}${fixes ? `${fixes} fix${fixes > 1 ? "es" : ""}` : "looks good"}`;
+}
 
 const fresh = (): Record<StepKey, StepState> => ({
   check: "idle",
   research: "idle",
   build: "idle",
+  review: "idle",
   animate: "idle",
   save: "idle",
 });
 
 export function Studio({ initialPrompt = "" }: { initialPrompt?: string }) {
   const router = useRouter();
-  const reduce = useReducedMotion();
+  const reduce = useSettledReducedMotion();
   const [prompt, setPrompt] = useState(initialPrompt);
   const [duration, setDuration] = useState(40);
   const [ideaOffset, setIdeaOffset] = useState(0);
@@ -54,12 +87,18 @@ export function Studio({ initialPrompt = "" }: { initialPrompt?: string }) {
     null,
   );
   const [saveProgress, setSaveProgress] = useState<SaveProgress | null>(null);
+  const [reviewProgress, setReviewProgress] = useState<ReviewProgress | null>(null);
+  const [produceProgress, setProduceProgress] = useState<ProduceProgress | null>(null);
   const [saveFailed, setSaveFailed] = useState<string | null>(null);
   const [elapsed, setElapsed] = useState(0);
   const completedTitleRef = useRef<HTMLHeadingElement>(null);
   const incompleteRef = useRef<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const allowLeaveRef = useRef(false);
+  const stayButtonRef = useRef<HTMLButtonElement>(null);
+  const bannerRef = useRef<HTMLDivElement>(null);
+  const [pendingLeave, setPendingLeave] = useState<string | null>(null);
 
   useEffect(() => {
     const discard = () => {
@@ -156,17 +195,26 @@ export function Studio({ initialPrompt = "" }: { initialPrompt?: string }) {
     }, 2500);
 
     try {
-      const { video: v } = await videos.create(q, duration, aspect, ac.signal);
+      const { video: planned, models } = await videos.create(q, duration, aspect, ac.signal);
       polling = false;
       if (pollRef.current) clearInterval(pollRef.current);
-      setSteps((s) => ({ ...s, check: "done", research: "done", build: "done" }));
-      incompleteRef.current = v.id;
+      incompleteRef.current = planned.id;
+      setSteps((s) => ({ ...s, check: "done", research: "done", build: "active" }));
+      const v = await produceFilm(planned, models, setProduceProgress, ac.signal);
+      setProduceProgress(null);
+      setSteps((s) => ({ ...s, build: "done", review: "active" }));
       setVideo(v);
       router.refresh();
-      await runSave(v);
+      const reviewed = await reviewRender(v, setReviewProgress, ac.signal);
+      setReviewProgress(null);
+      mark("review", "done");
+      setVideo(reviewed);
+      await runSave(reviewed);
       router.refresh();
     } catch (err) {
       polling = false;
+      setReviewProgress(null);
+      setProduceProgress(null);
       if (pollRef.current) clearInterval(pollRef.current);
       if (incompleteRef.current) await videos.discard(incompleteRef.current).catch(() => {});
       incompleteRef.current = null;
@@ -208,24 +256,127 @@ export function Studio({ initialPrompt = "" }: { initialPrompt?: string }) {
 
   const completed = video?.status === "rendered" && !!video.script;
   const working = busy || !!saveProgress;
+
+  // Closing or reloading the tab discards the video, so let the browser ask first.
+  // In-app links (the wordmark, the nav, the footer) do not fire that event.
+  useEffect(() => {
+    if (!working) {
+      allowLeaveRef.current = false;
+      return;
+    }
+    const warn = (e: BeforeUnloadEvent) => e.preventDefault();
+    const onClick = (event: MouseEvent) => {
+      if (allowLeaveRef.current) return;
+      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      const anchor = (event.target as Element | null)?.closest?.("a");
+      if (!(anchor instanceof HTMLAnchorElement)) return;
+      const dest = leavingTo(anchor);
+      if (!dest) return;
+      event.preventDefault();
+      event.stopPropagation();
+      setPendingLeave(dest);
+    };
+    window.addEventListener("beforeunload", warn);
+    document.addEventListener("click", onClick, true);
+    return () => {
+      window.removeEventListener("beforeunload", warn);
+      document.removeEventListener("click", onClick, true);
+    };
+  }, [working]);
+
+  useEffect(() => {
+    if (!working) {
+      document.body.removeAttribute("data-producing");
+      document.documentElement.style.removeProperty("--stay-h");
+      return;
+    }
+    document.body.dataset.producing = "true";
+    const el = bannerRef.current;
+    const apply = () => {
+      if (el) document.documentElement.style.setProperty("--stay-h", `${el.offsetHeight}px`);
+    };
+    apply();
+    const observer = new ResizeObserver(apply);
+    if (el) observer.observe(el);
+    return () => {
+      observer.disconnect();
+      document.body.removeAttribute("data-producing");
+      document.documentElement.style.removeProperty("--stay-h");
+    };
+  }, [working]);
+
+  useEffect(() => {
+    if (!pendingLeave) return;
+    stayButtonRef.current?.focus();
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setPendingLeave(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [pendingLeave]);
+
+  const confirmLeave = () => {
+    const dest = pendingLeave;
+    if (!dest) return;
+    allowLeaveRef.current = true;
+    setPendingLeave(null);
+    router.push(dest);
+  };
   const started = Object.values(steps).some((s) => s !== "idle");
   const pct = saveProgress ? Math.round(saveProgress.fraction * 100) : 0;
 
   return (
     <section className="studio-workspace" aria-labelledby="studio-title">
+      {working && typeof document !== "undefined"
+        ? createPortal(
+            <div ref={bannerRef} className="stay-banner" role="status">
+              <strong>Don’t leave this page.</strong> This tab is making your video. Clicking PolyChronicle, or opening
+              another page, stops it and the video won’t be saved.
+            </div>,
+            document.body,
+          )
+        : null}
+      {pendingLeave && typeof document !== "undefined"
+        ? createPortal(
+            <div
+              className="leave-backdrop"
+              onMouseDown={(event) => {
+                if (event.target === event.currentTarget) setPendingLeave(null);
+              }}
+            >
+              <div
+                className="leave-dialog"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="leave-title"
+                aria-describedby="leave-body"
+              >
+                <h2 id="leave-title">Stay on this page?</h2>
+                <p id="leave-body">
+                  {pendingLeave === "/"
+                    ? "The PolyChronicle name takes you back to the home page. Your video is still being made in this tab, so leaving now stops it and it won’t be saved."
+                    : "Your video is still being made in this tab. If you leave now, it stops and it won’t be saved."}
+                </p>
+                <div className="row">
+                  <button ref={stayButtonRef} className="btn" type="button" onClick={() => setPendingLeave(null)}>
+                    Stay here
+                  </button>
+                  <button className="btn danger" type="button" onClick={confirmLeave}>
+                    Leave and discard
+                  </button>
+                </div>
+              </div>
+            </div>,
+            document.body,
+          )
+        : null}
       <header className="studio-heading">
         <div>
           <span className="eyebrow">The history studio</span>
           <h1 id="studio-title">{completed ? "Your chronicle is ready." : "Turn curiosity into a chronicle."}</h1>
-          <p className="muted" id="studio-help">
-            {completed
-              ? "Watch your film, explore its sources, or start a new story."
-              : "Choose a moment. Set the pace. Bring it to life."}
-          </p>
+          {completed && <p className="muted">Watch your film, explore its sources, or start a new story.</p>}
         </div>
-        <span className="studio-heading-note">
-          {completed ? "Saved to your library" : "A little curiosity goes a long way."}
-        </span>
+        {completed && <span className="studio-heading-note">Saved to your library</span>}
       </header>
       {completed && video?.script ? (
         <motion.div
@@ -285,7 +436,7 @@ export function Studio({ initialPrompt = "" }: { initialPrompt?: string }) {
         </motion.div>
       ) : (
         <div className="studio">
-          <form className="stack studio-form" onSubmit={submit} aria-describedby="studio-help">
+          <form className="stack studio-form" onSubmit={submit}>
             <div className="field">
               <label htmlFor="prompt">What would you like to explore?</label>
               <textarea
@@ -381,8 +532,9 @@ export function Studio({ initialPrompt = "" }: { initialPrompt?: string }) {
               {saveProgress ? "Bringing history to life…" : busy ? "Working on it…" : "Bring it to life →"}
             </button>
             <p className="hint">
-              Each account can make {SITE.dailyVideos} videos per day. Requests are checked to keep things respectful
-              and historical. See our <Link href="/content-policy">content policy</Link>.
+              Keep this tab open the whole time. Leaving this page, including the PolyChronicle name at the top, stops
+              the video. Requests are checked to keep things respectful and historical. See our{" "}
+              <Link href="/content-policy">content policy</Link>.
             </p>
           </form>
 
@@ -460,7 +612,11 @@ export function Studio({ initialPrompt = "" }: { initialPrompt?: string }) {
                             : steps[s.key] === "active"
                               ? (s.key === "animate" || s.key === "save") && saveProgress
                                 ? `${pct}%`
-                                : "…"
+                                : s.key === "review" && reviewProgress
+                                  ? reviewNote(reviewProgress)
+                                  : s.key === "build" && produceProgress
+                                    ? `${produceProgress.built} of ${produceProgress.total} models${produceProgress.storyboard ? " · storyboard written" : ""}`
+                                    : "…"
                               : ""}
                       </span>
                     </li>
@@ -471,10 +627,12 @@ export function Studio({ initialPrompt = "" }: { initialPrompt?: string }) {
                     <div className="bar-fill" style={{ width: `${pct}%` }} />
                   </div>
                 ) : null}
-                {busy ? (
-                  <p className="hint">
-                    This usually takes one to three minutes. You can keep this tab open while we work.
-                  </p>
+                {working ? (
+                  <div className="notice info">
+                    <strong>Stay in this tab.</strong> Your browser helps build, check and animate the video. Closing
+                    it, reloading, or opening another page stops the film and it won’t be saved. This usually takes
+                    three to five minutes.
+                  </div>
                 ) : null}
                 {saveFailed ? (
                   <div className="notice error" role="alert">

@@ -12,7 +12,7 @@ npm run db:migrate
 npm run dev
 ```
 
-You need a PostgreSQL database and a Gemini API key. See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md#environment-variables).
+You need a PostgreSQL database and a Gemini API key. The example environment uses Gemini 3.8 Flash for research, moderation and planning, and Gemini 4 Argon for geometry, the storyboard and review. See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md#environment-variables).
 
 ## Before you open a pull request
 
@@ -35,7 +35,7 @@ If you change the pipeline, the database or the safety code, also run `npm run t
   - `lib/client/` is browser-only helpers.
   - `lib/lowpoly/` and `lib/render/` are the renderer. Keep them deterministic: no `Math.random()` or wall-clock time in frame code; use the seeded RNG in `lib/lowpoly/core.ts`.
   - `lib/content/` holds copy and static demo content.
-  - `references/` holds the example films attached to every creative Gemini request. The prompts describe only the data format, accuracy and safety, so the look of generated films is changed here, not in prompt text.
+  - `references/films/` holds the example films the director watches, and `references/stills/` holds frames from them for the planner and builders. Generated films take their format, pacing and look from these files; `lib/server/film-format.ts` is the only written description of that format. Keep the films small (they are sent inline with every film request) and use material you're allowed to use.
   - `scripts/` holds Node CLI scripts, grouped as `assets/` (generators), `bench/`, `checks/`, `db/` and `tests/`. Add a new unit check to `scripts/tests/` and to the `test:unit` script in `package.json`.
 - **No hard-coded model catalogue.** Generated videos must use per-request `ModelDefinition`s. To add a capability, extend the primitive vocabulary and `MODEL_FORMAT_GUIDE` in `lib/schema/model.ts`, not a named model.
 - **Never execute generated content.** Models and scripts are data, validated against hard limits.

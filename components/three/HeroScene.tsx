@@ -8,11 +8,13 @@ import { makeRng } from "@/lib/lowpoly/core";
 import { buildGlobe } from "@/lib/lowpoly/globe";
 import {
   CRATERS,
+  FLAG_POLE,
   LANDER,
+  MOON_RADIUS,
   ROCKS,
   START,
-  SURFACE_RADIUS,
   createMoonWalker,
+  groundHeight,
   type MoonWalker,
   type WalkPose,
 } from "@/components/three/moonWalk";
@@ -20,11 +22,65 @@ import { useInView } from "@/components/three/useInView";
 
 /** Radians per second: one full turn every 50 seconds. */
 const SPIN = (Math.PI * 2) / 50;
-const HOME = new THREE.Vector3(8, 6, 12);
-const TARGET = new THREE.Vector3(0, 1.2, 0);
+/** Looks down at about 45° so the landing reads from above and the Moon's limb stays round. */
+const HOME = new THREE.Vector3(6, 0.8, 8);
+const TARGET = new THREE.Vector3(0, -9.2, 0);
+/** Ortho frame in world units: the whole sphere, the lander, and room for the caption. */
+const FRAME_W = 26.7;
+const FRAME_H = 22;
 const HOME_TILT = new THREE.Spherical().setFromVector3(HOME.clone().sub(TARGET)).phi;
 const offset = new THREE.Vector3();
 const view = new THREE.Spherical();
+const surfUp = new THREE.Vector3();
+const surfForward = new THREE.Vector3();
+const surfRight = new THREE.Vector3();
+const surfBasis = new THREE.Matrix4();
+const surfPos = new THREE.Vector3();
+const surfQuat = new THREE.Quaternion();
+const axisX = new THREE.Vector3(1, 0, 0);
+const axisY = new THREE.Vector3(0, 1, 0);
+/** CircleGeometry faces +Z; this turns that normal up to local +Y so a planted print lies on the ground. */
+const circleTilt = new THREE.Quaternion().setFromAxisAngle(axisX, -Math.PI / 2);
+
+/** Point on the upper cap, with local +Y along the surface normal and local +Z along `heading`. */
+function frameAt(x: number, z: number, heading: number, lift: number) {
+  let px = x,
+    pz = z;
+  const reach = Math.hypot(x, z);
+  if (reach > MOON_RADIUS * 0.98) {
+    const s = (MOON_RADIUS * 0.98) / reach;
+    px *= s;
+    pz *= s;
+  }
+  const ny = groundHeight(px, pz) + MOON_RADIUS;
+  surfUp.set(px / MOON_RADIUS, ny / MOON_RADIUS, pz / MOON_RADIUS);
+  surfForward.set(Math.sin(heading), 0, Math.cos(heading));
+  surfForward.addScaledVector(surfUp, -surfForward.dot(surfUp));
+  if (surfForward.lengthSq() < 1e-6) surfForward.set(1, 0, 0).addScaledVector(surfUp, -surfUp.x);
+  surfForward.normalize();
+  surfRight.crossVectors(surfUp, surfForward).normalize();
+  surfBasis.makeBasis(surfRight, surfUp, surfForward);
+  surfQuat.setFromRotationMatrix(surfBasis);
+  surfPos.copy(surfUp).multiplyScalar(MOON_RADIUS + lift);
+  surfPos.y -= MOON_RADIUS;
+}
+
+function plant(obj: THREE.Object3D, x: number, z: number, heading = 0, lift = 0) {
+  frameAt(x, z, heading, lift);
+  obj.quaternion.copy(surfQuat);
+  obj.position.copy(surfPos);
+}
+
+/** `dir` points from the Moon's centre. +Y is the landing site's apex. */
+function plantDir(obj: THREE.Object3D, dir: THREE.Vector3, lift = 0) {
+  surfUp.copy(dir).normalize();
+  surfForward.crossVectors(Math.abs(surfUp.y) > 0.85 ? axisX : axisY, surfUp).normalize();
+  surfRight.crossVectors(surfUp, surfForward).normalize();
+  surfBasis.makeBasis(surfRight, surfUp, surfForward);
+  obj.quaternion.setFromRotationMatrix(surfBasis);
+  obj.position.copy(surfUp).multiplyScalar(MOON_RADIUS + lift);
+  obj.position.y -= MOON_RADIUS;
+}
 /** Lunar surface gravity in m/s² (a world unit is about a metre), so kicked-up dust arcs like the real thing. */
 const MOON_G = 1.62;
 /** Height of the astronaut rig that rests his boots on the surface. */
@@ -44,7 +100,8 @@ function MoonLanding({ animate }: { animate: boolean }) {
       resources.push(m);
       return m;
     };
-    const moon = material("#9b9ea5");
+    const moon = material("#9b9ea5", 0, 0.94);
+    const mare = material("#7a7f89");
     const edge = material("#555c68");
     const rim = material("#b6b7bb");
     const dark = material("#252e3e");
@@ -59,7 +116,7 @@ function MoonLanding({ animate }: { animate: boolean }) {
       geometry: THREE.BufferGeometry,
       mat: THREE.Material,
       pos: [number, number, number],
-      parent: THREE.Group = root,
+      parent: THREE.Object3D = root,
     ) => {
       resources.push(geometry);
       const obj = new THREE.Mesh(geometry, mat);
@@ -85,24 +142,63 @@ function MoonLanding({ animate }: { animate: boolean }) {
       obj.position.copy(start.add(end).multiplyScalar(0.5));
       obj.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), delta.normalize());
     };
-    // The entire tableau stays inside the lunar terrain at every allowed angle.
-    mesh(new THREE.CylinderGeometry(5.3, 5.1, 0.55, 64), edge, [0, -0.33, 0]);
-    mesh(new THREE.CylinderGeometry(5.3, 5.3, 0.12, 64), moon, [0, 0, 0]);
+    // A sphere, not a disc: the landing site is the upper cap, and the limb stays round from every angle.
+    const body = mesh(new THREE.SphereGeometry(MOON_RADIUS, 64, 48), moon, [0, -MOON_RADIUS, 0]);
+    body.castShadow = false;
+    const addCrater = (parent: THREE.Object3D, radius: number) => {
+      const ring = mesh(new THREE.TorusGeometry(radius, radius * 0.13, 5, 24), rim, [0, 0.03, 0], parent);
+      ring.rotation.x = Math.PI / 2;
+      ring.scale.z = 0.35;
+      const hollow = mesh(new THREE.CircleGeometry(radius * 0.85, 24), edge, [0, 0.02, 0], parent);
+      hollow.rotation.x = -Math.PI / 2;
+    };
     for (const k of ROCKS) {
-      const rock = mesh(new THREE.IcosahedronGeometry(k.size, 0), k.light ? rim : edge, [k.x, 0.08, k.z]);
+      const holder = new THREE.Group();
+      plant(holder, k.x, k.z);
+      root.add(holder);
+      const rock = mesh(new THREE.IcosahedronGeometry(k.size, 0), k.light ? rim : edge, [0, k.size * 0.4, 0], holder);
       rock.scale.set(1.3, 0.65, 1);
       rock.rotation.set(...k.spin);
     }
     for (const [x, z, r] of CRATERS) {
-      const ring = mesh(new THREE.TorusGeometry(r, r * 0.13, 5, 24), rim, [x, 0.08, z]);
-      ring.rotation.x = Math.PI / 2;
-      ring.scale.z = 0.35;
-      const hollow = mesh(new THREE.CircleGeometry(r * 0.85, 24), edge, [x, 0.065, z]);
-      hollow.rotation.x = -Math.PI / 2;
+      const holder = new THREE.Group();
+      plant(holder, x, z);
+      root.add(holder);
+      addCrater(holder, r);
+    }
+    // More craters and maria on the rest of the sphere, clear of the landing site.
+    const scatter = makeRng(201);
+    const dir = new THREE.Vector3();
+    for (let i = 0; i < 26; i++) {
+      const theta = scatter() * Math.PI * 2;
+      const y = scatter() * 1.7 - 0.9;
+      const ring = Math.sqrt(Math.max(0, 1 - y * y));
+      dir.set(Math.cos(theta) * ring, y, Math.sin(theta) * ring);
+      if (y > 0 && Math.hypot(dir.x, dir.z) * MOON_RADIUS < 5.7) continue;
+      const holder = new THREE.Group();
+      plantDir(holder, dir, 0.01);
+      root.add(holder);
+      addCrater(holder, 0.22 + scatter() * 0.55);
+    }
+    const seas = makeRng(7);
+    for (let i = 0; i < 8; i++) {
+      const theta = seas() * Math.PI * 2;
+      const y = seas() * 1.5 - 0.85;
+      const ring = Math.sqrt(Math.max(0, 1 - y * y));
+      dir.set(Math.cos(theta) * ring, y, Math.sin(theta) * ring);
+      if (y > 0.45) continue;
+      const holder = new THREE.Group();
+      plantDir(holder, dir, 0.015);
+      root.add(holder);
+      const patch = mesh(new THREE.CircleGeometry(0.65 + seas() * 1.05, 22), mare, [0, 0, 0], holder);
+      patch.rotation.x = -Math.PI / 2;
     }
     const lander = new THREE.Group();
-    lander.position.set(LANDER.x, 0, LANDER.z);
+    plant(lander, LANDER.x, LANDER.z);
     root.add(lander);
+    // Pads reach the sphere where it falls away from the tangent under the foot circle.
+    const footDrop = (2 * 2) / (2 * MOON_RADIUS);
+    const padY = 0.05 - footDrop;
     mesh(new THREE.CylinderGeometry(1.15, 1.25, 1.02, 8), gold, [0, 1.42, 0], lander).rotation.y = Math.PI / 8;
     // Contrasting foil panels around the octagonal descent stage.
     for (let i = 0; i < 8; i++) {
@@ -138,15 +234,21 @@ function MoonLanding({ animate }: { animate: boolean }) {
     for (const a of [0, Math.PI / 2, Math.PI, -Math.PI / 2]) {
       const x = Math.sin(a),
         z = Math.cos(a);
-      beam([x * 0.9, 1.7, z * 0.9], [x * 2.0, 0.18, z * 2.0], 0.065, gold, lander);
-      beam([x * 0.6, 1, z * 0.6], [x * 1.8, 0.5, z * 1.8], 0.04, silver, lander);
-      mesh(new THREE.CylinderGeometry(0.36, 0.42, 0.1, 12), gold, [x * 2, 0.14, z * 2], lander);
+      beam([x * 0.9, 1.7, z * 0.9], [x * 2.0, padY + 0.06, z * 2.0], 0.065, gold, lander);
+      beam([x * 0.6, 1, z * 0.6], [x * 1.8, 0.2, z * 1.8], 0.04, silver, lander);
+      mesh(new THREE.CylinderGeometry(0.36, 0.42, 0.1, 12), gold, [x * 2, padY, z * 2], lander);
     }
-    // Front ladder and individually visible rungs.
-    for (const x of [-0.23, 0.23]) beam([x, 2, 1.16], [x, 0.28, 2.0], 0.027, silver, lander);
+    // Front ladder and individually visible rungs. The rails end on the front footpad.
+    const railTopY = 2,
+      railBotY = padY + 0.08,
+      railTopZ = 1.16,
+      railBotZ = 2;
+    for (const x of [-0.23, 0.23]) beam([x, railTopY, railTopZ], [x, railBotY, railBotZ], 0.027, silver, lander);
     for (let i = 0; i < 8; i++) {
-      const p = i / 7;
-      beam([-0.23, 0.4 + p * 1.5, 1.94 - p * 0.73], [0.23, 0.4 + p * 1.5, 1.94 - p * 0.73], 0.025, silver, lander);
+      const p = 0.12 + (i / 7) * 0.7;
+      const y = railTopY + (railBotY - railTopY) * p;
+      const z = railTopZ + (railBotZ - railTopZ) * p;
+      beam([-0.23, y, z], [0.23, y, z], 0.025, silver, lander);
     }
     // Astronaut with pressure suit, life-support backpack and reflective visor, jointed at the
     // hips, shoulders and helmet so he can lope around the surface.
@@ -157,8 +259,7 @@ function MoonLanding({ animate }: { animate: boolean }) {
       return group;
     };
     const astronaut = new THREE.Group();
-    astronaut.position.set(START.x, BOOT_BASE, START.z);
-    astronaut.rotation.y = START.heading;
+    plant(astronaut, START.x, START.z, START.heading, BOOT_BASE);
     root.add(astronaut);
     const legs = [-0.15, 0.15].map((x) => {
       const hip = joint(astronaut, x, 0.65);
@@ -190,8 +291,8 @@ function MoonLanding({ animate }: { animate: boolean }) {
       const tuck = 0.4 * p.gait * p.bound * arc;
       // Spread legs lift the boots, so drop the hips until both touch down.
       const dip = 0.55 * (1 - Math.cos(stride));
-      astronaut.position.set(p.x, BOOT_BASE + (0.12 + 0.2 * p.bound) * p.gait * arc - dip, p.z);
-      astronaut.rotation.set(0, p.heading, 0);
+      const lift = BOOT_BASE + (0.12 + 0.2 * p.bound) * p.gait * arc - dip;
+      plant(astronaut, p.x, p.z, p.heading, lift);
       legs[0].hip.rotation.set(-stride - tuck, 0, 0);
       legs[1].hip.rotation.set(stride - tuck, 0, 0);
       upper.rotation.set(
@@ -209,22 +310,25 @@ function MoonLanding({ animate }: { animate: boolean }) {
       arms[1].rotation.set(-0.6 * stride - 0.5 * tuck, 0, 0);
     };
     // A rigid support bar: flags on the Moon do not flutter in wind.
-    beam([3.3, 0.1, -0.1], [3.3, 2.75, -0.1], 0.025, silver);
-    box([1.1, 0.025, 0.025], silver, [3.85, 2.75, -0.1]);
-    box([1.1, 0.65, 0.025], white, [3.85, 2.4, -0.1]);
+    // Local axes: +Y out of the ground, +X outward from the landing site.
+    const flag = new THREE.Group();
+    plant(flag, FLAG_POLE.x, FLAG_POLE.z);
+    root.add(flag);
+    beam([0, 0.1, 0], [0, 2.75, 0], 0.025, silver, flag);
+    box([1.1, 0.025, 0.025], silver, [0.55, 2.75, 0], flag);
+    box([1.1, 0.65, 0.025], white, [0.55, 2.4, 0], flag);
     // Printed on both faces so the flag reads correctly as the scene turns.
     for (const side of [1, -1]) {
-      for (let i = 0; i < 7; i++) box([1.1, 0.05, 0.03], red, [3.85, 2.7 - i * 0.1, -0.1 + side * 0.02]);
-      box([0.48, 0.35, 0.04], blue, [3.54, 2.55, -0.1 + side * 0.04]);
+      for (let i = 0; i < 7; i++) box([1.1, 0.05, 0.03], red, [0.55, 2.7 - i * 0.1, side * 0.02], flag);
+      box([0.48, 0.35, 0.04], blue, [0.24, 2.55, side * 0.04], flag);
       for (let i = 0; i < 9; i++)
-        box([0.035, 0.035, 0.012], white, [3.39 + (i % 3) * 0.14, 2.65 - Math.floor(i / 3) * 0.1, -0.1 + side * 0.068]);
+        box([0.035, 0.035, 0.012], white, [0.09 + (i % 3) * 0.14, 2.65 - Math.floor(i / 3) * 0.1, side * 0.068], flag);
     }
     for (let i = 0; i < 14; i++) {
-      const footprint = mesh(new THREE.CircleGeometry(0.065, 8), edge, [
-        0.1 + i * 0.14,
-        0.068,
-        1.9 + Math.sin(i * 0.45) * 0.16 + (i % 2) * 0.15,
-      ]);
+      const holder = new THREE.Group();
+      plant(holder, 0.1 + i * 0.14, 1.9 + Math.sin(i * 0.45) * 0.16 + (i % 2) * 0.15, Math.PI / 2);
+      root.add(holder);
+      const footprint = mesh(new THREE.CircleGeometry(0.065, 8), edge, [0, 0.02, 0], holder);
       footprint.rotation.x = -Math.PI / 2;
       footprint.scale.y = 1.6;
     }
@@ -246,8 +350,9 @@ function MoonLanding({ animate }: { animate: boolean }) {
     const stamp = (boot: THREE.Object3D, heading: number) => {
       boot.getWorldPosition(foot);
       // Stagger heights slightly so crossing trails never z-fight.
-      dummy.position.set(foot.x, 0.066 + (live.printHead % 12) * 0.0003, foot.z);
-      dummy.rotation.set(-Math.PI / 2, heading, 0, "YXZ");
+      frameAt(foot.x, foot.z, heading, 0.03 + (live.printHead % 12) * 0.0004);
+      dummy.position.copy(surfPos);
+      dummy.quaternion.copy(surfQuat).multiply(circleTilt);
       dummy.scale.set(1, 1.7, 1);
       dummy.updateMatrix();
       prints.setMatrixAt(live.printHead, dummy.matrix);
@@ -275,13 +380,26 @@ function MoonLanding({ animate }: { animate: boolean }) {
         live.grainHead = (live.grainHead + 1) % DUST;
         const a = heading + Math.PI + (rand() - 0.5) * 2.4;
         const v = 0.2 + rand() * 0.45;
+        const upV = 0.35 + rand() * 0.6;
+        const ny = groundHeight(foot.x, foot.z) + MOON_RADIUS;
+        const nx = foot.x / MOON_RADIUS,
+          nny = ny / MOON_RADIUS,
+          nz = foot.z / MOON_RADIUS;
+        // Kick along the ground, then loft it along the surface normal so it leaves a slope cleanly.
+        let vx = Math.sin(a) * v,
+          vy = 0,
+          vz = Math.cos(a) * v;
+        const into = vx * nx + vy * nny + vz * nz;
+        vx += nx * (upV - into);
+        vy += nny * (upV - into);
+        vz += nz * (upV - into);
         Object.assign(g, {
           x: foot.x,
-          y: 0.08,
+          y: groundHeight(foot.x, foot.z) + 0.06,
           z: foot.z,
-          vx: Math.sin(a) * v,
-          vy: 0.35 + rand() * 0.6,
-          vz: Math.cos(a) * v,
+          vx,
+          vy,
+          vz,
           size: 0.018 + rand() * 0.028,
           rest: 0,
         });
@@ -291,14 +409,32 @@ function MoonLanding({ animate }: { animate: boolean }) {
       for (let i = 0; i < DUST; i++) {
         const g = grains[i];
         if (g.size && !g.rest) {
-          g.vy -= MOON_G * dt;
+          // Fall toward the Moon's centre, so dust returns to the surface on a slope.
+          const cx = g.x,
+            cy = g.y + MOON_RADIUS,
+            cz = g.z;
+          const dist = Math.hypot(cx, cy, cz) || 1;
+          const nx = cx / dist,
+            ny = cy / dist,
+            nz = cz / dist;
+          g.vx -= nx * MOON_G * dt;
+          g.vy -= ny * MOON_G * dt;
+          g.vz -= nz * MOON_G * dt;
           g.x += g.vx * dt;
           g.y += g.vy * dt;
           g.z += g.vz * dt;
-          if (g.vy < 0 && g.y <= 0.07 && Math.hypot(g.x, g.z) < SURFACE_RADIUS) {
-            g.y = 0.07;
+          const px = g.x,
+            py = g.y + MOON_RADIUS,
+            pz = g.z;
+          const next = Math.hypot(px, py, pz) || 1;
+          const radial = g.vx * nx + g.vy * ny + g.vz * nz;
+          if (radial < 0 && next <= MOON_RADIUS + 0.04) {
+            const restR = MOON_RADIUS + 0.03;
+            g.x = (px / next) * restR;
+            g.y = (py / next) * restR - MOON_RADIUS;
+            g.z = (pz / next) * restR;
             g.rest = dt;
-          } else if (g.y < -2) g.size = 0;
+          } else if (next > MOON_RADIUS + 6) g.size = 0;
         } else if (g.rest && (g.rest += dt) > 0.5) g.size = 0;
         dummy.position.set(g.x, g.y, g.z);
         dummy.rotation.set(g.vx * 9, g.vz * 9, 0);
@@ -487,7 +623,7 @@ function DragCamera({ animate }: { animate: boolean }) {
     const cam = camera as THREE.OrthographicCamera;
     // Three.js cameras are mutable scene objects; update their projection imperatively.
     // eslint-disable-next-line react-hooks/immutability
-    cam.zoom = Math.min(size.width / 12.5, size.height / 10.3);
+    cam.zoom = Math.min(size.width / FRAME_W, size.height / FRAME_H);
     cam.updateProjectionMatrix();
     invalidate();
   }, [camera, invalidate, size.width, size.height]);
@@ -538,7 +674,7 @@ export function HeroScene({ onReady }: { onReady?: () => void }) {
         shadows="percentage"
         frameloop="demand"
         dpr={[1, 1.75]}
-        camera={{ position: [8, 6, 12], zoom: 40, near: 0.1, far: 100 }}
+        camera={{ position: [6, 0.8, 8], zoom: 24, near: 0.1, far: 120 }}
         gl={{ antialias: true, toneMapping: THREE.NeutralToneMapping }}
       >
         <hemisphereLight args={["#d8e8ff", "#596273", 1.3]} />
@@ -548,10 +684,10 @@ export function HeroScene({ onReady }: { onReady?: () => void }) {
           color="#fff5df"
           castShadow
           shadow-mapSize={[2048, 2048]}
-          shadow-camera-left={-8}
-          shadow-camera-right={8}
-          shadow-camera-top={8}
-          shadow-camera-bottom={-8}
+          shadow-camera-left={-12}
+          shadow-camera-right={12}
+          shadow-camera-top={12}
+          shadow-camera-bottom={-12}
           shadow-normalBias={0.04}
         />
         <directionalLight position={[6, 3, -8]} intensity={1.2} color="#99bcff" />

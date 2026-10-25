@@ -1,7 +1,7 @@
 /**
- * Hand-written ModelDefinitions that demonstrate the modelling skills.
- * Used as few-shot references for Gemini (never copied into videos) and to
- * drive the landing-page showcase through the same generic compiler.
+ * Hand-written ModelDefinitions for the home page, the sign-in screen and the
+ * model cards. They are never copied into generated videos. The landing-page
+ * sample is a separate generated film in `sample-film.json`.
  */
 import type { ModelDefinition } from "@/lib/schema/model";
 

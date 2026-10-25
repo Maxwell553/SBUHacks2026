@@ -1,6 +1,7 @@
 "use client";
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
 import type { CSSProperties, ElementType, ReactNode } from "react";
+import { useSettledReducedMotion } from "@/components/MotionRoot";
 
 /**
  * Gentle letter-by-letter reveal for short display headings set in Facet.
@@ -23,7 +24,7 @@ export function FacetText({
   style?: CSSProperties;
   accentWords?: string[];
 }) {
-  const reduce = useReducedMotion();
+  const reduce = useSettledReducedMotion();
   const Tag = as;
   let i = 0;
   const words = text.split(" ");
@@ -72,7 +73,7 @@ export function Reveal({
   className?: string;
   style?: CSSProperties;
 }) {
-  const reduce = useReducedMotion();
+  const reduce = useSettledReducedMotion();
   return (
     <motion.div
       className={className}

@@ -11,8 +11,8 @@ Then open, for example:
 
 - `http://127.0.0.1:4601/tools/visual-harness/?f=tower-bridge-waterfront`, a landscape contact sheet with one frame per scene.
 - `…?f=london-1666-street&p=1&check=1`, the same in portrait with the collision audit.
-- `…?file=tmp/bench/builder-<stamp>/film-0-gemini-3.5-flash.json`, any saved film or export.
-- `…?models=tmp/bench/builder-<stamp>/models-0-gemini-3.5-flash.json&vs=tmp/bench/builder-<stamp>/models-0-gemini-3.1-pro-preview.json`, a builder A/B. Each model is shown from both builders, from the same two views.
+- `…?file=tmp/bench/builder-<stamp>/film-0-gemini-3.8-flash.json`, any saved film or export. The filename includes the builder model id.
+- `…?models=tmp/bench/builder-<stamp>/models-0-gemini-3.8-flash.json&vs=tmp/bench/builder-<stamp>/models-0-gemini-4-argon.json`, a builder A/B. Each model is shown from both builders, from the same two views. The default benchmark compares Gemini 3.8 Flash with Gemini 4 Argon.
 
 Rebuild after changing renderer code. The page cache-busts the bundle on every load.
 

@@ -1,7 +1,7 @@
 /** Kinds of construction a planned model involves. They label the plan (for
  * validation and model routing); how to build each object is left to the model.
  */
-export const MODELING_SKILL_VERSION = "procedural-25-reference-led";
+export const MODELING_SKILL_VERSION = "procedural-26-reel-stills";
 export const MODELING_SKILLS = {
   silhouette: "Any object.",
   architecture: "Buildings, monuments, rooms, bridges and other construction.",

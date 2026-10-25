@@ -1,5 +1,18 @@
 "use client";
 import type { Aspect, VideoScript } from "@/lib/schema/video";
+import type { ShotIssue } from "@/lib/lowpoly/shot-audit";
+
+export interface PlannedModel {
+  id: string;
+  name: string;
+}
+
+export interface ReviewSummary {
+  verdict: "pass" | "revise";
+  summary: string;
+  shotsChanged: number;
+  modelsRepaired: string[];
+}
 
 export class ApiError extends Error {
   constructor(
@@ -89,7 +102,23 @@ export const videos = {
   list: (active = false) => api<{ videos: Video[] }>(active ? "/api/videos?active=1" : "/api/videos"),
   get: (id: string) => api<{ video: Video }>(`/api/videos/${id}`),
   create: (prompt: string, duration: number, aspect: Aspect, signal?: AbortSignal) =>
-    api<{ video: Video }>("/api/videos", { method: "POST", json: { prompt, duration, aspect }, signal }),
+    api<{ video: Video; models: PlannedModel[] }>("/api/videos", {
+      method: "POST",
+      json: { prompt, duration, aspect },
+      signal,
+    }),
+  build: (id: string, models: string[], signal?: AbortSignal) =>
+    api<{ built: string[]; failed: string[] }>(`/api/videos/${id}/build`, {
+      method: "POST",
+      json: { models },
+      signal,
+    }),
+  direct: (id: string, signal?: AbortSignal) =>
+    api<{ ok: boolean }>(`/api/videos/${id}/direct`, { method: "POST", signal }),
+  finish: (id: string, signal?: AbortSignal) =>
+    api<{ video: Video }>(`/api/videos/${id}/finish`, { method: "POST", signal }),
+  review: (id: string, json: { round: number; sheet: string; issues: ShotIssue[] }, signal?: AbortSignal) =>
+    api<{ video: Video; review: ReviewSummary }>(`/api/videos/${id}/review`, { method: "POST", json, signal }),
   discard: (id: string) =>
     api<{ ok: boolean }>(`/api/videos/${id}?incomplete=1`, { method: "DELETE", keepalive: true }),
   remove: (id: string) => api<{ ok: boolean }>(`/api/videos/${id}`, { method: "DELETE" }),

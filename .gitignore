@@ -36,3 +36,4 @@ npm-debug.log*
 *.p12
 *.pfx
 *.sql.gz
+.polychronicle-demo.mp4

@@ -77,25 +77,28 @@ flowchart LR
     B --> S["Script and models"]
     D --> S
     S --> C2{"Safety check"}
-    C2 --> V["Rendered in your browser<br/>Three.js"]
+    C2 --> Q2["Draft render + review<br/>fix shots and models"]
+    Q2 --> V["Rendered in your browser<br/>Three.js"]
     V --> L[("Your library<br/>HD video + sources")]
 ```
 
 1. **Check.** The question passes keyword and classifier moderation before anything is made.
-2. **Research.** Gemini, grounded with Google Search, writes a short briefing and keeps every source it used.
-3. **Plan, build and direct.** A planner lists the models the story needs (up to ten). Every model is built at once while the director writes the storyboard: shots, camera moves, captions, maps and timing. All three steps study the example films in [`references/`](references) as the target look.
+2. **Research.** Gemini 3.8 Flash, grounded with Google Search, writes a short briefing and keeps every source it used.
+3. **Plan, build and direct.** Gemini 3.8 Flash lists the models the story needs (up to ten). Gemini 4 Argon builds every model at once and, at the same time, writes the storyboard: shots, camera moves, captions, maps and timing. All three steps study the example films in [`references/`](references) for their look; the director writes it as a documentary, with an informative narrator, a running on-screen clock and a story that builds in scale.
 4. **Check again.** The finished storyboard is moderated too.
-5. **Render.** The browser draws every frame with a deterministic Three.js engine and encodes a 720p, 30 fps MP4 with WebCodecs.
-6. **Keep.** The film and a poster image upload in 1 MiB chunks and appear in your library, with the sources listed beside them.
+5. **Review.** Your browser renders a draft of every shot and measures it: objects passing through each other, the camera inside a model, subjects out of frame or too small. The server checks every model for loose parts. Gemini 4 Argon reviews the draft with those measurements, then shots are re-blocked and broken models repaired, in one pass. Every change is moderated again.
+6. **Render.** The browser draws every frame with a deterministic Three.js engine and encodes a 720p, 30 fps MP4 with WebCodecs.
+7. **Keep.** The film and a poster image upload in 1 MiB chunks and appear in your library, with the sources listed beside them.
 
-A film usually takes one to three minutes from question to library. The full lifecycle is in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+A film usually takes three to five minutes from question to library. The full lifecycle is in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
-<img src="docs/images/readme-player.jpg" alt="The interactive player showing the sample film about the Norman Conquest" width="100%" />
+<img src="docs/images/readme-player.jpg" alt="The interactive player showing the sample film about the Great Fire of London" width="100%" />
 
 ## Features
 
 - **Research you can check.** Every film is built from a grounded briefing, and its source list stays with the video.
 - **A film made in code.** Procedural terrain, water and weather; streets, waterfronts, settlements and interiors; camera moves, captions, transitions and a faceted globe with real coastlines.
+- **Reviewed while it's made.** A draft of every shot is rendered, measured and reviewed before the final encode, so overlapping objects, floating parts and badly framed shots get fixed.
 - **Rendered and encoded in the browser.** Frames are drawn offscreen and saved as an HD MP4 (WebM as a fallback) with a synthesized ambient soundtrack and a JPEG poster.
 - **Safe by design.** Prompts and storyboards both pass moderation, and every decision is written to an audit log that's deleted with the account.
 - **Private accounts.** Email and password sign-up with hashed sessions, a private library, HD downloads and full account deletion.
@@ -103,19 +106,19 @@ A film usually takes one to three minutes from question to library. The full lif
 
 ### Usage limits
 
-Each account can make **10 videos per day**, and a library holds up to 100 videos. The daily number lives in one place, `SITE.dailyVideos` in [`lib/content/site.ts`](lib/content/site.ts), and the site shows it in the studio, in the message people see when they reach it, and in the Terms. Storage budgets are listed in the [deployment guide](docs/DEPLOYMENT.md#storage-and-retention).
+There is no daily cap on new videos. Each account makes one video at a time, and a library holds up to 100 videos. Storage budgets are listed in the [deployment guide](docs/DEPLOYMENT.md#storage-and-retention). Add a daily cap back before opening the site to the public: every film makes a dozen or more paid Gemini calls.
 
 ## Tech stack
 
-| Area          | Choice                                                                                                                         |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| Framework     | Next.js 16 (App Router), React 19, TypeScript                                                                                  |
-| 3D and motion | Three.js, React Three Fiber, motion.dev                                                                                        |
-| AI            | Google Gemini via `@google/genai`: Gemini 4 Argon creates each film; a Flash model handles grounded research and safety checks |
-| Database      | TigerData (managed PostgreSQL) via `pg`                                                                                        |
-| Media         | Mediabunny and WebCodecs (MP4, WebM fallback); chunked PostgreSQL storage                                                      |
-| Validation    | zod 4, with schemas shared by the server and the browser                                                                       |
-| Hosting       | Vercel or any Node.js host                                                                                                     |
+| Area          | Choice                                                                                                         |
+| ------------- | -------------------------------------------------------------------------------------------------------------- |
+| Framework     | Next.js 16 (App Router), React 19, TypeScript                                                                  |
+| 3D and motion | Three.js, React Three Fiber, motion.dev                                                                        |
+| AI            | Gemini 3.8 Flash researches, plans and moderates; Gemini 4 Argon builds, directs and reviews (`@google/genai`) |
+| Database      | TigerData (managed PostgreSQL) via `pg`                                                                        |
+| Media         | Mediabunny and WebCodecs (MP4, WebM fallback); chunked PostgreSQL storage                                      |
+| Validation    | zod 4, with schemas shared by the server and the browser                                                       |
+| Hosting       | Vercel or any Node.js host                                                                                     |
 
 ## Quick start
 
@@ -171,7 +174,7 @@ lib/
 db/             Database schema
 docs/           Project documentation; docs/images/ holds the README screenshots
 public/         The Facet, Tessera and Tessera Mono typefaces, and static images
-references/     Example films attached to every creative Gemini request as the target look
+references/     Example films the director watches (films/) and frames from them for the other steps (stills/)
 scripts/
   assets/       Font and land-mask generators
   bench/        Live builder-model benchmark
@@ -189,18 +192,18 @@ tmp/            Local scratch (git-ignored): QA probes, benchmark runs, contact 
 
 ## Documentation
 
-| Document                                                                                    | Contents                                                     |
-| ------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| [Architecture](docs/ARCHITECTURE.md)                                                        | System overview, request lifecycle, data model, code layout  |
-| [HTTP API](docs/API.md)                                                                     | Endpoints, payloads, errors and rate limits                  |
-| [Renderer](docs/RENDERER.md)                                                                | Script and model formats, compiler, engine, export           |
-| [Cinematic renderer](docs/CINEMATIC_RENDERER.md)                                            | Streets, waterfronts, settlements, interiors, shot rig, QA   |
-| [Builder benchmark](docs/BUILDER_BENCHMARK.md)                                              | Flash vs Pro geometry builders, run before the Argon default |
-| [Safety, privacy and security](docs/SAFETY.md)                                              | Moderation layers, audit log, sessions, data lifecycle       |
-| [Design system](docs/DESIGN.md)                                                             | Theme, typefaces, components, motion                         |
-| [Deployment and operations](docs/DEPLOYMENT.md)                                             | Environment, Vercel, database, limits, checklist             |
-| [Storytelling brief](docs/STORYTELLING.md)                                                  | The original production brief the project started from       |
-| [Contributing](CONTRIBUTING.md) · [Security policy](SECURITY.md) · [Agent guide](AGENTS.md) | Workflow, conventions and reporting                          |
+| Document                                                                                    | Contents                                                    |
+| ------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| [Architecture](docs/ARCHITECTURE.md)                                                        | System overview, request lifecycle, data model, code layout |
+| [HTTP API](docs/API.md)                                                                     | Endpoints, payloads, errors and rate limits                 |
+| [Renderer](docs/RENDERER.md)                                                                | Script and model formats, compiler, engine, export          |
+| [Cinematic renderer](docs/CINEMATIC_RENDERER.md)                                            | Streets, waterfronts, settlements, interiors, shot rig, QA  |
+| [Builder benchmark](docs/BUILDER_BENCHMARK.md)                                              | Historical Flash vs Pro run, before the current models      |
+| [Safety, privacy and security](docs/SAFETY.md)                                              | Moderation layers, audit log, sessions, data lifecycle      |
+| [Design system](docs/DESIGN.md)                                                             | Theme, typefaces, components, motion                        |
+| [Deployment and operations](docs/DEPLOYMENT.md)                                             | Environment, Vercel, database, limits, checklist            |
+| [Storytelling brief](docs/STORYTELLING.md)                                                  | The original production brief the project started from      |
+| [Contributing](CONTRIBUTING.md) · [Security policy](SECURITY.md) · [Agent guide](AGENTS.md) | Workflow, conventions and reporting                         |
 
 ## Deploying
 

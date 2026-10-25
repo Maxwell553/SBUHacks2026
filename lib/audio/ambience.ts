@@ -1,12 +1,28 @@
 import type { Scene } from "@/lib/schema/video";
 
+let shared: AudioContext | null = null;
+
+/** One context for the page, created inside a click so later films can play without another gesture. */
+export function ambienceContext() {
+  if (!shared || shared.state === "closed") shared = new AudioContext();
+  return shared;
+}
+
+export function primeAmbience() {
+  const context = ambienceContext();
+  if (context.state === "running") return Promise.resolve(true);
+  return context.resume().then(() => context.state === "running");
+}
+
 /** Quiet, synthesized environmental beds: no downloads, licenses or API latency. */
 export class Ambience {
-  private context = new AudioContext();
+  private context = ambienceContext();
   private source: AudioBufferSourceNode;
   private filter = this.context.createBiquadFilter();
   private gain = this.context.createGain();
   private level = 0;
+  /** Gain is only remembered once the context is running, so a suspended start cannot stick at silence. */
+  private arm = true;
   constructor() {
     const buffer = this.context.createBuffer(1, this.context.sampleRate * 4, this.context.sampleRate);
     const data = buffer.getChannelData(0);
@@ -26,11 +42,18 @@ export class Ambience {
     this.source.connect(this.filter).connect(this.gain).connect(this.context.destination);
     this.source.start();
   }
+  isRunning() {
+    return this.context.state === "running";
+  }
   async resume() {
-    await this.context.resume();
+    if (this.context.state === "closed") return false;
+    if (this.context.state !== "running") await this.context.resume();
+    const running = this.context.state === "running";
+    if (running) this.arm = true;
+    return running;
   }
   update(scene: Scene, time: number, active: boolean) {
-    if (this.context.state === "closed") return;
+    if (this.context.state !== "running") return;
     const interior = scene.layout === "interior";
     const space = !interior && (scene.setting === "orbit" || scene.setting === "lunar");
     const water = !interior && ["ocean", "coast", "river"].includes(scene.setting);
@@ -46,16 +69,22 @@ export class Ambience {
       this.context.currentTime,
       0.5,
     );
-    if (Math.abs(level - this.level) > 0.002) {
-      this.gain.gain.setTargetAtTime(level, this.context.currentTime, 0.12);
-      this.level = level;
-    }
+    if (!this.arm && Math.abs(level - this.level) <= 0.002) return;
+    const now = this.context.currentTime;
+    this.gain.gain.cancelScheduledValues(now);
+    this.gain.gain.setValueAtTime(this.gain.gain.value, now);
+    this.gain.gain.linearRampToValueAtTime(level, now + 0.18);
+    this.level = level;
+    this.arm = false;
   }
   dispose() {
-    this.source.stop();
+    try {
+      this.source.stop();
+    } catch {
+      /* already stopped */
+    }
     this.source.disconnect();
     this.filter.disconnect();
     this.gain.disconnect();
-    void this.context.close();
   }
 }

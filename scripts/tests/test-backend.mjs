@@ -112,8 +112,24 @@ try {
         aspect: "landscape",
       },
     });
-    check(r.response.status === 201, `live generation returns ready video (${JSON.stringify(r.body).slice(0, 220)})`);
+    check(
+      r.response.status === 201 && r.body.models?.length > 0 && r.body.video.script === null,
+      `live planning returns a model plan (${JSON.stringify(r.body).slice(0, 220)})`,
+    );
     videoId = r.body.video.id;
+    // Production runs as separate short requests, the way the studio drives it.
+    const [build, direct] = await Promise.all([
+      call(`/api/videos/${videoId}/build`, {
+        method: "POST",
+        cookie: a.cookie,
+        data: { models: r.body.models.map((m) => m.id) },
+      }),
+      call(`/api/videos/${videoId}/direct`, { method: "POST", cookie: a.cookie }),
+    ]);
+    check(build.response.status === 200 && build.body.failed.length === 0, "every planned model builds");
+    check(direct.response.status === 200, "storyboard written while models build");
+    r = await call(`/api/videos/${videoId}/finish`, { method: "POST", cookie: a.cookie });
+    check(r.response.status === 200, `finished film is ready (${JSON.stringify(r.body).slice(0, 220)})`);
     const generated = r.body.video.script;
     check(
       generated.models?.length > 0 && generated.models.every((m) => m.parts?.length > 0),

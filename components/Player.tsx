@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import type { Aspect, VideoScript } from "@/lib/schema/video";
-import { Ambience } from "@/lib/audio/ambience";
+import { Ambience, primeAmbience } from "@/lib/audio/ambience";
 import type { PolyEngine } from "@/lib/lowpoly/engine";
 
 const fmt = (t: number) => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, "0")}`;
@@ -59,6 +59,27 @@ export function Player({
     let ro: ResizeObserver | null = null;
     let io: IntersectionObserver | null = null;
 
+    // The switch defaults to on. Browsers still block audio until a gesture, and a click
+    // anywhere on the page counts — the player does not have to be on screen yet.
+    const startAmbience = () => {
+      if (!showControls || !ambientEnabled.current) return;
+      try {
+        void primeAmbience();
+        ambienceRef.current ??= new Ambience();
+        void ambienceRef.current.resume().then((running) => {
+          if (!running || !ambienceRef.current || !engineRef.current) return;
+          const scene = script.scenes[engineRef.current.sceneAt(timeRef.current).index];
+          ambienceRef.current.update(
+            scene,
+            timeRef.current,
+            playingRef.current && visibleRef.current && !document.hidden,
+          );
+        });
+      } catch {
+        setAudioError("Ambient audio is unavailable in this browser.");
+      }
+    };
+
     (async () => {
       try {
         const { PolyEngine } = await import("@/lib/lowpoly/engine");
@@ -76,6 +97,7 @@ export function Player({
         }
         engine.renderAt(0);
         setReady(true);
+        startAmbience();
         ro = new ResizeObserver(() => {
           const nw = Math.max(160, wrap.clientWidth);
           const nh = Math.round(aspect === "portrait" ? (nw * 16) / 9 : (nw * 9) / 16);
@@ -119,26 +141,16 @@ export function Player({
       }
     })();
 
-    // Browsers require a gesture for sound; the preference is on from first load.
-    const unlockAudio = () => {
-      if (!showControls || !visibleRef.current || !ambientEnabled.current) return;
-      try {
-        ambienceRef.current ??= new Ambience();
-        void ambienceRef.current.resume().catch(() => setAudioError("Tap Ambience to enable sound."));
-      } catch {
-        setAudioError("Ambient audio is unavailable in this browser.");
-      }
-    };
-    document.addEventListener("pointerdown", unlockAudio);
-    document.addEventListener("keydown", unlockAudio);
+    document.addEventListener("pointerdown", startAmbience, true);
+    document.addEventListener("keydown", startAmbience, true);
     const visibility = () => {
       if (document.hidden) ambienceRef.current?.update(script.scenes[0], 0, false);
     };
     document.addEventListener("visibilitychange", visibility);
     return () => {
       document.removeEventListener("visibilitychange", visibility);
-      document.removeEventListener("pointerdown", unlockAudio);
-      document.removeEventListener("keydown", unlockAudio);
+      document.removeEventListener("pointerdown", startAmbience, true);
+      document.removeEventListener("keydown", startAmbience, true);
       ambienceRef.current?.dispose();
       ambienceRef.current = null;
       disposed = true;
@@ -167,19 +179,33 @@ export function Player({
   const toggleAmbience = async () => {
     setAudioError(null);
     try {
-      if (!ambienceRef.current) ambienceRef.current = new Ambience();
-      await ambienceRef.current.resume();
+      ambienceRef.current ??= new Ambience();
+      const wasRunning = ambienceRef.current.isRunning();
+      const running = await primeAmbience();
+      const scene = script.scenes[engineRef.current?.sceneAt(timeRef.current).index ?? 0];
+      // The control already says on before the browser has allowed sound. That click
+      // should start it, not flip the preference off.
+      if (ambientEnabled.current && !wasRunning) {
+        if (!running) {
+          setAudioError("Tap Ambience to enable sound.");
+          return;
+        }
+        playingRef.current = true;
+        setPlaying(true);
+        ambienceRef.current.update(scene, timeRef.current, visibleRef.current && !document.hidden);
+        return;
+      }
       ambientEnabled.current = !ambientEnabled.current;
       setAmbient(ambientEnabled.current);
       if (ambientEnabled.current) {
         playingRef.current = true;
         setPlaying(true);
-      } else
-        ambienceRef.current.update(
-          script.scenes[engineRef.current?.sceneAt(timeRef.current).index ?? 0],
-          timeRef.current,
-          false,
-        );
+      }
+      ambienceRef.current.update(
+        scene,
+        timeRef.current,
+        ambientEnabled.current && visibleRef.current && !document.hidden,
+      );
     } catch {
       setAudioError("Ambient audio is unavailable in this browser.");
     }

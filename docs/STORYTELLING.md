@@ -5,7 +5,7 @@ description: Create or revise engaging historical animated short videos with res
 
 # Historical video production
 
-> **Status: background reading.** This is the original production brief the project started from, written as a general agent skill. It isn't loaded by the app. The live pipeline is reference-led: the planner, builders and director study the example films in `references/` and follow the data contracts in `lib/schema/` (see [ARCHITECTURE.md](ARCHITECTURE.md)). The brief is kept because its storytelling principles still describe what a good PolyChronicle film should do.
+> **Status: background reading.** This is the original production brief the project started from, written as a general agent skill. It isn't loaded by the app. The shipped film is 20–60 seconds, landscape or portrait. The live pipeline is reference-led: Gemini 3.8 Flash researches and plans, Gemini 4 Argon builds, directs and reviews, the director watches the example films in `references/films/` and follows the format brief in `lib/server/film-format.ts`, and everything follows the data contracts in `lib/schema/` (see [ARCHITECTURE.md](ARCHITECTURE.md)). The brief is kept because its storytelling principles still describe what a good PolyChronicle film should do. The request template below is the original brief, including its older length and aspect defaults.
 
 Create a finished, engaging video using the user's event and constraints. Reuse a working production pipeline when available. Deliver an actual playable video and editable source; distinguish these from plans, previews, and code that has not been rendered.
 

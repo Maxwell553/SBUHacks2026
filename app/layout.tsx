@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import "@/app/globals.css";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { AudioUnlock } from "@/components/AudioUnlock";
+import { MotionRoot } from "@/components/MotionRoot";
 import { getViewer } from "@/lib/server/viewer";
 import { SITE } from "@/lib/content/site";
 
@@ -30,9 +32,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         ))}
       </head>
       <body>
-        <Header user={user} />
-        <main>{children}</main>
-        <Footer />
+        <MotionRoot>
+          <AudioUnlock />
+          <Header user={user} />
+          <main>{children}</main>
+          <Footer />
+        </MotionRoot>
       </body>
     </html>
   );

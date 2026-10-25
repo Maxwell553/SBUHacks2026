@@ -9,6 +9,8 @@ export async function ownedVideo(id: string, userId: string) {
   return rows[0];
 }
 export function videoResponse(row: Record<string, unknown>) {
+  // While a film is in production, plan holds its working state, not a script.
+  const script = row.status === "ready" || row.status === "rendered" ? row.plan : null;
   return {
     id: row.id,
     prompt: row.prompt,
@@ -16,8 +18,8 @@ export function videoResponse(row: Record<string, unknown>) {
     duration: row.duration,
     aspect: row.aspect,
     status: row.status,
-    plan: row.plan,
-    script: row.plan,
+    plan: script,
+    script,
     research: row.research,
     sources: row.sources,
     error: row.error,

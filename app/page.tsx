@@ -5,8 +5,6 @@ import { SHOWCASE_SCRIPT } from "@/lib/content/showcase";
 import { EXAMPLE_BIPLANE, EXAMPLE_COG_SHIP, EXAMPLE_FOOT_SOLDIER } from "@/lib/content/model-examples";
 import { getViewer } from "@/lib/server/viewer";
 import { TOPIC_IDEAS } from "@/lib/content/topics";
-import { SITE } from "@/lib/content/site";
-
 export default async function Home({ searchParams }: { searchParams: Promise<{ deleted?: string }> }) {
   const [user, { deleted }] = await Promise.all([getViewer(), searchParams]);
   const start = user ? "/studio" : "/signup";
@@ -83,7 +81,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
             <h2 id="how-title" className="section-title">
               From a question to a short film
             </h2>
-            <p className="lead">It usually takes a couple of minutes. You can watch each step happen.</p>
+            <p className="lead">It usually takes a few minutes. You can watch each step happen.</p>
           </Reveal>
           <div className="steps">
             {[
@@ -121,15 +119,15 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
           <Reveal delay={0.1} className="stack" style={{ gap: 20 }}>
             <span className="eyebrow">See an example</span>
             <h2 id="showcase-title" className="section-title">
-              The Norman Conquest in 30 seconds
+              Kitty Hawk, 1903 in 30 seconds
             </h2>
             <p className="lead">
               This sample shows how your films can look. Press play, pause anywhere, or turn Ambience on or off.
             </p>
             <ul className="muted" style={{ margin: 0, paddingLeft: 22, display: "grid", gap: 8 }}>
-              <li>A globe shows where it happened and the route taken.</li>
-              <li>Labels name the groups involved, with colours for each side.</li>
-              <li>Short captions keep to the key facts, dates and places.</li>
+              <li>The Flyer waits on the dunes at Kill Devil Hills.</li>
+              <li>Wilbur, the launch rail and a camera are built for that morning.</li>
+              <li>A clock counts the twelve-second flight, then the distance of the fourth.</li>
               <li>Every real video comes with the list of sources it used.</li>
             </ul>
           </Reveal>
@@ -259,8 +257,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
           </Reveal>
           <Reveal delay={0.1}>
             <p className="lead" style={{ margin: "0 auto" }}>
-              Create a free account and make your first video in a couple of minutes. Each account can make{" "}
-              {SITE.dailyVideos} videos per day.
+              Create a free account and make your first video in a few minutes.
             </p>
           </Reveal>
           <Reveal delay={0.2}>

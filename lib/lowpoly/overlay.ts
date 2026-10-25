@@ -3,7 +3,7 @@
  * site's warm educational style: ivory cards with dark readable text, teal
  * and terracotta accents, soft faceted transitions and an end card.
  */
-import type { Scene, VideoScript } from "@/lib/schema/video";
+import type { Scene, SceneCounter, VideoScript } from "@/lib/schema/video";
 import { clamp, easeInOut, easeOut, makeRng } from "@/lib/lowpoly/core";
 
 export const FONT_DISPLAY = "Facet";
@@ -104,6 +104,71 @@ function logo(ctx: CanvasRenderingContext2D, x: number, y: number, s: number) {
   tri([0.08, 0.8, 0.5, 0.6, 0.92, 0.8], TEAL);
 }
 
+/** The counter's text at `progress` (0–1) through its shot, without the unit. */
+export function counterText(c: SceneCounter, progress: number): string {
+  const v = c.from + (c.to - c.from) * clamp(progress, 0, 1);
+  const two = (n: number) => String(n).padStart(2, "0");
+  if (c.format === "clock") {
+    const minutes = (((Math.round(v * 60) % 1440) + 1440) % 1440) | 0;
+    return `${two(Math.floor(minutes / 60))}:${two(minutes % 60)}`;
+  }
+  const d = c.decimals ?? 0;
+  const scale = 10 ** d;
+  const units = Math.round(Math.abs(v) * scale);
+  const whole = Math.floor(units / scale);
+  const sign = v < 0 && units > 0 ? "-" : "";
+  const frac = d ? "." + String(units % scale).padStart(d, "0") : "";
+  if (c.format === "duration") {
+    const h = Math.floor(whole / 3600);
+    const m = Math.floor((whole % 3600) / 60);
+    return sign + (h ? `${h}:${two(m)}:${two(whole % 60)}` : `${m}:${two(whole % 60)}`) + frac;
+  }
+  return sign + String(whole).replace(/\B(?=(\d{3})+(?!\d))/g, ",") + frac;
+}
+
+function drawCounter(
+  ctx: CanvasRenderingContext2D,
+  c: SceneCounter,
+  progress: number,
+  x: number,
+  y: number,
+  u: number,
+  maxW: number,
+  portrait: boolean,
+) {
+  ctx.save();
+  ctx.shadowColor = "rgba(8,18,27,0.55)";
+  ctx.shadowBlur = u * 1.4;
+  ctx.font = `400 ${u * 2.2}px ${FONT_MONO}`;
+  ctx.fillStyle = "#eef6f4";
+  spaced(ctx, c.label.toUpperCase(), x, y, u * 0.25);
+  const value = counterText(c, progress);
+  const unit = c.unit ? ` ${c.unit.toUpperCase()}` : "";
+  let size = u * (portrait ? 8.5 : 6.5);
+  const width = () => {
+    ctx.font = `400 ${size}px ${FONT_MONO}`;
+    const w = ctx.measureText(value).width;
+    ctx.font = `400 ${size * 0.4}px ${FONT_MONO}`;
+    return w + ctx.measureText(unit).width;
+  };
+  while (width() > maxW && size > u * 3) size *= 0.9;
+  y += size * 0.95;
+  ctx.font = `400 ${size}px ${FONT_MONO}`;
+  ctx.fillStyle = "#ffffff";
+  ctx.fillText(value, x, y);
+  if (unit) {
+    const vx = x + ctx.measureText(value).width;
+    ctx.font = `400 ${size * 0.4}px ${FONT_MONO}`;
+    ctx.fillText(unit, vx, y);
+  }
+  if (c.note) {
+    ctx.font = `400 ${u * 2.1}px ${FONT_MONO}`;
+    ctx.fillStyle = "#e0ebe9";
+    spaced(ctx, c.note.toUpperCase(), x, y + u * 3.8, u * 0.2);
+  }
+  ctx.restore();
+}
+
 export function drawOverlay(ctx: CanvasRenderingContext2D, st: OverlayState) {
   const { width: W, height: H, script, scene, local } = st;
   const portrait = H > W;
@@ -151,13 +216,17 @@ export function drawOverlay(ctx: CanvasRenderingContext2D, st: OverlayState) {
       heading = wrap(ctx, headingText, W - pad * 2);
     }
     const headlineIn = easeOut(clamp(local / 0.35, 0, 1));
+    const lineStep = portrait ? 7.2 : 5.8;
+    const shown = heading.slice(0, 2);
     ctx.globalAlpha = headlineIn;
-    heading
-      .slice(0, 2)
-      .forEach((line, i) =>
-        ctx.fillText(line.join(" "), pad, pad + u * (11 + i * (portrait ? 7.2 : 5.8) + (1 - headlineIn) * 1.5)),
-      );
+    shown.forEach((line, i) =>
+      ctx.fillText(line.join(" "), pad, pad + u * (11 + i * lineStep + (1 - headlineIn) * 1.5)),
+    );
     ctx.globalAlpha = 1;
+    if (scene.counter) {
+      const y = pad + u * (11 + (shown.length - 1) * lineStep + (portrait ? 8 : 6));
+      drawCounter(ctx, scene.counter, local / scene.duration, pad, y, u, W - pad * 2, portrait);
+    }
   }
 
   // Title card (scene 0).
@@ -331,9 +400,9 @@ export function drawOverlay(ctx: CanvasRenderingContext2D, st: OverlayState) {
   ctx.restore();
 }
 
-/** Soft faceted wipe around scene boundaries (paper, teal and terracotta). */
+/** Soft faceted wipe around scene boundaries (paper, teal and terracotta); a quick cut in immersive films. */
 function drawTransition(ctx: CanvasRenderingContext2D, st: OverlayState) {
-  const T = 0.45;
+  const T = st.script.presentation === "immersive" ? 0.15 : 0.45;
   let cover = 0,
     dir = 1,
     which = 0;

@@ -1,7 +1,20 @@
 import { makeRng } from "@/lib/lowpoly/core";
 
-/** Ground plan of the Tranquility Base diorama, in world units on the lunar surface (x, z). */
+/** Ground plan of the Tranquility Base diorama, in world units over the landing site (x, z). */
 export const SURFACE_RADIUS = 5.3;
+/**
+ * Radius of the Moon the diorama stands on. The site sits on the upper cap,
+ * so the ground is this sphere rather than a flat stage.
+ */
+export const MOON_RADIUS = 7.5;
+
+/** Height of the lunar surface relative to the landing site's apex (y = 0). Below the apex on the slopes. */
+export function groundHeight(x: number, z: number) {
+  const r2 = x * x + z * z;
+  const limit = MOON_RADIUS * MOON_RADIUS;
+  if (r2 >= limit) return -MOON_RADIUS;
+  return Math.sqrt(limit - r2) - MOON_RADIUS;
+}
 export const LANDER = { x: -0.45, z: -0.6 };
 export const FLAG_POLE = { x: 3.3, z: -0.1 };
 export const CRATERS: readonly (readonly [x: number, z: number, radius: number])[] = [
@@ -30,7 +43,7 @@ export const ROCKS: readonly Rock[] = (() => {
   return rocks;
 })();
 
-/** Farthest the astronaut's centre may go from the middle of the disc, so his boots stay on it. */
+/** Farthest the astronaut's centre may go from the middle of the site, so his boots stay on the ground. */
 export const WALK_RADIUS = 4.5;
 /** Half-width of the astronaut, boots included. */
 const BODY = 0.3;
@@ -41,9 +54,9 @@ export const OBSTACLES: readonly { x: number; z: number; r: number }[] = [
   ...ROCKS.map((k) => ({ x: k.x, z: k.z, r: k.size * 1.3 + BODY })),
 ];
 
-/** True when a straight walk from a to b stays on the disc and clear of everything on it. */
+/** True when a straight walk from a to b stays on the landing site and clear of everything on it. */
 export function isClear(ax: number, az: number, bx: number, bz: number) {
-  // The disc is convex, so checking the destination keeps the whole walk on it.
+  // The site's footprint is a disc, so checking the destination keeps the whole walk on it.
   if (Math.hypot(bx, bz) > WALK_RADIUS) return false;
   const dx = bx - ax,
     dz = bz - az;

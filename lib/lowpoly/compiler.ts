@@ -542,6 +542,13 @@ export interface InteriorBounds {
   open: { minX: boolean; maxX: boolean; minZ: boolean; maxZ: boolean };
 }
 
+export interface ModelStructure {
+  /** Largest model dimension, metres. */
+  size: number;
+  /** Groups of solid parts touching neither the main body nor the ground, largest first. */
+  detached: { parts: string[]; gap: number; share: number }[];
+}
+
 export interface InstancedSet {
   object: THREE.Group;
   count: number;
@@ -997,6 +1004,69 @@ export class ModelLibrary {
     }
     this.interiors.set(id, result);
     return result;
+  }
+
+  /**
+   * Finds parts that float loose from the model: groups of solid parts that
+   * touch neither the main body nor the ground at rest. Touching is measured
+   * between the parts' actual bounding boxes, including repeats and mirrors.
+   */
+  structure(id: string): ModelStructure {
+    const def = this.defs.get(id);
+    if (!def) return { size: 0, detached: [] };
+    const world = new Map<Node, THREE.Matrix4>();
+    const boxes: { part: string; box: THREE.Box3 }[] = [];
+    for (const n of expand(def)) {
+      const w = n.parent ? world.get(n.parent)!.clone().multiply(n.local) : n.local.clone();
+      world.set(n, w);
+      if (n.part.shape === "group" || EFFECT_SHAPES.has(n.part.shape)) continue;
+      const g = primitiveGeometry(n.part);
+      if (!g) continue;
+      g.computeBoundingBox();
+      boxes.push({ part: n.part.id, box: g.boundingBox!.clone().applyMatrix4(w) });
+      g.dispose();
+    }
+    const scale = def.scale ?? 1;
+    if (!boxes.length) return { size: 0, detached: [] };
+    const all = boxes.reduce((u, b) => u.union(b.box), new THREE.Box3());
+    const extent = all.getSize(new THREE.Vector3());
+    const size = Math.max(extent.x, extent.y, extent.z);
+    const tol = Math.max(0.02, size * 0.015);
+    const gap = (a: THREE.Box3, b: THREE.Box3) =>
+      Math.hypot(
+        Math.max(0, a.min.x - b.max.x, b.min.x - a.max.x),
+        Math.max(0, a.min.y - b.max.y, b.min.y - a.max.y),
+        Math.max(0, a.min.z - b.max.z, b.min.z - a.max.z),
+      );
+    // Union-find over parts, with one extra node for the ground the model stands on.
+    const ground = boxes.length;
+    const root = Array.from({ length: boxes.length + 1 }, (_, i) => i);
+    const find = (i: number): number => (root[i] === i ? i : (root[i] = find(root[i])));
+    const join = (a: number, b: number) => (root[find(a)] = find(b));
+    boxes.forEach((a, i) => {
+      if (a.box.min.y <= all.min.y + tol) join(i, ground);
+      for (let j = i + 1; j < boxes.length; j++) if (gap(a.box, boxes[j].box) <= tol) join(i, j);
+    });
+    const volume = (b: THREE.Box3) => {
+      const s = b.getSize(new THREE.Vector3());
+      return Math.max(s.x * s.y * s.z, 1e-6);
+    };
+    const groups = new Map<number, number[]>();
+    boxes.forEach((_, i) => groups.set(find(i), [...(groups.get(find(i)) ?? []), i]));
+    const weight = (list: number[]) => list.reduce((a, i) => a + volume(boxes[i].box), 0);
+    const total = weight(boxes.map((_, i) => i));
+    const main = [...groups.entries()].sort(
+      (a, b) => Number(b[0] === find(ground)) - Number(a[0] === find(ground)) || weight(b[1]) - weight(a[1]),
+    )[0][1];
+    const detached = [...groups.values()]
+      .filter((list) => list !== main)
+      .map((list) => ({
+        parts: [...new Set(list.map((i) => boxes[i].part))].slice(0, 8),
+        gap: Math.min(...list.flatMap((i) => main.map((j) => gap(boxes[i].box, boxes[j].box)))) * scale,
+        share: weight(list) / total,
+      }))
+      .sort((a, b) => b.share - a.share);
+    return { size: size * scale, detached };
   }
 
   /**

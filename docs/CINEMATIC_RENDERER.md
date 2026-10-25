@@ -59,7 +59,7 @@ Three optional scene fields describe the place independently of `layout`: `settl
 - **Coast.** The sea normally lies behind the action. When the shot's subject is a vessel, it lies toward the camera instead, with the shoreline behind the subject (half the hull's length plus 6 m, at least 10 m). Seen across land, a hull reads as beached. Vessels are placed so the whole hull is afloat, not just its centre.
 - **Open-land settlements.** Buildings form a few loose clusters behind and beside the action. Their fronts turn roughly toward it, they never stand on the camera's side, and they're spaced by real footprint.
 
-The renderer-side contract and its inference rules are recorded in `tmp/cinematic/notes/cursor-world-contract.txt`.
+Inference is implemented in `lib/lowpoly/world.ts` and `lib/lowpoly/environment.ts`. A script that sets `settlement`, `waterWidth` or `banks` overrides it.
 
 ## Per-scene pipeline (immersive)
 
@@ -158,30 +158,15 @@ Shots alternate sides between consecutive scenes. Lens (about 44–66° vertical
 
 ## Verification
 
-All of this ran in the visual harness (`tools/visual-harness/`, run with `npm run visual:build && npm run visual:serve`). It renders a contact sheet per fixture in landscape and portrait, an automated collision audit, and GPU-synchronised timings. The curated fixtures and what each one exercises are listed in `tools/visual-harness/fixtures/README.md`.
+Check renderer changes in the visual harness (`npm run visual:build && npm run visual:serve`). It renders a contact sheet per fixture in landscape and portrait, an automated collision audit, and GPU-synchronised timings. The curated fixtures and what each one exercises are listed in `tools/visual-harness/fixtures/README.md`. Results are on `window.__result`; the contact sheet is on `window.__sheet`.
 
-Fixtures:
+The collision audit samples 16 frames per scene:
 
-- London 1666 (`24bbc42c…`, 8 scenes)
-- Pompeii 60 s (`8059e316…`, 7 scenes) and the earlier poor Pompeii first-HD (`4e225e63…`)
-- First flight, legacy (`final20`) and fresh (`flight20-v8`)
-- Printing house as a street (`9f05909a…`) and as an interior (`8ec460ab…`, `layout: interior`)
-- Jamestown and Columbus (classic)
+- **Instanced dressing.** The camera is tested against each instance's box.
+- **Other meshes.** Whenever a mesh's box contains the camera, real surfaces are tested: six rays detect a surface within 0.15 m or back-face hits that mean the camera is inside a solid. Merged room walls therefore don't false-alarm.
+- **Terrain.** The camera is tested against the raycast terrain height.
 
-- **Collision audit.**
-  - The audit samples 16 frames per scene.
-  - **Instanced dressing.** The camera is tested against each instance's box.
-  - **Other meshes.** Whenever a mesh's box contains the camera, real surfaces are tested: six rays detect a surface within 0.15 m or back-face hits that mean the camera is inside a solid. Merged room walls therefore don't false-alarm.
-  - **Terrain.** The camera is tested against the raycast terrain height.
-- **Results.** 0 issues in every run:
-  - London: 112 samples, landscape and portrait.
-  - Pompeii 60 s: 112.
-  - Interior: 96.
-  - First flight, legacy and fresh: 64 each.
-  - Old Pompeii: 64.
-  - Jamestown and Columbus: 80 each.
-- **Performance.** Scene build plus first frame takes 30–130 ms after the first shader compile (about 0.4–1.4 s once per engine). A full 60 s London film renders at 1280 × 720, 30 fps (1800 frames, scene builds and overlay included, no encoding) in 3.3 s, about 1.8 ms per frame.
-- **Tests.** `npx tsc --noEmit`, `npx eslint lib/lowpoly`, `npx prettier --check lib/lowpoly` and `npm run test:unit` pass. `scripts/tests/test-generated-film.ts` passes on the London, Pompeii, flight, street printing-house and interior fixtures.
+`npm run check` covers the type, lint, format and unit checks, including `scripts/tests/test-generated-film.ts` on a saved script. Re-run the harness on the street, waterfront, interior, flight and classic fixtures after a camera or layout change. Scene build plus first frame is typically tens to low hundreds of milliseconds after the first shader compile.
 
 ## Limitations
 
@@ -210,15 +195,16 @@ Fixtures:
 
 The optional `scene.shotSize` field accepts `wide`, `medium`, or `close`. It scales the immersive camera distance to establish the location, frame the main action, or crop into the subject for detail. Collision and room boundaries still apply. When omitted, existing films retain their previous framing.
 
-## Proposed minimal schema additions (not implemented)
+## Schema fields not yet implemented
 
-These are optional fields the director could set to replace inference. Each degrades to today's behaviour when absent. `scene.layout` (`open | street | interior`) has since been added by the schema owner and is supported above.
+These optional fields would let the director replace inference. Each would keep today's behaviour when absent. `scene.layout` (`open | street | interior`) and `scene.shotSize` are already supported.
 
 - More `scene.layout` values, `square` and `waterfront`, would add a ring of frontage around a plaza and a single frontage plus quay.
-- `scene.streetWidth?: number` (3–30 m) would give an explicit roadway width instead of inferring it from offsets.
+- `scene.streetWidth` (3–30 m) would give an explicit roadway width instead of inferring it from offsets.
 - `element.role: "frontage"` would give an explicit "line the street with this model" intent, distinct from a background crowd or one-off landmark, instead of the current `background` + `count ≥ 2` + eligibility rule.
+- `scene.keyLight` (`left`, `right` or `back`) would set the sun side for continuity across consecutive shots. Today it comes from the seed.
 
-- `scene.keyLight?: "left" | "right" | "back"` would set the sun side for continuity across consecutive shots; today it comes from the seed.
+## Geometry and motion already supported
 
 ### Structural aftermath
 

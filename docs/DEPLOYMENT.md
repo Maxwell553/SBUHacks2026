@@ -6,27 +6,28 @@ PolyChronicle deploys as one Next.js project. Vercel works out of the box: no se
 
 Copy `.env.example` to `.env.local` for development. Set the same values in your hosting provider. None of the credentials use the `NEXT_PUBLIC_` prefix.
 
-| Variable                    | Required        | Purpose                                                                                                      |
-| --------------------------- | --------------- | ------------------------------------------------------------------------------------------------------------ |
-| `GEMINI_API_KEY`            | yes             | Google Gemini key (Vertex AI Express key by default).                                                        |
-| `GEMINI_PROVIDER`           | no              | `vertex` (default) or `developer` for Google AI Studio keys.                                                 |
-| `GEMINI_PROJECT`            | for Argon       | Google Cloud project (id or number) of the Vertex key. Without it Vertex Express only reaches `us-central1`. |
-| `GEMINI_LOCATION`           | no              | Vertex location used with `GEMINI_PROJECT`. Default `global` (`gemini-4-argon` is served from global/us/eu). |
-| `GEMINI_CREATIVE_MODEL`     | no              | Model that creates the film: model plan, geometry and storyboard. Default `gemini-4-argon`.                  |
-| `GEMINI_FAST_MODEL`         | no              | Model for research and moderation, and the fallback for a timed-out build. Default `gemini-3.8-flash`.       |
-| `GEMINI_PLANNER_MODEL`      | no              | Model for the model plan. Defaults to `GEMINI_CREATIVE_MODEL`.                                               |
-| `GEMINI_BUILDER_MODEL`      | no              | Model that builds each 3D geometry definition. Defaults to `GEMINI_CREATIVE_MODEL`.                          |
-| `GEMINI_ARTICULATED_MODEL`  | no              | Builder for articulated models (people, animals). Defaults to `GEMINI_BUILDER_MODEL`.                        |
-| `GEMINI_MODEL`              | no              | Fallback for `GEMINI_FAST_MODEL` when unset.                                                                 |
-| `DATABASE_URL`              | yes             | PostgreSQL URL for the **runtime** role (DML only). `sslmode` flags are stripped; TLS is configured in code. |
-| `DATABASE_CA_CERT`          | for TigerData   | Pinned CA certificate as one line with literal `\n` separators. Certificate verification stays on.           |
-| `MIGRATION_DATABASE_URL`    | migrations only | Admin URL used by `npm run db:migrate`. **Never** set this in the production runtime.                        |
-| `APP_URL`                   | production      | Canonical `https://` origin. Used for the origin check and metadata.                                         |
-| `NEXT_PUBLIC_SITE_URL`      | recommended     | Public canonical URL for metadata, `robots.txt` and the sitemap (falls back to `APP_URL`).                   |
-| `NEXT_PUBLIC_CONTACT_EMAIL` | before launch   | Contact address shown in the legal pages.                                                                    |
-| `NEXT_PUBLIC_LEGAL_ENTITY`  | before launch   | Operator name shown in the legal pages.                                                                      |
+| Variable                    | Required              | Purpose                                                                                                                                                            |
+| --------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `GEMINI_API_KEY`            | yes                   | Google Gemini key (Vertex AI Express key by default).                                                                                                              |
+| `GEMINI_PROVIDER`           | no                    | `vertex` (default) or `developer` for Google AI Studio keys.                                                                                                       |
+| `GEMINI_PROJECT`            | for production models | Google Cloud project id or number of the Vertex key. Without it Vertex Express only reaches `us-central1`. Both models are served from `global`, `us` and `eu`.    |
+| `GEMINI_LOCATION`           | no                    | Vertex location used with `GEMINI_PROJECT`. Default `global`.                                                                                                      |
+| `GEMINI_FAST_MODEL`         | no                    | Research, moderation, the model plan, and the fallback when a build times out. Default `gemini-3.8-flash`. Thinking is `low`; `minimal` is rejected by this model. |
+| `GEMINI_MODEL`              | no                    | Used only when `GEMINI_FAST_MODEL` is unset. Set it to `gemini-3.8-flash`.                                                                                         |
+| `GEMINI_CREATIVE_MODEL`     | no                    | Storyboard, and the default for geometry and the draft review. Default `gemini-4-argon`. It does not plan models unless `GEMINI_PLANNER_MODEL` points at it.       |
+| `GEMINI_PLANNER_MODEL`      | no                    | Model for the model plan. Defaults to `GEMINI_FAST_MODEL`.                                                                                                         |
+| `GEMINI_BUILDER_MODEL`      | no                    | Model that builds each 3D geometry definition. Defaults to `GEMINI_CREATIVE_MODEL`.                                                                                |
+| `GEMINI_ARTICULATED_MODEL`  | no                    | Builder for articulated models (people, animals). Defaults to `GEMINI_BUILDER_MODEL`.                                                                              |
+| `GEMINI_REVIEW_MODEL`       | no                    | Reviews the rendered draft of each film and decides shot fixes. Defaults to `GEMINI_CREATIVE_MODEL`.                                                               |
+| `DATABASE_URL`              | yes                   | PostgreSQL URL for the **runtime** role (DML only). `sslmode` flags are stripped; TLS is configured in code.                                                       |
+| `DATABASE_CA_CERT`          | for TigerData         | Pinned CA certificate as one line with literal `\n` separators. Certificate verification stays on.                                                                 |
+| `MIGRATION_DATABASE_URL`    | migrations only       | Admin URL used by `npm run db:migrate`. **Never** set this in the production runtime.                                                                              |
+| `APP_URL`                   | production            | Canonical `https://` origin. Used for the origin check and metadata.                                                                                               |
+| `NEXT_PUBLIC_SITE_URL`      | recommended           | Public canonical URL for metadata, `robots.txt` and the sitemap (falls back to `APP_URL`).                                                                         |
+| `NEXT_PUBLIC_CONTACT_EMAIL` | before launch         | Contact address shown in the legal pages.                                                                                                                          |
+| `NEXT_PUBLIC_LEGAL_ENTITY`  | before launch         | Operator name shown in the legal pages.                                                                                                                            |
 
-Check the AI configuration with `npm run gemini:check` (uses billable API calls). Check the database with `npm run db:check`. Neither changes service configuration.
+Check the AI configuration with `npm run gemini:check`. It calls the configured fast model (`gemini-3.8-flash` unless overridden) with Google Search grounding and uses billable API calls. Check the database with `npm run db:check`. Neither changes service configuration.
 
 ## Deploy to Vercel
 
@@ -39,7 +40,7 @@ Check the AI configuration with `npm run gemini:check` (uses billable API calls)
    `db/schema.sql` is idempotent and never drops data.
 4. Deploy, then verify sign-up, sign-in, one generation, the saved HD video in the library, download, and sign-out on the deployed URL.
 
-The generation route allows up to 300 seconds (`maxDuration`), and the provider pipeline is bounded at 260 seconds. The example films in `references/` are read at runtime, so `next.config.ts` traces them into the `/api/videos` function; files that would push the request past a 14 MiB inline budget (measured after base64 encoding) are skipped. Media is uploaded in 1 MiB chunks and streamed back from PostgreSQL with HTTP Range support, so nothing relies on the function filesystem.
+Production runs as separate short requests (plan, build, direct, finish, review), so it fits Vercel's Hobby plan. Every route sets `maxDuration = 300`, the Hobby maximum, but each step stops itself at 200 seconds (`STEP_DEADLINE_MS` in `lib/server/gemini.ts`). Measured steps take about 20–60 s (plan), 30–135 s (a build group, including a retry), 40–110 s (storyboard), 2 s (finish) and 50–70 s (a review round). The example films and stills in `references/` are read at runtime, so `next.config.ts` traces them into the `/api/videos` function; within each set, files that would push the request past a 14 MiB inline budget (measured after base64 encoding) are skipped. The films are third-party reels used as style references; replace them with material you have rights to before a public launch. Media is uploaded in 1 MiB chunks and streamed back from PostgreSQL with HTTP Range support, so nothing relies on the function filesystem.
 
 ## Database
 
@@ -51,7 +52,7 @@ The generation route allows up to 300 seconds (`maxDuration`), and the provider 
 
 | Item                                           | Limit or retention                          |
 | ---------------------------------------------- | ------------------------------------------- |
-| New videos                                     | 10 per account per day (`SITE.dailyVideos`) |
+| New videos                                     | No daily cap; one in progress per account   |
 | Rendered file                                  | 32 MiB each                                 |
 | Media per account                              | 96 MiB                                      |
 | Global media reservation                       | 700 MiB (headroom within a 1 GiB database)  |
@@ -59,12 +60,13 @@ The generation route allows up to 300 seconds (`maxDuration`), and the provider 
 | Unfinished uploads                             | Expire after 24 hours                       |
 | Videos, prompts, research, scripts, audit rows | Until the user deletes the video or account |
 
-Storing media chunks in PostgreSQL suits a demo or hackathon. Before public scale, move chunks to private object storage, keep the same ownership checks, and raise limits only with a matching storage budget.
+Storing media chunks in PostgreSQL fits the current single-database deployment. Before public scale, move chunks to private object storage, keep the same ownership checks, and raise limits only with a matching storage budget.
 
 ## Pre-launch checklist
 
 - [ ] Set `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_CONTACT_EMAIL` and `NEXT_PUBLIC_LEGAL_ENTITY` to verified values. The defaults are placeholders.
 - [ ] Review `/terms`, `/privacy` and `/content-policy` with whoever operates the service.
+- [ ] Add a daily cap on new videos per account again (removed for private testing). Each film makes a dozen or more paid Gemini calls, plus a review round.
 - [ ] Email verification and password reset are **not implemented**. Add an email provider and a recovery flow before promising account recovery.
 - [ ] Run `npm run check`, `npm run secrets:check`, and `npm run test:backend -- --live` against a localhost server connected to an isolated staging database. The automated suite refuses remote hosts; perform the deployed smoke test manually.
 - [ ] Confirm the database CA expiry date and set up alerting on `/api/health`.
