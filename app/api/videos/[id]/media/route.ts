@@ -14,7 +14,7 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
     const {
       rows: [asset],
     } = await query(
-      `SELECT * FROM ph_assets WHERE video_id=$1 AND complete=true ${assetId ? "AND id=$2" : "AND mime<>'image/jpeg'"} ORDER BY created_at DESC LIMIT 1`,
+      `SELECT * FROM ph_assets WHERE video_id=$1 AND complete=true ${assetId ? "AND id=$2" : "AND mime NOT IN ('image/jpeg','audio/wav')"} ORDER BY created_at DESC LIMIT 1`,
       assetId ? [id, assetId] : [id],
     );
     if (!asset) throw new ApiError(404, "No saved render yet.");
@@ -69,7 +69,9 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
           ? "gif"
           : asset.mime === "video/webm"
             ? "webm"
-            : "mp4";
+            : asset.mime === "audio/wav"
+              ? "wav"
+              : "mp4";
     return new Response(stream, {
       status: range ? 206 : 200,
       headers: {

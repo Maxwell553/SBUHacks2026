@@ -1,6 +1,7 @@
 import type { VideoScript } from "@/lib/schema/video";
 import { resolveScore, type ScoreLayer, type Voice } from "@/lib/audio/score";
 import { addUnderscore } from "@/lib/audio/underscore";
+import { applyFilter, biquad, fadeEnds, filter, integratedLoudness, softCeiling } from "@/lib/audio/dsp";
 
 const RATE = 48000;
 
@@ -119,24 +120,27 @@ function knock(left: Float32Array, right: Float32Array, time: number, amp: numbe
 /** Wind, room tone and the city bed were a constant hiss. They stay in the score and stay silent. */
 function addWind(_span: Span, _gust: number) {}
 
+/** Rain as many short, bright droplets scattered across the stereo field, not a hiss. */
 function addRain(span: Span) {
   const rng = rngOf(span.seed);
-  let t = span.start + rng() * 0.4;
+  const density = 14 + span.level * 26;
+  let t = span.start + rng() * 0.05;
   while (t < span.end) {
-    const f = 1600 + rng() * 4200;
-    const pan = rng();
     const i0 = Math.floor(t * RATE);
-    const n = Math.floor((0.008 + rng() * 0.01) * RATE);
-    const [pl, pr] = panGain(pan);
-    let phase = rng() * 6;
-    const drop = span.level * (0.16 + rng() * 0.22);
+    const n = Math.floor((0.002 + rng() * 0.004) * RATE);
+    const [pl, pr] = panGain(rng());
+    const amp = span.level * (0.08 + rng() * 0.3);
+    let prev = 0;
     for (let k = 0; k < n && i0 + k < span.to; k++) {
-      phase += (2 * Math.PI * f) / RATE;
-      const s = Math.sin(phase) * Math.exp((-k / n) * 5) * drop;
+      const white = rng() * 2 - 1;
+      // The first difference lifts the highs, so each drop is a tick, not a thud.
+      const s = (white - prev) * Math.exp((-k / n) * 6) * amp;
+      prev = white;
       span.left[i0 + k] += s * pl;
       span.right[i0 + k] += s * pr;
     }
-    t += 0.35 + rng() * 0.55;
+    // Poisson spacing: drops fall independently.
+    t += -Math.log(1 - rng() * 0.999) / density;
   }
 }
 
@@ -216,37 +220,47 @@ function addInsects(span: Span) {
   }
 }
 
+/**
+ * Firing pulses rung through two body resonances: an audible putt-putt.
+ * The firing rate keeps the low rhythm; the sound itself sits where speakers play it.
+ */
 function addEngine(span: Span) {
-  const firing = 12 + (span.seed % 11);
-  let p1 = 0;
-  let p2 = 0;
-  let p3 = 0;
-  const amp = span.level * 0.4;
+  const rng = rngOf(span.seed);
+  const firing = 22 + (span.seed % 14);
+  const body = filter(biquad("bandpass", 200 + (span.seed % 70), RATE, 2.2));
+  const bark = filter(biquad("bandpass", 650 + (span.seed % 180), RATE, 1.4));
+  const amp = span.level * 1.6;
+  let phase = 0;
   for (let i = span.from; i < span.to; i++) {
     const t = (i - span.from) / RATE;
-    const hz = firing * (1 + 0.045 * Math.sin(t * 2.1) + 0.02 * Math.sin(t * 5.3));
-    const cycle = (t * hz) % 1;
-    const knockEnv = Math.exp(-cycle * 16);
-    p1 += (2 * Math.PI * hz) / RATE;
-    p2 += (2 * Math.PI * hz * 2) / RATE;
-    p3 += (2 * Math.PI * hz * 3.02) / RATE;
-    const tone = Math.sin(p1) * 0.5 + Math.sin(p2) * 0.24 + Math.sin(p3) * 0.1;
-    const s = tone * (0.8 + 0.2 * knockEnv) * amp * edge(span, i);
+    phase += (firing * (1 + 0.045 * Math.sin(t * 2.1) + 0.02 * Math.sin(t * 5.3))) / RATE;
+    const cycle = phase % 1;
+    const pulse = Math.exp(-cycle * 18) * (0.85 + 0.3 * rng()) + (rng() * 2 - 1) * 0.3 * Math.exp(-cycle * 5);
+    const s = (body(pulse) + bark(pulse) * 0.55) * amp * edge(span, i);
     span.left[i] += s * 0.82;
     span.right[i] += s;
   }
 }
 
+/** A blade-rate thrum over a band of rushing air, with the motor's buzz under it. */
 function addPropeller(span: Span) {
+  const rng = rngOf(span.seed);
+  const air = filter(biquad("bandpass", 520, RATE, 0.8));
+  const rush = filter(biquad("bandpass", 1500, RATE, 1.1));
+  const motor = filter(biquad("bandpass", 240, RATE, 2));
+  const amp = span.level * 2.4;
   let blade = 0;
-  const amp = span.level * 0.36;
+  let fire = 0;
   for (let i = span.from; i < span.to; i++) {
     const t = (i - span.from) / RATE;
-    const hz = 26 + 8 * Math.sin(t * 0.55) + 3 * Math.sin(t * 1.6);
-    blade += (2 * Math.PI * hz) / RATE;
-    const chop = 0.82 + 0.18 * Math.abs(Math.sin(blade));
-    const motor = Math.sin(blade * 0.33) * 0.28 + Math.sin(blade * 0.66) * 0.12;
-    const s = motor * chop * amp * edge(span, i);
+    const passes = 18 + 5 * Math.sin(t * 0.55) + 2 * Math.sin(t * 1.6);
+    blade += passes / RATE;
+    fire += (passes * 1.9) / RATE;
+    const chop = (0.5 + 0.5 * Math.cos(2 * Math.PI * blade)) ** 3;
+    const white = rng() * 2 - 1;
+    const wash = air(white) * (0.35 + 0.65 * chop) + rush(white) * 0.3 * (0.5 + 0.5 * chop);
+    const buzz = motor(Math.exp(-(fire % 1) * 18)) * 0.5;
+    const s = (wash + buzz) * amp * edge(span, i);
     span.left[i] += s * 0.88;
     span.right[i] += s;
   }
@@ -386,20 +400,43 @@ const RENDER: Record<Voice, (span: Span) => void> = {
   explosion: addExplosion,
 };
 
+/** The internal mix level the score is held at before the film is brought to its final loudness. */
 const LEVEL = 0.05;
+/** Effects sit under the score. They follow the shot and cannot cover it. */
+const EFFECT_GAIN = 0.2;
+/** Integrated loudness of a finished film: the usual level for web and phone video. */
+export const TARGET_LUFS = -16;
+/** −1 dBFS. */
+const PEAK = 0.891;
 
-/** Pulls a buffer onto one loudness. Used for the score before effects are added. */
+/**
+ * Pulls the score onto one loudness. The gain follows a centred 0.4 s window and
+ * moves at most ±3 dB, so phrases even out while each note keeps its attack.
+ */
 function levelTo(left: Float32Array, right: Float32Array, target: number) {
   const n = left.length;
   if (n < 2) return;
-  const win = Math.floor(0.18 * RATE);
-  const floor = target / 8;
+  const half = Math.floor(0.2 * RATE);
   const prefix = new Float64Array(n + 1);
   for (let i = 0; i < n; i++) prefix[i + 1] = prefix[i] + left[i] * left[i] + right[i] * right[i];
   for (let i = 0; i < n; i++) {
-    const end = Math.min(n, i + win);
-    const rms = Math.sqrt((prefix[end] - prefix[i]) / (2 * (end - i)));
-    const gain = target / Math.max(rms, floor);
+    const a = Math.max(0, i - half);
+    const b = Math.min(n, i + half);
+    const rms = Math.sqrt((prefix[b] - prefix[a]) / (2 * Math.max(1, b - a)));
+    const gain = rms > 0 ? Math.min(1.41, Math.max(0.71, target / rms)) : 1;
+    left[i] *= gain;
+    right[i] *= gain;
+  }
+}
+
+/** Scales a buffer to one RMS level with a single gain. */
+function scaleTo(left: Float32Array, right: Float32Array, target: number) {
+  let sum = 0;
+  for (let i = 0; i < left.length; i++) sum += left[i] * left[i] + right[i] * right[i];
+  const rms = Math.sqrt(sum / Math.max(1, 2 * left.length));
+  if (rms <= 0) return;
+  const gain = target / rms;
+  for (let i = 0; i < left.length; i++) {
     left[i] *= gain;
     right[i] *= gain;
   }
@@ -415,7 +452,8 @@ function holdLevel(left: Float32Array, right: Float32Array, target: number) {
   const win = Math.floor(0.18 * RATE);
   const prefix = new Float64Array(n + 1);
   for (let i = 0; i < n; i++) prefix[i + 1] = prefix[i] + left[i] * left[i] + right[i] * right[i];
-  const ceiling = target * 2.6;
+  // Room for the music's own peaks; the final limiter is in bringToLoudness.
+  const ceiling = target * 4;
   const knee = ceiling * 0.9;
   for (let i = 0; i < n; i++) {
     const end = Math.min(n, i + win);
@@ -424,14 +462,6 @@ function holdLevel(left: Float32Array, right: Float32Array, target: number) {
     left[i] = softCeiling(left[i] * gain, ceiling, knee);
     right[i] = softCeiling(right[i] * gain, ceiling, knee);
   }
-}
-
-function softCeiling(sample: number, ceiling: number, knee: number) {
-  const ax = Math.abs(sample);
-  if (ax <= knee) return sample;
-  const span = ceiling - knee;
-  const shaped = knee + span * Math.tanh((ax - knee) / span);
-  return Math.sign(sample) * Math.min(ceiling, shaped);
 }
 
 function continues(layers: ScoreLayer[], layer: ScoreLayer, at: "start" | "end"): boolean {
@@ -444,36 +474,105 @@ function continues(layers: ScoreLayer[], layer: ScoreLayer, at: "start" | "end")
 }
 
 /**
- * Every film, live or saved, comes through here. The score is leveled first.
- * Effects from the shot are mixed under it, then the sum is held so nothing can jump.
+ * Lays the narrator over the mix. The music and effects dip about 10 dB while
+ * the voice speaks, and the voice's speech sits about 4 dB over the undipped bed.
  */
-export function renderSoundtrack(script: VideoScript): AudioBuffer {
+function addVoice(left: Float32Array, right: Float32Array, voice: Float32Array) {
+  const n = Math.min(left.length, voice.length);
+  let sum = 0;
+  let count = 0;
+  for (let i = 0; i < n; i++) {
+    if (Math.abs(voice[i]) < 1e-4) continue;
+    sum += voice[i] * voice[i];
+    count++;
+  }
+  if (!count) return;
+  const speech = Math.sqrt(sum / count);
+  const gain = (LEVEL * 1.6) / speech;
+  const ahead = Math.floor(0.03 * RATE);
+  const attack = 1 - Math.exp(-1 / (0.02 * RATE));
+  const release = 1 - Math.exp(-1 / (0.4 * RATE));
+  let env = 0;
+  for (let i = 0; i < left.length; i++) {
+    // The dip starts just before the voice so its first syllable is clear.
+    const lead = i + ahead < n ? Math.abs(voice[i + ahead]) : 0;
+    env += (lead - env) * (lead > env ? attack : release);
+    const dip = 1 - 0.68 * Math.min(1, env / (speech * 0.5));
+    const v = i < n ? voice[i] * gain : 0;
+    left[i] = left[i] * dip + v;
+    right[i] = right[i] * dip + v;
+  }
+}
+
+/** One gain to the target loudness, then a soft limit at −1 dBFS. */
+function bringToLoudness(left: Float32Array, right: Float32Array) {
+  const loudness = integratedLoudness(left, right);
+  if (!Number.isFinite(loudness)) return;
+  const gain = 10 ** ((TARGET_LUFS - loudness) / 20);
+  for (let i = 0; i < left.length; i++) {
+    left[i] = softCeiling(left[i] * gain, PEAK, PEAK * 0.85);
+    right[i] = softCeiling(right[i] * gain, PEAK, PEAK * 0.85);
+  }
+}
+
+/**
+ * Every film, live or saved, comes through here. Effects from the shot are
+ * mixed under the score and the sum is held so nothing can jump. Sub-bass no
+ * speaker plays is removed, the narrator (if any) goes on top, and the film is
+ * brought to one loudness with a fade at each end.
+ *
+ * `voice` is the narration stem: mono, 48 kHz, starting at the film's start.
+ */
+export function mixSoundtrack(script: VideoScript, voice?: Float32Array): { left: Float32Array; right: Float32Array } {
+  const length = Math.max(1, Math.ceil(script.totalDuration * RATE));
+  const left = new Float32Array(length);
+  const right = new Float32Array(length);
   const layers = resolveScore(script);
-  const buffer = new AudioBuffer({
-    length: Math.max(1, Math.ceil(script.totalDuration * RATE)),
-    numberOfChannels: 2,
-    sampleRate: RATE,
-  });
-  const left = buffer.getChannelData(0);
-  const right = buffer.getChannelData(1);
   for (const layer of layers) {
     const span = spanOf(left, right, layer, !continues(layers, layer, "start"), !continues(layers, layer, "end"));
     if (span) RENDER[layer.cue](span);
   }
-  // Effects sit under the score. They follow the shot and cannot cover it.
-  const effectGain = 0.2;
-  for (let i = 0; i < left.length; i++) {
-    left[i] *= effectGain;
-    right[i] *= effectGain;
+  for (let i = 0; i < length; i++) {
+    left[i] *= EFFECT_GAIN;
+    right[i] *= EFFECT_GAIN;
   }
-  const scoreL = new Float32Array(left.length);
-  const scoreR = new Float32Array(right.length);
+  const scoreL = new Float32Array(length);
+  const scoreR = new Float32Array(length);
   addUnderscore(scoreL, scoreR, script);
+  scaleTo(scoreL, scoreR, LEVEL);
   levelTo(scoreL, scoreR, LEVEL);
-  for (let i = 0; i < left.length; i++) {
+  for (let i = 0; i < length; i++) {
     left[i] += scoreL[i];
     right[i] += scoreR[i];
   }
+  applyFilter(left, biquad("highpass", 40, RATE));
+  applyFilter(right, biquad("highpass", 40, RATE));
   holdLevel(left, right, LEVEL);
+  if (voice?.length) addVoice(left, right, voice);
+  bringToLoudness(left, right);
+  fadeEnds(left, RATE, 0.25, 1.5);
+  fadeEnds(right, RATE, 0.25, 1.5);
+  return { left, right };
+}
+
+/** mixSoundtrack as an AudioBuffer, for the player and the movie encoder. */
+export function renderSoundtrack(script: VideoScript, voice?: Float32Array): AudioBuffer {
+  const { left, right } = mixSoundtrack(script, voice);
+  return bufferOf(left, right);
+}
+
+export function bufferOf(left: Float32Array, right: Float32Array): AudioBuffer {
+  const buffer = new AudioBuffer({ length: left.length, numberOfChannels: 2, sampleRate: RATE });
+  buffer.getChannelData(0).set(left);
+  buffer.getChannelData(1).set(right);
   return buffer;
+}
+
+/** One sound on its own, as a film would render it (left channel), for tests and tuning. */
+export function voiceProbe(cue: Voice, seconds: number, level = 0.8, seed = 7): Float32Array {
+  const left = new Float32Array(Math.ceil(seconds * RATE));
+  const right = new Float32Array(left.length);
+  const span = spanOf(left, right, { cue, start: 0, end: seconds, level, seed }, true, true);
+  if (span) RENDER[cue](span);
+  return left;
 }

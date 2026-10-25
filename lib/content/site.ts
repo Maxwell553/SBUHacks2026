@@ -7,6 +7,8 @@ export const SITE = {
   contactEmail: process.env.NEXT_PUBLIC_CONTACT_EMAIL?.trim() || "privacy@polychronicle.app",
   legalEntity: process.env.NEXT_PUBLIC_LEGAL_ENTITY?.trim() || "the PolyChronicle team",
   jurisdiction: "the State of New York, United States",
+  /** New videos per account per day. Each film makes a dozen or more paid Gemini calls. */
+  dailyVideos: 10,
   termsVersion: "2026-10-23",
   effectiveDate: "October 23, 2026",
 };

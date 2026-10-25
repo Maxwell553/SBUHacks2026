@@ -8,8 +8,10 @@ import { ApiError, videos, type Video } from "@/lib/client/api";
 import { saveRender, type SaveProgress } from "@/lib/client/save";
 import { reviewRender, type ReviewProgress } from "@/lib/client/review";
 import { produceFilm, type ProduceProgress } from "@/lib/client/produce";
+import { loadNarration } from "@/lib/audio/narration";
 import type { Aspect } from "@/lib/schema/video";
 import { TOPIC_IDEAS } from "@/lib/content/topics";
+import { SITE } from "@/lib/content/site";
 import dynamic from "next/dynamic";
 import { StudioPreview } from "@/components/StudioPreview";
 const Player = dynamic(() => import("@/components/Player").then((m) => m.Player));
@@ -124,10 +126,12 @@ export function Studio({ initialPrompt = "" }: { initialPrompt?: string }) {
 
   const runSave = async (v: Video) => {
     setSaveFailed(null);
-    mark("animate", "active");
+    setSteps((s) => ({ ...s, animate: "active", save: "idle" }));
     const ac = new AbortController();
     abortRef.current = ac;
     try {
+      // A film without narration (or whose recording failed) is saved with music and effects only.
+      const voice = v.narrationUrl ? ((await loadNarration(v.narrationUrl)) ?? undefined) : undefined;
       const saved = await saveRender(
         v,
         (p) => {
@@ -138,16 +142,21 @@ export function Studio({ initialPrompt = "" }: { initialPrompt?: string }) {
           }
         },
         ac.signal,
+        voice,
       );
       mark("animate", "done");
       mark("save", "done");
       incompleteRef.current = null;
       setVideo(saved);
     } catch (e) {
-      await videos.discard(v.id).catch(() => {});
-      incompleteRef.current = null;
-      setVideo(null);
-      if ((e as Error).name === "AbortError") return;
+      if ((e as Error).name === "AbortError") {
+        await videos.discard(v.id).catch(() => {});
+        incompleteRef.current = null;
+        setVideo(null);
+        return;
+      }
+      // The film itself is finished, so keep it and let saving be tried again.
+      // Leaving the page still discards it through incompleteRef.
       setSteps((s) => ({
         ...s,
         animate: s.animate === "done" ? "done" : "error",
@@ -170,6 +179,9 @@ export function Studio({ initialPrompt = "" }: { initialPrompt?: string }) {
       });
       return;
     }
+    // A film kept after a failed save is replaced by the new one.
+    if (incompleteRef.current) void videos.discard(incompleteRef.current).catch(() => {});
+    incompleteRef.current = null;
     setBusy(true);
     setElapsed(0);
     setError(null);
@@ -205,11 +217,17 @@ export function Studio({ initialPrompt = "" }: { initialPrompt?: string }) {
       setSteps((s) => ({ ...s, build: "done", review: "active" }));
       setVideo(v);
       router.refresh();
+      // The narration is recorded while the draft is reviewed: the review never changes captions.
+      const narration = videos
+        .narrate(v.id, ac.signal)
+        .then(({ video: narrated }) => narrated.narrationUrl ?? null)
+        .catch(() => null);
       const reviewed = await reviewRender(v, setReviewProgress, ac.signal);
+      const ready = { ...reviewed, narrationUrl: await narration };
       setReviewProgress(null);
       mark("review", "done");
-      setVideo(reviewed);
-      await runSave(reviewed);
+      setVideo(ready);
+      await runSave(ready);
       router.refresh();
     } catch (err) {
       polling = false;
@@ -398,6 +416,7 @@ export function Studio({ initialPrompt = "" }: { initialPrompt?: string }) {
               <Player
                 script={video.script}
                 aspect={video.aspect === "portrait" ? "portrait" : "landscape"}
+                narrationUrl={video.narrationUrl}
                 autoPlay
                 loop
               />
@@ -533,8 +552,8 @@ export function Studio({ initialPrompt = "" }: { initialPrompt?: string }) {
             </button>
             <p className="hint">
               Keep this tab open the whole time. Leaving this page, including the PolyChronicle name at the top, stops
-              the video. Requests are checked to keep things respectful and historical. See our{" "}
-              <Link href="/content-policy">content policy</Link>.
+              the video. Each account can make {SITE.dailyVideos} videos per day. Requests are checked to keep things
+              respectful and historical. See our <Link href="/content-policy">content policy</Link>.
             </p>
           </form>
 
@@ -636,8 +655,15 @@ export function Studio({ initialPrompt = "" }: { initialPrompt?: string }) {
                 ) : null}
                 {saveFailed ? (
                   <div className="notice error" role="alert">
-                    <strong>This video couldn’t finish.</strong> {saveFailed} The incomplete attempt has been discarded.
-                    You can try creating it again.
+                    <strong>This video couldn’t be saved.</strong> {saveFailed} The film is still here, so you can try
+                    saving it again. Leaving this page discards it.
+                    {video?.status === "ready" && !working ? (
+                      <div className="row" style={{ marginTop: 10 }}>
+                        <button className="btn" type="button" onClick={() => void runSave(video)}>
+                          Try saving again
+                        </button>
+                      </div>
+                    ) : null}
                   </div>
                 ) : null}
               </div>

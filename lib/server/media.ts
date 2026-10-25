@@ -45,6 +45,48 @@ export async function createUpload(videoId: string, userId: string, input: z.inf
     return { assetId: id, chunkSize: CHUNK_SIZE };
   });
 }
+/**
+ * Saves a film's recorded narration as a finished WAV asset, replacing any
+ * earlier recording. It counts toward the same storage limits as renders and
+ * is deleted with the video.
+ */
+export async function storeNarration(videoId: string, userId: string, wav: Uint8Array) {
+  await ownedVideo(videoId, userId);
+  if (wav.length > 32 * CHUNK_SIZE) throw new ApiError(413, "The narration is too long to save.");
+  return transaction(async (db) => {
+    await db.query("SELECT pg_advisory_xact_lock(hashtext('polyhistor-storage-quota'))");
+    const {
+      rows: [video],
+    } = await db.query("SELECT narration_asset_id FROM ph_videos WHERE id=$1 FOR UPDATE", [videoId]);
+    if (video?.narration_asset_id) await db.query("DELETE FROM ph_assets WHERE id=$1", [video.narration_asset_id]);
+    const {
+      rows: [usage],
+    } = await db.query(
+      `SELECT coalesce(sum(a.total_bytes),0)::bigint AS total,
+   coalesce(sum(a.total_bytes) FILTER (WHERE v.user_id=$1),0)::bigint AS personal
+   FROM ph_assets a JOIN ph_videos v ON v.id=a.video_id`,
+      [userId],
+    );
+    if (Number(usage.total) + wav.length > 700 * CHUNK_SIZE || Number(usage.personal) + wav.length > 96 * CHUNK_SIZE)
+      throw new ApiError(409, "Storage limit reached. Delete an older video before making another.");
+    const id = randomUUID();
+    const bytes = Buffer.from(wav.buffer, wav.byteOffset, wav.byteLength);
+    const chunks = Math.ceil(bytes.length / CHUNK_SIZE);
+    await db.query(
+      "INSERT INTO ph_assets(id,video_id,mime,total_bytes,chunk_count,complete,sha256) VALUES($1,$2,'audio/wav',$3,$4,true,$5)",
+      [id, videoId, bytes.length, chunks, createHash("sha256").update(bytes).digest("hex")],
+    );
+    for (let index = 0; index < chunks; index++)
+      await db.query("INSERT INTO ph_asset_chunks(asset_id,chunk_index,data) VALUES($1,$2,$3)", [
+        id,
+        index,
+        bytes.subarray(index * CHUNK_SIZE, (index + 1) * CHUNK_SIZE),
+      ]);
+    await db.query("UPDATE ph_videos SET narration_asset_id=$2,updated_at=now() WHERE id=$1", [videoId, id]);
+    return id;
+  });
+}
+
 export async function ownedAsset(videoId: string, assetId: string, userId: string) {
   if (!uuid.safeParse(assetId).success) throw new ApiError(404, "Asset not found.");
   await ownedVideo(videoId, userId);

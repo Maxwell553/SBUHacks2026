@@ -18,7 +18,13 @@ import { renderPoster, type ExportProgress } from "@/lib/render/export";
 /** Offline timestamps let hardware encoding run faster than playback, with full color and sound. */
 export async function exportMovie(
   script: VideoScript,
-  options: { aspect: Aspect; signal?: AbortSignal; onProgress?: (p: ExportProgress) => void },
+  options: {
+    aspect: Aspect;
+    signal?: AbortSignal;
+    onProgress?: (p: ExportProgress) => void;
+    /** The film's narration stem (mono, 48 kHz), mixed into the soundtrack. */
+    voice?: Float32Array;
+  },
 ) {
   const [width, height] = options.aspect === "portrait" ? [720, 1280] : [1280, 720];
   const fps = 30;
@@ -48,7 +54,8 @@ export async function exportMovie(
   const video = new CanvasSource(engine.canvas, {
     codec: mp4 ? "avc" : "vp9",
     quality: new Quality({ bitrate: 3_500_000 }),
-    latencyMode: "realtime",
+    // An offline encode: favour quality over per-frame latency.
+    latencyMode: "quality",
     keyFrameInterval: 2,
   });
   const audio = new AudioBufferSource({ codec: mp4 ? "aac" : "opus", quality: new Quality({ bitrate: 96000 }) });
@@ -57,7 +64,7 @@ export async function exportMovie(
   const frames = Math.round(script.totalDuration * fps);
   try {
     await output.start();
-    await audio.add(renderSoundtrack(script));
+    await audio.add(renderSoundtrack(script, options.voice));
     audio.close();
     for (let frame = 0; frame < frames; frame++) {
       options.signal?.throwIfAborted();

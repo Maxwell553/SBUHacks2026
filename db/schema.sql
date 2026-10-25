@@ -39,10 +39,12 @@ CREATE TABLE IF NOT EXISTS ph_videos (
 ALTER TABLE ph_videos ADD COLUMN IF NOT EXISTS aspect text NOT NULL DEFAULT 'landscape';
 ALTER TABLE ph_videos ADD COLUMN IF NOT EXISTS gif_asset_id uuid;
 ALTER TABLE ph_videos ADD COLUMN IF NOT EXISTS poster_asset_id uuid;
+-- Recorded narration (WAV), stored as an asset like the renders.
+ALTER TABLE ph_videos ADD COLUMN IF NOT EXISTS narration_asset_id uuid;
 ALTER TABLE ph_videos ADD COLUMN IF NOT EXISTS gif_bytes integer;
 CREATE INDEX IF NOT EXISTS ph_videos_user_date ON ph_videos(user_id, created_at DESC);
 
--- Rendered media (GIF and JPEG poster), uploaded in 1 MiB chunks.
+-- Rendered media (movie, GIF and JPEG poster), uploaded in 1 MiB chunks, and recorded narration.
 CREATE TABLE IF NOT EXISTS ph_assets (
   id          uuid PRIMARY KEY,
   video_id    uuid NOT NULL REFERENCES ph_videos(id) ON DELETE CASCADE,

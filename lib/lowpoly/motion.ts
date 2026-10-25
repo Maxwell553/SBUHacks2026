@@ -1,5 +1,13 @@
 import type { ModelChannel } from "@/lib/schema/model";
 
+/**
+ * Scene progress for a model's own one-way action: held at its start before the
+ * shot that shows it, at its end after, or played across the shot.
+ */
+export function stageProgress(stage: "before" | "during" | "after" | undefined, progress: number): number {
+  return stage === "before" ? 0 : stage === "after" ? 1 : progress;
+}
+
 /** Stateless sampling supports seeking, export, and previews in any frame order. */
 export function channelValue(c: ModelChannel, time: number, progress: number, flip: boolean): number {
   const keys = c.keyframes;

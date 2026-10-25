@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { resolveScore } from "../../lib/audio/score";
-import { renderSoundtrack } from "../../lib/audio/soundtrack";
+import { mixSoundtrack, renderSoundtrack, TARGET_LUFS, voiceProbe } from "../../lib/audio/soundtrack";
+import { scoreOf } from "../../lib/audio/underscore";
+import { applyFilter, biquad, integratedLoudness } from "../../lib/audio/dsp";
 import { SHOWCASE_SCRIPT } from "../../lib/content/showcase";
 
 class TestBuffer {
@@ -18,14 +20,25 @@ Object.defineProperty(globalThis, "AudioBuffer", { value: TestBuffer, configurab
 
 const energyOf = (data: Float32Array) => data.reduce((sum, x) => sum + x * x, 0);
 
-/** Every film goes through the same mix, so the level has to hold on more than one story. */
+/** Share of a signal's energy above `hz`. */
+function shareAbove(data: Float32Array, hz: number) {
+  const total = energyOf(data);
+  const high = data.slice();
+  applyFilter(high, biquad("highpass", hz, 48000));
+  return total > 0 ? energyOf(high) / total : 0;
+}
+
+/**
+ * Every film goes through the same mix, so the level has to hold on more than one story.
+ * The fade-in and the final 2 seconds (the fade-out) are left out.
+ */
 function assertEven(buffer: { length: number; getChannelData(channel: number): Float32Array }, message: string) {
   const left = buffer.getChannelData(0);
   const right = buffer.getChannelData(1);
   const win = Math.floor(0.4 * 48000);
   let quiet = Infinity;
   let loud = 0;
-  for (let i = 0; i + win <= buffer.length; i += win) {
+  for (let i = win; i + win <= buffer.length - 2 * 48000; i += win) {
     let windowEnergy = 0;
     for (let k = 0; k < win; k++) windowEnergy += left[i + k] * left[i + k] + right[i + k] * right[i + k];
     const level = Math.sqrt(windowEnergy / (win * 2));
@@ -48,7 +61,18 @@ for (const sample of a.getChannelData(0)) {
 assert(peak < 1 && energy > 0, "Sound is audible and never clipped");
 assert.deepEqual(a.getChannelData(0), b.getChannelData(0), "Deterministic soundtrack");
 
-assert(peak < 0.2, "Peaks stay under the ceiling");
+assert(peak < 0.891, "Peaks stay under -1 dBFS");
+const loudness = integratedLoudness(a.getChannelData(0), a.getChannelData(1));
+assert(
+  Math.abs(loudness - TARGET_LUFS) < 1,
+  `The film plays at -16 LUFS like other web video (${loudness.toFixed(1)})`,
+);
+const tail = a.getChannelData(0).slice(-480);
+assert(
+  tail.every((x) => Math.abs(x) < 0.01),
+  "The film fades out instead of cutting off",
+);
+assert(shareAbove(a.getChannelData(0), 150) > 0.4, "Most of the sound is where phone and laptop speakers play");
 assertEven(a, "The Kitty Hawk flight stays even");
 
 const room = structuredClone(film);
@@ -174,4 +198,33 @@ assert(
   "The flight and a quiet room stay at the same level",
 );
 
-console.log("PASS soundtrack follows the shot: score, habitat, machines, launch, shelter and vacuum");
+// The aircraft and its engine are heard on ordinary speakers, not only as sub-bass.
+for (const cue of ["propeller", "engine"] as const)
+  assert(shareAbove(voiceProbe(cue, 4), 150) > 0.5, `The ${cue} is mostly above 150 Hz`);
+
+// Night and storm scenes darken the music without sinking it below what speakers play.
+const night = structuredClone(SHOWCASE_SCRIPT);
+night.scenes.forEach((scene) => (scene.timeOfDay = "night"));
+assert(shareAbove(renderSoundtrack(night).getChannelData(0), 150) > 0.3, "A night film is not all bass");
+
+// Each film's seed picks its own key, tempo, chords and arpeggio.
+const choices = new Set([1, 2, 3, 4, 5, 6, 7, 8].map((seed) => JSON.stringify(scoreOf({ ...SHOWCASE_SCRIPT, seed }))));
+assert(choices.size >= 4, "Films do not all share one tune");
+
+// Narration: the music and effects dip under the voice and come back after it.
+const voice = new Float32Array(Math.ceil(film.totalDuration * 48000));
+const speaking = [4 * 48000, 9 * 48000];
+for (let i = speaking[0]; i < speaking[1]; i++) voice[i] = 0.3 * Math.sin((2 * Math.PI * 2500 * i) / 48000);
+const bedUnder = (mix: { left: Float32Array }) => {
+  const low = mix.left.slice();
+  applyFilter(low, biquad("lowpass", 1000, 48000));
+  const level = (from: number, to: number) => energyOf(low.subarray(from, to)) / (to - from);
+  return level(speaking[0] + 4800, speaking[1] - 4800) / level(12 * 48000, 17 * 48000);
+};
+const plain = bedUnder(mixSoundtrack(film));
+const narrated = bedUnder(mixSoundtrack(film, voice));
+assert(narrated < plain * 0.35, `The bed dips under the narrator (${(narrated / plain).toFixed(2)})`);
+
+console.log(
+  "PASS soundtrack follows the shot: score, habitat, machines, launch, shelter and vacuum; -16 LUFS, audible effects, varied music, fades and narration",
+);

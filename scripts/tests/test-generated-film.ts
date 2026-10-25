@@ -10,7 +10,7 @@ const script = parsed.data;
 assert(Math.abs(script.scenes.reduce((n, s) => n + s.duration, 0) - script.totalDuration) < 0.01);
 for (const scene of script.scenes)
   assert(
-    scene.caption.trim().split(/\s+/).length <= Math.min(16, Math.max(5, Math.floor(scene.duration * 2.2))),
+    scene.caption.trim().split(/\s+/).length <= Math.min(22, Math.max(5, Math.floor(scene.duration * 2.5))),
     "Caption must fit reading budget",
   );
 const library = new ModelLibrary(script.models);

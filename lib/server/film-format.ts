@@ -14,15 +14,20 @@ this film is narrated like a documentary.
   caption that sets the scene with facts: where, when, who, and what is at stake.
 - Narration. Third person, past or historical present, in the measured voice of a documentary narrator. Each caption
   teaches something specific and verifiable: names, dates, numbers, causes and consequences. Usually one or two
-  sentences of 10 to 22 words. No rhetorical questions, no addressing the viewer, no hype.
+  sentences of 10 to 22 words. No rhetorical questions, no addressing the viewer, no hype. A narrator reads each
+  caption aloud over its shot, so write it to be heard as well as read: plain sentences, numbers and dates a speaker
+  can say, no abbreviations, symbols or parentheses.
 - Structure. Context, then the event unfolding as cause and effect, then its consequences, then why it mattered. Each
   shot advances the story by one development and shows it. Scale can grow from the people involved to the street, the
   city and the wider world (a map shot when geography matters). Return to places already shown so change is visible.
+  A model's one-way action (its plan's action timing is progressive or mixed) plays in the shot that shows it happening;
+  set actionStage after for that model in later shots and before in earlier ones, so it does not happen again.
 - A clock. Keep a running clock or count on screen (scene.counter) as a documentary readout: the hour, the day, the
   year, a distance, a tally. Carry it through consecutive shots, each continuing from where the last stopped. Time can
   slow down for the decisive minutes and leap ahead across years.
-- Pacing. Hold each shot long enough to read its caption at a calm pace (about 3 words per second, plus a beat to look
-  at the picture), usually 4 to 7 seconds. The opening, the turning point and the final shot hold longest.
+- Pacing. Hold each shot long enough for its caption to be read aloud at a calm pace (about 2.5 words per second, plus
+  a beat to look at the picture), usually 4 to 8 seconds. The opening, the turning point and the final shot hold
+  longest.
 - Cinematography. Vary the coverage the way a documentary does: establishing wides, medium shots of the action, close
   details of a mechanism or a document. Give every shot a clear subject that fills a good part of the frame, with depth
   around it. Keep the world believable: subjects stand apart, nothing passes through anything else, and crowds and

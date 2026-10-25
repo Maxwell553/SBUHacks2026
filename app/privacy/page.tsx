@@ -104,7 +104,7 @@ export default function PrivacyPage() {
             <td>Saved videos</td>
             <td>
               The animated video (or legacy GIF) and still image created in your browser and uploaded to your library,
-              with their size and a checksum.
+              and the recorded narration of its captions, with their size and a checksum.
             </td>
           </tr>
           <tr>
@@ -126,7 +126,7 @@ export default function PrivacyPage() {
       <p>
         We don’t ask for sensitive information, and we ask that you don’t include personal details about yourself or
         others in your questions. Videos are animated on your own device; we do not access your camera, microphone or
-        files. If you turn on “Read aloud”, your browser’s built-in speech feature reads captions on your device.
+        files. A video’s narration is a synthetic voice reading its captions, never a recording of you.
       </p>
 
       <h2 id="use">3. How we use it</h2>
@@ -158,11 +158,11 @@ export default function PrivacyPage() {
 
       <h2 id="ai">4. AI research and your questions</h2>
       <p>
-        To make a video, we send your question — and, at later steps, the research text, the storyboard and draft frames
-        of the film rendered in your browser for a quality review — to Google’s Gemini models on Google Cloud (Vertex
-        AI), including Google Search grounding to find public sources. Google processes this content to return results
-        to us under its cloud terms. We do not send your name, email or password. Please don’t put personal information
-        in your questions.
+        To make a video, we send your question — and, at later steps, the research text, the storyboard, draft frames of
+        the film rendered in your browser for a quality review, and the finished captions to be read aloud as narration
+        — to Google’s Gemini models on Google Cloud (Vertex AI), including Google Search grounding to find public
+        sources. Google processes this content to return results to us under its cloud terms. We do not send your name,
+        email or password. Please don’t put personal information in your questions.
       </p>
       <p>
         We use the results to write captions and design the scenes, and we keep the list of sources with your video so
@@ -202,7 +202,7 @@ export default function PrivacyPage() {
         <tbody>
           <tr>
             <td>Google Cloud (Vertex AI, Gemini, Google Search grounding)</td>
-            <td>Safety screening, research, storyboard and model design.</td>
+            <td>Safety screening, research, storyboard and model design, and narration.</td>
           </tr>
           <tr>
             <td>TigerData (managed PostgreSQL)</td>

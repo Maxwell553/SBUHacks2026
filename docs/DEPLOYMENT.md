@@ -19,6 +19,9 @@ Copy `.env.example` to `.env.local` for development. Set the same values in your
 | `GEMINI_BUILDER_MODEL`      | no                    | Model that builds each 3D geometry definition. Defaults to `GEMINI_CREATIVE_MODEL`.                                                                                |
 | `GEMINI_ARTICULATED_MODEL`  | no                    | Builder for articulated models (people, animals). Defaults to `GEMINI_BUILDER_MODEL`.                                                                              |
 | `GEMINI_REVIEW_MODEL`       | no                    | Reviews the rendered draft of each film and decides shot fixes. Defaults to `GEMINI_CREATIVE_MODEL`.                                                               |
+| `GEMINI_TTS_MODEL`          | no                    | Reads each caption aloud for the film's narration. Default `gemini-3.8-flash-tts`.                                                                                 |
+| `GEMINI_TTS_VOICE`          | no                    | Prebuilt voice for the narration. Default `Charon`.                                                                                                                |
+| `GEMINI_REFERENCE_CACHE`    | no                    | `off` sends the director's reference films inline with every storyboard request instead of keeping them in a Gemini context cache.                                 |
 | `DATABASE_URL`              | yes                   | PostgreSQL URL for the **runtime** role (DML only). `sslmode` flags are stripped; TLS is configured in code.                                                       |
 | `DATABASE_CA_CERT`          | for TigerData         | Pinned CA certificate as one line with literal `\n` separators. Certificate verification stays on.                                                                 |
 | `MIGRATION_DATABASE_URL`    | migrations only       | Admin URL used by `npm run db:migrate`. **Never** set this in the production runtime.                                                                              |
@@ -37,7 +40,7 @@ Check the AI configuration with `npm run gemini:check`. It calls the configured 
    ```bash
    MIGRATION_DATABASE_URL=… DATABASE_CA_CERT=… npm run db:migrate
    ```
-   `db/schema.sql` is idempotent and never drops data.
+   `db/schema.sql` is idempotent and never drops data. Run it before deploying a release that adds columns, such as `ph_videos.narration_asset_id` for narration.
 4. Deploy, then verify sign-up, sign-in, one generation, the saved HD video in the library, download, and sign-out on the deployed URL.
 
 Production runs as separate short requests (plan, build, direct, finish, review), so it fits Vercel's Hobby plan. Every route sets `maxDuration = 300`, the Hobby maximum, but each step stops itself at 200 seconds (`STEP_DEADLINE_MS` in `lib/server/gemini.ts`). Measured steps take about 20–60 s (plan), 30–135 s (a build group, including a retry), 40–110 s (storyboard), 2 s (finish) and 50–70 s (a review round). The example films and stills in `references/` are read at runtime, so `next.config.ts` traces them into the `/api/videos` function; within each set, files that would push the request past a 14 MiB inline budget (measured after base64 encoding) are skipped. The films are third-party reels used as style references; replace them with material you have rights to before a public launch. Media is uploaded in 1 MiB chunks and streamed back from PostgreSQL with HTTP Range support, so nothing relies on the function filesystem.
@@ -52,7 +55,7 @@ Production runs as separate short requests (plan, build, direct, finish, review)
 
 | Item                                           | Limit or retention                          |
 | ---------------------------------------------- | ------------------------------------------- |
-| New videos                                     | No daily cap; one in progress per account   |
+| New videos                                     | 10 per day; one in progress per account     |
 | Rendered file                                  | 32 MiB each                                 |
 | Media per account                              | 96 MiB                                      |
 | Global media reservation                       | 700 MiB (headroom within a 1 GiB database)  |
@@ -66,7 +69,6 @@ Storing media chunks in PostgreSQL fits the current single-database deployment. 
 
 - [ ] Set `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_CONTACT_EMAIL` and `NEXT_PUBLIC_LEGAL_ENTITY` to verified values. The defaults are placeholders.
 - [ ] Review `/terms`, `/privacy` and `/content-policy` with whoever operates the service.
-- [ ] Add a daily cap on new videos per account again (removed for private testing). Each film makes a dozen or more paid Gemini calls, plus a review round.
 - [ ] Email verification and password reset are **not implemented**. Add an email provider and a recovery flow before promising account recovery.
 - [ ] Run `npm run check`, `npm run secrets:check`, and `npm run test:backend -- --live` against a localhost server connected to an isolated staging database. The automated suite refuses remote hosts; perform the deployed smoke test manually.
 - [ ] Confirm the database CA expiry date and set up alerting on `/api/health`.

@@ -1,6 +1,7 @@
 import { requireUser } from "@/lib/server/auth";
 import { query } from "@/lib/server/db";
-import { directFilm } from "@/lib/server/gemini";
+import { after } from "next/server";
+import { directFilm, warmFilmCache } from "@/lib/server/gemini";
 import { failure, json, limit, sameOrigin } from "@/lib/server/http";
 import { productionOf } from "@/lib/server/production";
 import { ownedVideo } from "@/lib/server/videos";
@@ -15,6 +16,8 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     const row = await ownedVideo((await context.params).id, user.id);
     const { requests } = productionOf(row);
     await limit(`direct:${row.id}`, 4, 3600);
+    // If the reference cache had expired, the next film finds it ready again.
+    after(() => warmFilmCache());
     const story = await directFilm(
       {
         prompt: row.prompt,

@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { ModelLibrary } from "../../lib/lowpoly/compiler";
 import { shotIssues, type ShotSnapshot, type UnitSnapshot } from "../../lib/lowpoly/shot-audit";
 import { normalizeModelDefinition, type ModelDefinition } from "../../lib/schema/model";
+import { modelingGuide } from "../../lib/server/modeling-skills";
+import { describeLoose, looseOf, looseShare } from "../../lib/server/structure-quality";
 
 const model = (id: string, parts: unknown[]): ModelDefinition =>
   normalizeModelDefinition({
@@ -35,6 +37,20 @@ assert.equal(loose.length, 1);
 assert.deepEqual(loose[0].parts, ["lamp"]);
 assert.ok(loose[0].gap > 0.5 && loose[0].gap < 0.8, `gap ${loose[0].gap}`);
 lib.dispose();
+
+// The build step and the review share one loose-part check.
+assert.deepEqual(looseOf(table), []);
+const lamp = looseOf(floating);
+assert.equal(lamp.length, 1);
+assert.ok(looseShare(lamp) > 0 && looseShare(lamp) < 1);
+assert.match(describeLoose(lamp), /parts lamp float 0\.\d\d m away/);
+
+// Builders get the construction strategy for each planned skill, and silhouette always.
+const guide = modelingGuide(["articulation"]);
+assert.match(guide, /^SKILL silhouette:/);
+assert.match(guide, /SKILL articulation:/);
+assert.doesNotMatch(guide, /SKILL architecture:/);
+assert.equal(modelingGuide(["silhouette", "silhouette"]).match(/SKILL /g)?.length, 1);
 
 // Shot audit.
 const unit = (over: Partial<UnitSnapshot>): UnitSnapshot => ({
