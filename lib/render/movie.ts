@@ -48,7 +48,8 @@ export async function exportMovie(
   const video = new CanvasSource(engine.canvas, {
     codec: mp4 ? "avc" : "vp9",
     quality: new Quality({ bitrate: 3_500_000 }),
-    latencyMode: "realtime",
+    // An offline encode: favour quality over per-frame latency.
+    latencyMode: "quality",
     keyFrameInterval: 2,
   });
   const audio = new AudioBufferSource({ codec: mp4 ? "aac" : "opus", quality: new Quality({ bitrate: 96000 }) });

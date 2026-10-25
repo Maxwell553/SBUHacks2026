@@ -21,8 +21,9 @@ this film is narrated like a documentary.
 - A clock. Keep a running clock or count on screen (scene.counter) as a documentary readout: the hour, the day, the
   year, a distance, a tally. Carry it through consecutive shots, each continuing from where the last stopped. Time can
   slow down for the decisive minutes and leap ahead across years.
-- Pacing. Hold each shot long enough to read its caption at a calm pace (about 3 words per second, plus a beat to look
-  at the picture), usually 4 to 7 seconds. The opening, the turning point and the final shot hold longest.
+- Pacing. Hold each shot long enough for its caption to be read aloud at a calm pace (about 2.5 words per second, plus
+  a beat to look at the picture), usually 4 to 8 seconds. The opening, the turning point and the final shot hold
+  longest.
 - Cinematography. Vary the coverage the way a documentary does: establishing wides, medium shots of the action, close
   details of a mechanism or a document. Give every shot a clear subject that fills a good part of the frame, with depth
   around it. Keep the world believable: subjects stand apart, nothing passes through anything else, and crowds and

@@ -124,7 +124,7 @@ export function Studio({ initialPrompt = "" }: { initialPrompt?: string }) {
 
   const runSave = async (v: Video) => {
     setSaveFailed(null);
-    mark("animate", "active");
+    setSteps((s) => ({ ...s, animate: "active", save: "idle" }));
     const ac = new AbortController();
     abortRef.current = ac;
     try {
@@ -144,10 +144,14 @@ export function Studio({ initialPrompt = "" }: { initialPrompt?: string }) {
       incompleteRef.current = null;
       setVideo(saved);
     } catch (e) {
-      await videos.discard(v.id).catch(() => {});
-      incompleteRef.current = null;
-      setVideo(null);
-      if ((e as Error).name === "AbortError") return;
+      if ((e as Error).name === "AbortError") {
+        await videos.discard(v.id).catch(() => {});
+        incompleteRef.current = null;
+        setVideo(null);
+        return;
+      }
+      // The film itself is finished, so keep it and let saving be tried again.
+      // Leaving the page still discards it through incompleteRef.
       setSteps((s) => ({
         ...s,
         animate: s.animate === "done" ? "done" : "error",
@@ -170,6 +174,9 @@ export function Studio({ initialPrompt = "" }: { initialPrompt?: string }) {
       });
       return;
     }
+    // A film kept after a failed save is replaced by the new one.
+    if (incompleteRef.current) void videos.discard(incompleteRef.current).catch(() => {});
+    incompleteRef.current = null;
     setBusy(true);
     setElapsed(0);
     setError(null);
@@ -636,8 +643,15 @@ export function Studio({ initialPrompt = "" }: { initialPrompt?: string }) {
                 ) : null}
                 {saveFailed ? (
                   <div className="notice error" role="alert">
-                    <strong>This video couldn’t finish.</strong> {saveFailed} The incomplete attempt has been discarded.
-                    You can try creating it again.
+                    <strong>This video couldn’t be saved.</strong> {saveFailed} The film is still here, so you can try
+                    saving it again. Leaving this page discards it.
+                    {video?.status === "ready" && !working ? (
+                      <div className="row" style={{ marginTop: 10 }}>
+                        <button className="btn" type="button" onClick={() => void runSave(video)}>
+                          Try saving again
+                        </button>
+                      </div>
+                    ) : null}
                   </div>
                 ) : null}
               </div>
