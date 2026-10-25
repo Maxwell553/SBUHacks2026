@@ -55,6 +55,7 @@ Three optional scene fields describe the place independently of `layout`: `settl
   - **Embankments** (the default for cities) add stone river walls with coping, a 6 m paved quay and bollards. Natural banks slope and meander gently.
   - **Water units.** Spans lie across the flow and stand still; vessels sail along it.
   - **Placement and camera.** Quay buildings line both banks behind the quay. The camera keeps eye height when it steps onto a quay or bank.
+- **Coast.** The sea normally lies behind the action. When the shot's subject is a vessel, it lies toward the camera instead, with the shoreline behind the subject (half the hull's length plus 6 m, at least 10 m). Seen across land, a hull reads as beached. Vessels are placed so the whole hull is afloat, not just its centre.
 - **Open-land settlements.** Buildings form a few loose clusters behind and beside the action. Their fronts turn roughly toward it, they never stand on the camera's side, and they're spaced by real footprint.
 
 The renderer-side contract and its inference rules are recorded in `tmp/cinematic/notes/cursor-world-contract.txt`.

@@ -474,12 +474,21 @@ function normalizePart(raw: unknown, i: number, matIds: Set<string>, defaultMat:
           frequency: n(c.frequency, 0, MODEL_LIMITS.maxFrequencyHz, 1),
         };
         if (Array.isArray(c.keyframes)) {
+          const raw = c.keyframes
+            .slice(0, 8)
+            .map((k) => o(k))
+            .filter((k) => Number.isFinite(Number(k.at)) && Number.isFinite(Number(k.value)))
+            .map((k) => [Number(k.at), Number(k.value)] as const);
+          // Providers sometimes key absolute units (milliseconds, degrees) instead
+          // of progress 0–1 and amplitude multipliers. Rescaling keeps the intended
+          // motion where clamping would flatten it; in-contract keys are unchanged.
+          const lastAt = Math.max(0, ...raw.map(([at]) => at));
+          const peak = Math.max(0, ...raw.map(([, value]) => Math.abs(value)));
+          if (peak > 1 && Math.abs(out.amplitude) <= 1)
+            out.amplitude = n(out.amplitude < 0 ? -peak : peak, -cap, cap, 0);
           const keys = new Map<number, number>();
-          for (const raw of c.keyframes.slice(0, 8)) {
-            const k = o(raw);
-            if (!Number.isFinite(Number(k.at)) || !Number.isFinite(Number(k.value))) continue;
-            keys.set(n(k.at, 0, 1, 0), n(k.value, -1, 1, 0));
-          }
+          for (const [at, value] of raw)
+            keys.set(n(lastAt > 1 ? at / lastAt : at, 0, 1, 0), n(peak > 1 ? value / peak : value, -1, 1, 0));
           if (keys.size >= 2) {
             out.keyframes = [...keys].sort((a, b) => a[0] - b[0]).map(([at, value]) => ({ at, value }));
             out.interpolation = pickEnum(["linear", "smooth", "hold"] as const, c.interpolation, "smooth");

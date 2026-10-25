@@ -593,7 +593,16 @@ export class PolyEngine {
     }
 
     const roomSpan = room ? Math.hypot(room.rect.maxX - room.rect.minX, room.rect.maxZ - room.rect.minZ) / 2 : 0;
+    // A vessel's coast shot looks out to sea, with the shoreline behind it.
+    // Seen across the land, any hull reads as beached.
+    const lead = sc.elements.find((e) => e.role === "subject") ?? sc.elements[0];
+    const leadDef = lead ? lib.definition(lead.model) : undefined;
+    const offshore =
+      lead && leadDef?.placement === "water" && !architectural(lead) && !channel && !room
+        ? Math.max(10, (Math.max(lib.bounds(lead.model).size.x, lib.bounds(lead.model).size.z) * scaleOf(lead)) / 2 + 6)
+        : null;
     const env: Environment = buildEnvironment(sc, seed, {
+      offshore,
       forceWater: needsWater,
       focus: room ? { x: room.x, z: room.z } : focus0,
       // A room levels the ground under it but gets no road.
@@ -642,15 +651,23 @@ export class PolyEngine {
     // Search across the water: along x for a channel down the view axis,
     // along z for the legacy shore and river bands.
     const across = channel ? ([1, 0] as const) : ([0, 1] as const);
-    const findWater = (x: number, z: number) => {
-      if (env.isWater(x, z)) return [x, z];
-      for (let k = 1; k < 60; k++)
-        for (const d of [-k * 1.5, k * 1.5]) {
-          const px = x + across[0] * d,
-            pz = z + across[1] * d;
-          if (env.isWater(px, pz) && env.isWater(px - across[0] * Math.sign(d) * 2, pz - across[1] * Math.sign(d) * 2))
-            return [px, pz];
-        }
+    // Float the whole hull (half its extent across the water), not just its
+    // centre; a hull on the shoreline reads as beached. Water too narrow for
+    // that falls back to the nearest open water.
+    const findWater = (x: number, z: number, half = 2) => {
+      const afloat = (px: number, pz: number, k: number) =>
+        env.isWater(px, pz) &&
+        env.isWater(px + across[0] * k, pz + across[1] * k) &&
+        env.isWater(px - across[0] * k, pz - across[1] * k);
+      for (const k of half > 2 ? [half, 2] : [2]) {
+        if (afloat(x, z, k)) return [x, z];
+        for (let i = 1; i < 60; i++)
+          for (const d of [-i * 1.5, i * 1.5]) {
+            const px = x + across[0] * d,
+              pz = z + across[1] * d;
+            if (afloat(px, pz, k)) return [px, pz];
+          }
+      }
       return [x, z];
     };
     const findLand = (x: number, z: number, r = 0) => {
@@ -746,8 +763,12 @@ export class PolyEngine {
         }
         if (room && !shell) [x, z] = insideRoom(x, z, radius);
         let y = 0;
-        if (placement === "water" && !spans) [x, z] = findWater(x, z);
-        else if (placement === "ground" && env.hasWater) [x, z] = findLand(x, z, radius);
+        if (placement === "water" && !spans) {
+          const cosH = Math.abs(Math.cos(unitHeading)),
+            sinH = Math.abs(Math.sin(unitHeading));
+          const extent = (across[0] ? cosH * b.size.x + sinH * b.size.z : sinH * b.size.x + cosH * b.size.z) * s;
+          [x, z] = findWater(x, z, extent / 2 + 1);
+        } else if (placement === "ground" && env.hasWater) [x, z] = findLand(x, z, radius);
         if (placement === "air")
           y = orbit
             ? range(rng, 0, layoutRadius * 0.4)

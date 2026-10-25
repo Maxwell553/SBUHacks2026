@@ -54,11 +54,24 @@ Measured on the Wright plan, the one built successfully by both:
 
 ## Recommendation
 
-1. **Fix the motion stage first.** It failed 9 of 12 runs here. The repair response schema is now tolerant of empty and out-of-range channels, an improvement over the failures seen in this session's first, aborted run. What remains is the motion-quality check after repair.
+1. **Fix the motion stage first.** It failed 9 of 12 runs here. _Fixed since:_ see [Motion repair fix](#motion-repair-fix) below.
 2. **Then use a hybrid builder.**
    - **Pro** for `instancePolicy: unique` subjects and natural or architectural backdrops, keeping the 45 s per-model fallback to Flash.
    - **Flash** for figures, props and repeated scenery. Articulated models already have their own setting, `GEMINI_ARTICULATED_MODEL`.
 3. **Re-run the benchmark after the motion fix.** Three prompts is a small sample, so compare success rate, total time and the side-by-side sheets again.
+
+## Motion repair fix
+
+The cause was the keyframe units. Asked for a one-way action, the repair model writes keyframe times in milliseconds and values in degrees with `amplitude: 0` (for example `at: 1000, value: -85`). The contract is progress 0–1, a −1…1 multiplier, and the size in `amplitude`. The strict repair schema discarded those channels, so the repaired model still had no one-way motion, and the film failed.
+
+What changed:
+
+- **Normalizer.** `normalizeModelDefinition` rescales keys written in absolute units instead of clamping them flat: times become progress, and the peak moves into `amplitude` unless an explicit amplitude was given. In-contract channels are unchanged.
+- **Repair call.** The repair asks for the strict contract but judges each part on its own, so one off-contract channel or unknown part ID no longer discards the whole answer. It gets a second attempt that is told which check failed. It also keeps a part's existing hinge when the answer omits one.
+- **No more hard failure.** If motion still falls short, the model is kept (and not cached) rather than failing the film. The log reports `Model motion below target`.
+- **Early stop.** One failed model now stops the other builds and the storyboard call.
+
+On six full 20–40 s films from the topic ideas (Magellan, the Sistine Chapel, Marie Curie, the Great Pyramid, the Wright brothers, Gutenberg), all six succeeded in 58–96 s, with no model kept below target.
 
 ## Reproduce
 

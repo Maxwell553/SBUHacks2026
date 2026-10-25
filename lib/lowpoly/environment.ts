@@ -32,6 +32,8 @@ export interface EnvOptions {
   waterway?: Waterway | null;
   /** How built-up the ground around the action is. */
   settlement?: Settlement;
+  /** Coast shot of a vessel: the sea lies toward the camera and the shoreline this far behind the focus. */
+  offshore?: number | null;
 }
 
 export interface Waterway {
@@ -271,7 +273,8 @@ export function buildEnvironment(spec: EnvSpec, seed: number, o: EnvOptions = {}
     r: range(rng, 1.5, setting === "lunar" ? 7 : 3),
     d: range(rng, 0.4, 1.4),
   }));
-  const shore = (x: number) => -5 + 3.5 * noise(x * 0.04 + 11, 3.7, 2);
+  const offshore = o.offshore ?? null;
+  const shore = (x: number) => (offshore != null ? F.z - offshore : -5) + 3.5 * noise(x * 0.04 + 11, 3.7, 2);
   const riverZ = (x: number) => 3 * Math.sin(x * 0.07 + (seed % 7));
   const WW = space ? null : (o.waterway ?? null);
   const waterBand = WW
@@ -325,9 +328,10 @@ export function buildEnvironment(spec: EnvSpec, seed: number, o: EnvOptions = {}
       if (d < 1.3) h += d < 1 ? -c.d * (1 - d * d) : (c.d * 0.35 * (1.3 - d)) / 0.3;
     }
     if (waterBand === "coast") {
-      const s = shore(x);
-      if (z < s) h = Math.min(h, -1.8 - (s - z) * 0.18);
-      else h = Math.max(h, 0.35 + Math.min(1, (z - s) * 0.2) * 0.4);
+      // Distance out to sea: behind the action, or toward the camera offshore.
+      const out = offshore != null ? z - shore(x) : shore(x) - z;
+      if (out > 0) h = Math.min(h, -1.8 - out * 0.18);
+      else h = Math.max(h, 0.35 + Math.min(1, -out * 0.2) * 0.4);
     } else if (waterBand === "river") {
       const d = Math.abs(z - riverZ(x));
       if (d < 3.6) h = -1.6;

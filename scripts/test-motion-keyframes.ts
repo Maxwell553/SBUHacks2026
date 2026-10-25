@@ -96,3 +96,59 @@ returning.parts[0].animation![0].keyframes = [
 ];
 assert(!hasProgressiveMotion(returning), "A cycle encoded as keys is still not a settled state change");
 console.log("PASS progressive action contracts reject static poses and repeating cycles");
+
+const absolute = normalizeModelDefinition({
+  ...model,
+  parts: [
+    {
+      ...model.parts[0],
+      animation: [
+        {
+          property: "rotation",
+          axis: "z",
+          wave: "sine",
+          amplitude: 0,
+          frequency: 0,
+          keyframes: [
+            { at: 0, value: 0 },
+            { at: 1000, value: -85 },
+            { at: 2000, value: -85 },
+          ],
+        },
+      ],
+    },
+  ],
+});
+const raised = absolute.parts[0].animation?.[0];
+assert.equal(raised?.amplitude, 85, "Keys in degrees move their peak into the amplitude");
+assert.deepEqual(
+  raised?.keyframes,
+  [
+    { at: 0, value: 0 },
+    { at: 0.5, value: -1 },
+    { at: 1, value: -1 },
+  ],
+  "Keys in milliseconds become scene progress",
+);
+assert(hasProgressiveMotion(absolute), "Rescaled absolute keys still satisfy a progressive action");
+const scaled = normalizeModelDefinition({
+  ...model,
+  parts: [
+    {
+      ...model.parts[0],
+      animation: [
+        {
+          ...channel,
+          property: "rotation",
+          amplitude: 30,
+          keyframes: [
+            { at: 0, value: 0 },
+            { at: 1, value: 45 },
+          ],
+        },
+      ],
+    },
+  ],
+});
+assert.equal(scaled.parts[0].animation?.[0].amplitude, 30, "An explicit amplitude is kept when keys overshoot");
+console.log("PASS keys written in absolute units keep their intended motion");

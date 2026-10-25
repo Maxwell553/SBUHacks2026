@@ -59,7 +59,7 @@ export function AccountPanel({ user }: { user: User }) {
           </button>
         </div>
         <p className="hint">
-          Want a copy of your videos? Open any video in your library and choose “Download GIF”. See our{" "}
+          Want a copy of your videos? Open any video in your library and choose “Download”. See our{" "}
           <Link href="/privacy#rights">privacy choices</Link> for other requests.
         </p>
       </div>
@@ -67,8 +67,8 @@ export function AccountPanel({ user }: { user: User }) {
       <div className="card terra stack" style={{ gap: 14 }}>
         <h2 style={{ fontSize: 24 }}>Delete your account</h2>
         <p className="muted" style={{ fontSize: 16.5 }}>
-          This permanently removes your account, your sign-in sessions, every video in your library, the saved GIFs and
-          the questions and sources stored with them. It can’t be undone.
+          This permanently removes your account, your sign-in sessions, every video in your library, the saved video
+          files and the questions and sources stored with them. It can’t be undone.
         </p>
         <div className="field">
           <label htmlFor="confirm">Type DELETE to confirm</label>
