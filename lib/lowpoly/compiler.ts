@@ -1028,6 +1028,69 @@ function anchorNodes(nodes: Node[]) {
 }
 
 /**
+ * A tall part hung entirely under the widest mass (a shoulder glued to the
+ * underside of a base) would become the ground contact and lift that mass
+ * into the air. Bring the part up so its base shares the foundation.
+ * Feet, wheels and short keels stay below the body.
+ */
+function liftBuriedMasses(nodes: Node[]) {
+  const world = new Map<Node, THREE.Matrix4>();
+  const solids: { node: Node; box: THREE.Box3 }[] = [];
+  for (const n of nodes) {
+    const w = n.parent ? world.get(n.parent)!.clone().multiply(n.local) : n.local.clone();
+    world.set(n, w);
+    if (n.part.shape === "group" || EFFECT_SHAPES.has(n.part.shape)) continue;
+    const g = primitiveGeometry(n.part);
+    if (!g?.boundingBox) {
+      g?.dispose();
+      continue;
+    }
+    solids.push({ node: n, box: g.boundingBox.clone().applyMatrix4(w) });
+    g.dispose();
+  }
+  if (solids.length < 2) return;
+  let widest = solids[0];
+  let area = 0;
+  for (const s of solids) {
+    const size = s.box.getSize(new THREE.Vector3());
+    const next = size.x * size.z;
+    if (next > area) {
+      area = next;
+      widest = s;
+    }
+  }
+  const foundation = widest.box.min.y;
+  let top = foundation;
+  for (const s of solids) if (s.box.max.y > foundation + 0.05) top = Math.max(top, s.box.max.y);
+  const above = Math.max(0.5, top - foundation);
+  const buried = new Set<Node>();
+  for (const s of solids) {
+    const height = s.box.max.y - s.box.min.y;
+    // Table legs and wheels meet the underside and stay there. Only a mass
+    // almost as tall as everything above the foundation is a misplaced base.
+    if (s.box.max.y > foundation + 0.15 || height < above * 0.75) continue;
+    // A metre of wheel, foot or keel stays put. This is a whole mass hung underneath.
+    if (foundation - s.box.min.y < 2) continue;
+    buried.add(s.node);
+  }
+  for (const s of solids) {
+    if (!buried.has(s.node)) continue;
+    let covered = false;
+    for (let parent = s.node.parent; parent; parent = parent.parent) if (buried.has(parent)) covered = true;
+    if (covered) continue;
+    const lift = foundation - s.box.min.y;
+    const parent = s.node.parent ? world.get(s.node.parent)! : new THREE.Matrix4();
+    const q = new THREE.Quaternion();
+    const p = new THREE.Vector3();
+    const sc = new THREE.Vector3();
+    parent.decompose(p, q, sc);
+    const dL = new THREE.Vector3(0, lift, 0).applyQuaternion(q.invert());
+    dL.y /= sc.y || 1;
+    s.node.local.premultiply(new THREE.Matrix4().makeTranslation(0, dL.y, 0));
+  }
+}
+
+/**
  * Writes those same seats back into part positions when a part has a single
  * unmirrored, unrepeated copy. Returns null when the model already holds
  * together or the loose parts cannot be moved without disturbing a repeat.
@@ -1063,6 +1126,7 @@ function compileTemplate(
 ): CompiledTemplate {
   const nodes = expand(def);
   anchorNodes(nodes);
+  liftBuriedMasses(nodes);
   const mats = new Map(def.materials.map((m) => [m.id, m]));
   const geoCache = new Map<string, THREE.BufferGeometry | null>();
   const rng: Rng = makeRng(variant * 7919 + def.id.length * 131 + 17);

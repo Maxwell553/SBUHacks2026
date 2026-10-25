@@ -108,7 +108,13 @@ export async function structured<T>(
     });
   } catch (error) {
     providerError(error);
-    throw new ApiError(502, "The research service is temporarily unavailable. Please retry shortly.");
+    const aborted = signal?.aborted === true || (error instanceof Error && /abort/i.test(error.name + error.message));
+    throw new ApiError(
+      502,
+      aborted
+        ? "That step ran out of time. Please try again."
+        : "The generation service is temporarily unavailable. Please retry shortly.",
+    );
   }
   if (response.candidates?.[0]?.finishReason !== "STOP" || !response.text)
     throw new ApiError(422, "The request could not produce a complete, safe result. Try a clearer historical topic.");
@@ -328,15 +334,28 @@ import { MODELING_SKILLS } from "@/lib/server/modeling-skills";
 
 /** Exported for scripts/bench/bench-builder.ts, which compares builders on one fixed plan. */
 export async function planModels(prompt: string, research: string, signal?: AbortSignal, budgetMs = PLAN_BUDGET_MS) {
-  const plan = await structured(
-    modelPlanSchema,
-    MODEL_PLANNING_INSTRUCTIONS,
-    JSON.stringify({ event: prompt, research, availableSkills: Object.keys(MODELING_SKILLS) }),
-    6144,
-    budgeted(signal, budgetMs),
-    plannerModel(),
-    false,
-  );
+  const started = Date.now();
+  const ask = (ms: number) =>
+    structured(
+      modelPlanSchema,
+      MODEL_PLANNING_INSTRUCTIONS,
+      JSON.stringify({ event: prompt, research, availableSkills: Object.keys(MODELING_SKILLS) }),
+      4096,
+      budgeted(signal, ms),
+      plannerModel(),
+      false,
+    );
+  let plan;
+  try {
+    plan = await ask(budgetMs);
+  } catch (error) {
+    const used = Date.now() - started;
+    const left = budgetMs - used;
+    // A fast provider failure gets one more try. A call that used its whole window does not.
+    if (signal?.aborted || used > 6_000 || left < 8_000 || !(error instanceof ApiError) || error.status !== 502)
+      throw error;
+    plan = await ask(left);
+  }
   plan.models = plan.models.slice(0, MAX_PLANNED_MODELS);
   if (new Set(plan.models.map((m) => m.id)).size !== plan.models.length)
     throw new ApiError(502, "The model plan had duplicate identifiers. Please retry.");

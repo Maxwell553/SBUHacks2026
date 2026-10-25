@@ -57,3 +57,33 @@ try {
   ruined.dispose();
   second.dispose();
 }
+
+const hung = normalizeModelDefinition({
+  id: "hung_base",
+  name: "Hung base",
+  category: "structure",
+  placement: "ground",
+  materials: [{ id: "stone", color: "#aabbcc", finish: "matte" }],
+  parts: [
+    { id: "base", shape: "box", material: "stone", size: [10, 4, 10], position: [0, 0, 0], anchor: "bottom" },
+    {
+      id: "hanger",
+      shape: "box",
+      material: "stone",
+      size: [2, 8, 2],
+      position: [0, 0, 0],
+      parent: "base",
+      anchor: "bottom",
+      attachTo: "bottom",
+    },
+  ],
+});
+const seated = new ModelLibrary([hung]);
+try {
+  const box = seated.bounds(hung.id);
+  assert(box.minY > -0.2, `A part hung under the base must not pull the model down (${box.minY})`);
+  assert(box.height > 6, "The raised part still stands above the foundation");
+  console.log("PASS a tall part hung under a base shares the foundation instead of floating the model");
+} finally {
+  seated.dispose();
+}

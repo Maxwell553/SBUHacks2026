@@ -13,7 +13,7 @@ const ORDER: FilmStage[] = ["moderate", "research", "plan", "parallel", "finish"
 const CEILING: Record<FilmStage, number> = {
   moderate: 8_000,
   research: 14_000,
-  plan: 12_000,
+  plan: 22_000,
   parallel: 62_000,
   finish: 10_000,
   review: 3_000,
@@ -24,7 +24,7 @@ const CEILING: Record<FilmStage, number> = {
 const PROTECT: Record<FilmStage, number> = {
   moderate: 6_000,
   research: 10_000,
-  plan: 8_000,
+  plan: 14_000,
   parallel: 48_000,
   finish: 8_000,
   review: 2_000,
