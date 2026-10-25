@@ -8,11 +8,11 @@ const parsed = validateVideoScript(JSON.parse(readFileSync(path, "utf8")));
 assert(parsed.success, "Generated script must satisfy renderer schema");
 const script = parsed.data;
 assert(Math.abs(script.scenes.reduce((n, s) => n + s.duration, 0) - script.totalDuration) < 0.01);
-for (const scene of script.scenes)
-  assert(
-    scene.caption.trim().split(/\s+/).length <= Math.min(16, Math.max(5, Math.floor(scene.duration * 2.2))),
-    "Caption must fit reading budget",
-  );
+for (const scene of script.scenes) {
+  const caption = scene.caption.trim();
+  assert(caption.length > 0 && caption.length <= 160, "Caption is a complete line, not a chopped fragment");
+  assert(!/\b(and|or|the|a|an|across|of|to|in)$/i.test(caption), `Caption ends mid-sentence: ${caption}`);
+}
 const library = new ModelLibrary(script.models);
 let animated = 0;
 for (const model of script.models) {

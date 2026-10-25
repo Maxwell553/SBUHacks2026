@@ -1,5 +1,6 @@
 import { requireUser } from "@/lib/server/auth";
 import { query } from "@/lib/server/db";
+import { stageAllowance } from "@/lib/server/film-budget";
 import { directFilm } from "@/lib/server/gemini";
 import { failure, json, limit, sameOrigin } from "@/lib/server/http";
 import { productionOf } from "@/lib/server/production";
@@ -24,6 +25,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
         aspect: row.aspect === "landscape" ? "landscape" : "portrait",
       },
       request.signal,
+      Date.now() + stageAllowance("parallel", Date.now() - new Date(row.created_at as string).getTime()),
     );
     await query(
       "UPDATE ph_videos SET plan=jsonb_set(plan,'{production,story}',$2::jsonb),updated_at=now() WHERE id=$1 AND status='scripting'",

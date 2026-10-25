@@ -31,7 +31,7 @@ export async function createUpload(videoId: string, userId: string, input: z.inf
     );
     if (
       Number(usage.total) + input.totalBytes > 700 * CHUNK_SIZE ||
-      Number(usage.personal) + input.totalBytes > 96 * CHUNK_SIZE
+      Number(usage.personal) + input.totalBytes > 256 * CHUNK_SIZE
     )
       throw new ApiError(409, "Storage limit reached. Delete an older video before uploading another.");
     const id = randomUUID();

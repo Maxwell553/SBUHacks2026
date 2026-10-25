@@ -90,7 +90,7 @@ flowchart LR
 6. **Render.** The browser draws every frame with a deterministic Three.js engine and encodes a 720p, 30 fps MP4 with WebCodecs.
 7. **Keep.** The film and a poster image upload in 1 MiB chunks and appear in your library, with the sources listed beside them.
 
-A film usually takes three to five minutes from question to library. The full lifecycle is in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+A film usually takes about two minutes from question to library. The full lifecycle is in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 <img src="docs/images/readme-player.jpg" alt="The interactive player showing the sample film about the Great Fire of London" width="100%" />
 

@@ -106,6 +106,22 @@ export const COUNTER_FORMATS = ["number", "duration", "clock"] as const;
 export const MAX_COUNTER_VALUE = 1e12;
 export const MAP_ZOOMS = ["world", "region", "local"] as const;
 export const ASPECTS = ["landscape", "portrait"] as const;
+/**
+ * Underscore the director chooses for the whole film. Loudness stays even;
+ * the character is what changes from one history to the next.
+ */
+export const SCORE_MOODS = [
+  "solemn",
+  "mournful",
+  "tense",
+  "martial",
+  "pastoral",
+  "hopeful",
+  "wonder",
+  "urgent",
+] as const;
+/** How one shot sits inside that underscore. */
+export const SCORE_TONES = ["spare", "open", "dark", "bright"] as const;
 
 export type Setting = (typeof SETTINGS)[number];
 export type Settlement = (typeof SETTLEMENTS)[number];
@@ -118,6 +134,16 @@ export type Position = (typeof POSITIONS)[number];
 export type Motion = (typeof MOTIONS)[number];
 export type Facing = (typeof FACINGS)[number];
 export type Aspect = (typeof ASPECTS)[number];
+export type ScoreMood = (typeof SCORE_MOODS)[number];
+export type ScoreTone = (typeof SCORE_TONES)[number];
+
+export function isScoreMood(value: unknown): value is ScoreMood {
+  return typeof value === "string" && (SCORE_MOODS as readonly string[]).includes(value);
+}
+
+export function isScoreTone(value: unknown): value is ScoreTone {
+  return typeof value === "string" && (SCORE_TONES as readonly string[]).includes(value);
+}
 
 // ---------------------------------------------------------------- schema
 const hex = z.string().regex(/^#[0-9a-fA-F]{6}$/, "expected #rrggbb");
@@ -175,6 +201,8 @@ export const sceneSchema = z.object({
   structureState: z.enum(["intact", "ruined"]).optional(),
   timeOfDay: z.enum(TIMES_OF_DAY),
   weather: z.enum(WEATHER),
+  /** How this shot sits in the film's underscore. Omit and the picture decides. */
+  tone: z.enum(SCORE_TONES).optional(),
   camera: z.enum(CAMERA_MOVES),
   elements: z.array(sceneElementSchema).max(MAX_ELEMENTS_PER_SCENE),
   map: mapSpecSchema.optional(),
@@ -199,6 +227,8 @@ export const videoScriptSchema = z
     totalDuration: z.number().min(MIN_TOTAL_SECONDS).max(MAX_TOTAL_SECONDS),
     seed: z.number().int().min(0).max(2_147_483_647),
     palette: z.object({ primary: hex, secondary: hex, accent: hex }),
+    /** Original underscore for this film. Inferred from the story when the director omits it. */
+    music: z.object({ mood: z.enum(SCORE_MOODS) }).optional(),
     factions: z.array(factionSchema).max(4).optional(),
     /** Per-request low-poly model definitions referenced by scene elements. */
     models: z.array(modelDefinitionSchema).max(MODEL_LIMITS.maxModelsPerScript),
@@ -249,6 +279,66 @@ export type SceneCounter = z.infer<typeof counterSchema>;
 export type Scene = z.infer<typeof sceneSchema>;
 export type Faction = z.infer<typeof factionSchema>;
 export type VideoScript = z.infer<typeof videoScriptSchema>;
+
+const MOOD_CUES: { mood: ScoreMood; test: RegExp }[] = [
+  {
+    mood: "martial",
+    test: /\b(battle|battles|war|wars|army|armies|siege|cavalry|soldier|soldiers|invasion|regiment|cannon|artillery)\b/,
+  },
+  {
+    mood: "wonder",
+    test: /\b(flight|flights|flew|flying|discover\w*|moon|telescope|invent\w*|voyage|aviation|spacecraft)\b/,
+  },
+  {
+    mood: "mournful",
+    test: /\b(fire|fires|burn\w*|ash|plague|funeral|grief|death|died|dead|ruin\w*|destroy\w*|massacre|mourning|exile|famine)\b/,
+  },
+  { mood: "urgent", test: /\b(flee|fled|escape|countdown|collapse|rush\w*)\b|\b(hours|minutes)\s+(left|remain)/ },
+  { mood: "tense", test: /\b(storm|crisis|assassin\w*|uprising|revolution|plot|danger|threat)\b/ },
+  {
+    mood: "hopeful",
+    test: /\b(peace|treaty|freedom|rebuilt|rebuild\w*|founded|abolished|recover\w*|saved|liberation)\b/,
+  },
+  { mood: "pastoral", test: /\b(harvest|farm|farming|village|market|garden|pasture)\b/ },
+];
+
+/** Mood for a film whose director left `music` unset. An explicit mood always wins over this. */
+export function inferScoreMood(source: {
+  title?: string;
+  subtitle?: string;
+  scenes?: Pick<Scene, "caption" | "setting" | "weather">[];
+}): ScoreMood {
+  const scenes = source.scenes ?? [];
+  const text = [source.title, source.subtitle, ...scenes.map((scene) => scene.caption)]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+  for (const cue of MOOD_CUES) if (cue.test.test(text)) return cue.mood;
+  const share = (match: (scene: Pick<Scene, "setting" | "weather">) => boolean) =>
+    scenes.filter(match).length / Math.max(1, scenes.length);
+  if (share((scene) => scene.setting === "battlefield") >= 0.34) return "martial";
+  if (share((scene) => scene.setting === "orbit" || scene.setting === "lunar") >= 0.34) return "wonder";
+  if (share((scene) => scene.weather === "storm" || scene.weather === "smoke") >= 0.34) return "tense";
+  return "solemn";
+}
+
+/** Tone for a shot. The director's `tone` wins; otherwise the picture sets it. */
+export function toneOf(
+  scene: Pick<Scene, "tone" | "layout" | "shotSize" | "structureState" | "setting" | "timeOfDay" | "weather">,
+): ScoreTone {
+  if (scene.tone) return scene.tone;
+  if (
+    scene.structureState === "ruined" ||
+    scene.setting === "battlefield" ||
+    scene.timeOfDay === "night" ||
+    scene.weather === "storm" ||
+    scene.weather === "smoke"
+  )
+    return "dark";
+  if (scene.layout === "interior" || scene.shotSize === "close") return "spare";
+  if (scene.timeOfDay === "dawn") return "bright";
+  return "open";
+}
 
 // ---------------------------------------------------------------- text
 const CHARSET = new Set<string>(Array.from(charsetJson as string));
@@ -430,6 +520,7 @@ export function normalizeVideoScript(raw: unknown, opts: { targetDuration?: numb
     const map = s.map || kind === "map" ? normalizeMap(s.map, location, coordinates) : undefined;
     if (kind === "map" && !map) kind = "diorama";
     const counter = s.counter ? normalizeCounter(s.counter) : undefined;
+    const duration = num(s.duration, MIN_SCENE_SECONDS, MAX_SCENE_SECONDS, 5);
     const pal = obj(s.palette);
     const palette = {
       ...(hexOr(pal.sky) ? { sky: hexOr(pal.sky) } : {}),
@@ -438,7 +529,7 @@ export function normalizeVideoScript(raw: unknown, opts: { targetDuration?: numb
     };
     return {
       kind,
-      duration: num(s.duration, MIN_SCENE_SECONDS, MAX_SCENE_SECONDS, 5),
+      duration,
       kicker: text(s.kicker, 40, "—"),
       caption: text(s.caption, 160, "…"),
       setting: pick(SETTINGS, s.setting, kind === "map" ? "ocean" : "plains"),
@@ -458,7 +549,8 @@ export function normalizeVideoScript(raw: unknown, opts: { targetDuration?: numb
       ...(s.structureState === "ruined" || s.structureState === "intact" ? { structureState: s.structureState } : {}),
       timeOfDay: pick(TIMES_OF_DAY, s.timeOfDay, "day"),
       weather: pick(WEATHER, s.weather, "clear"),
-      camera: pick(CAMERA_MOVES, s.camera, kind === "map" ? "push_in" : "orbit"),
+      ...(isScoreTone(s.tone) ? { tone: s.tone } : {}),
+      camera: pick(CAMERA_MOVES, s.camera, "push_in"),
       elements,
       ...(map ? { map } : {}),
       ...(counter ? { counter } : {}),
@@ -496,12 +588,15 @@ export function normalizeVideoScript(raw: unknown, opts: { targetDuration?: numb
     Number.isInteger(seedRaw) && (seedRaw as number) >= 0
       ? (seedRaw as number) % 2_147_483_647
       : hashSeed(String(r.title ?? "") + location);
+  const title = text(r.title, 60, "Untitled moment");
+  const subtitle = typeof r.subtitle === "string" && r.subtitle.trim() ? text(r.subtitle, 90) : undefined;
+  const requestedMood = obj(r.music).mood;
 
   return videoScriptSchema.parse({
     version: VIDEO_SCHEMA_VERSION,
     ...(r.presentation === "immersive" ? { presentation: "immersive" } : {}),
-    title: text(r.title, 60, "Untitled moment"),
-    ...(typeof r.subtitle === "string" && r.subtitle.trim() ? { subtitle: text(r.subtitle, 90) } : {}),
+    title,
+    ...(subtitle ? { subtitle } : {}),
     dateLabel: text(r.dateLabel, 40, "Date unknown"),
     location,
     ...(coordinates ? { coordinates } : {}),
@@ -512,10 +607,24 @@ export function normalizeVideoScript(raw: unknown, opts: { targetDuration?: numb
       secondary: hexOr(pal.secondary, "#246d62"),
       accent: hexOr(pal.accent, "#c99a3c"),
     },
+    music: {
+      mood: isScoreMood(requestedMood) ? requestedMood : inferScoreMood({ title, subtitle, scenes }),
+    },
     ...(factions.length ? { factions } : {}),
     models: models.filter((m) => scenes.some((s) => s.elements.some((e) => e.model === m.id))),
     scenes,
   });
+}
+
+/**
+ * Drops diorama shots left with no models, then fits the remaining shots to the
+ * film's length. A film can lose a model that did not finish building and still play.
+ */
+export function withoutEmptyDioramas(script: VideoScript): VideoScript {
+  const scenes = script.scenes.filter((scene) => scene.kind === "map" || scene.elements.length > 0);
+  if (scenes.length === script.scenes.length) return script;
+  if (scenes.length < MIN_SCENES) throw new Error("Not enough shots remain after a model was left out.");
+  return normalizeVideoScript({ ...script, scenes }, { targetDuration: script.totalDuration, seed: script.seed });
 }
 
 /** Strict validation (no repair). Returns a discriminated result. */
@@ -617,6 +726,17 @@ export function geminiVideoScriptJsonSchema(
         },
         required: ["primary", "secondary", "accent"],
       },
+      music: {
+        type: "object",
+        description: "Original underscore for this film. Loudness stays even across shots.",
+        properties: {
+          mood: en(
+            SCORE_MOODS,
+            "solemn = weighty history; mournful = loss; tense = danger; martial = conflict; pastoral = ordinary life; hopeful = a way forward; wonder = a first or a discovery; urgent = a race against time",
+          ),
+        },
+        required: ["mood"],
+      },
       factions: {
         type: "array",
         maxItems: 4,
@@ -667,6 +787,10 @@ export function geminiVideoScriptJsonSchema(
             ),
             timeOfDay: en(TIMES_OF_DAY, "Lighting"),
             weather: en(WEATHER, "Atmosphere"),
+            tone: en(
+              SCORE_TONES,
+              "How this shot sits in music.mood. spare = thinner; open = as written; dark = lower and narrower; bright = lighter. Omit and the picture decides. Loudness does not change.",
+            ),
             camera: en(CAMERA_MOVES, "Camera move"),
             elements: {
               type: "array",
@@ -765,6 +889,7 @@ export function geminiVideoScriptJsonSchema(
       "totalDuration",
       "seed",
       "palette",
+      "music",
       "scenes",
       ...(opts.includeModels ? ["models"] : []),
     ],
@@ -785,9 +910,15 @@ How the renderer reads a shot:
   water it lines the banks. Other elements are placed as individual instances.
 - offset {x,z} is absolute metres (+z toward the camera); position is a coarse alternative. formation and count lay out a
   group, spaced by the models' real footprints. Footprints are kept apart, and movers stop short of anything in their way.
+- A person or animal who uses, holds or steadies something shares that object's offset, a metre or two to one side, feet
+  on the ground. Witnesses may sit a few metres toward the camera as foreground. Only buildings and landscape sit tens of
+  metres away. The renderer pulls a stray subject person back beside a subject vehicle, aircraft, boat or prop. A crowd
+  of six or more stays in its formation.
 - motion: march, charge and retreat travel along the facing on land, sail on water, fly in the air; launch takes off; burn and
   explode attach fire or blasts to the object; collapse topples it; idle, wave and sway stay put while the model's own
-  animation plays. color recolours a model's tint:true materials.
+  animation plays. wave is a small greeting, not a swing at the air. A person hauling, pouring, prying, or steering
+  stands at that object and uses march only to travel with it; otherwise idle. The rope, jar, or lever is part of the
+  work, aimed at it. color recolours a model's tint:true materials.
 - layout: street (a built corridor), open (land, water or flight), interior (inside a room-shell model that is an element of
   the shot). settlement, waterWidth, banks and structureState describe the place; shotSize and camera choose the coverage.
 - kind=map flies a faceted globe to map.lat/lon, with an optional route.
@@ -795,11 +926,17 @@ How the renderer reads a shot:
   number (a count, with unit and decimals), duration (seconds as m:ss; decimals 3 shows milliseconds) or clock (hour of
   day, 13.5 = 13:30). label says what is measured; note is a small line under it. To keep one clock running through
   the film, give consecutive shots a counter whose \`from\` is the previous shot's \`to\`.
+- music.mood is the underscore for the whole film: solemn, mournful, tense, martial, pastoral, hopeful, wonder, or
+  urgent. Choose the one this history needs. tone on a shot (spare, open, dark, bright) thins, darkens, or lifts that
+  same bed; omit it and the picture decides. Loudness does not change between shots. The rest of the soundtrack is
+  heard from this shot: the setting, the weather, the time of day, and each element's motion and what that model is.
+  Set those so they match the picture. Wind, water, a room, or a street, and an engine, bell, fire, or footsteps,
+  enter only with the thing they belong to and stay under the underscore. There is no constant noise bed and no voice.
 - Shots change with a quick cut. title is shown large on the first shot and kicker on the others; caption is the line
   of narration along the bottom. A closing title card covers the last 2 seconds of the final shot, so give that shot
   enough extra time for its caption to be read first.
 
 Contract: ${MIN_SCENES}-${MAX_SCENES} scenes of ${MIN_SCENE_SECONDS}-${MAX_SCENE_SECONDS}s whose durations sum exactly to totalDuration; only model ids from the
 provided set; at most ${MAX_ELEMENTS_PER_SCENE} elements and ${MAX_INSTANCES_PER_SCENE} instances (sum of counts) per scene; captions of at most 160
-characters; Latin script only (the fonts have no other glyphs), no emoji.
+characters, written as a complete sentence that finishes its thought; Latin script only (the fonts have no other glyphs), no emoji.
 `.trim();

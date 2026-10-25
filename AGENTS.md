@@ -10,7 +10,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # Agent guide
 
-PolyChronicle is a Next.js 16 / React 19 app that turns a history question into a 20–60 s low-poly film. Gemini 3.8 Flash (`gemini-3.8-flash`) researches the event with Google Search, moderates it and plans the models. Gemini 4 Argon (`gemini-4-argon`) builds the geometry, writes the storyboard and reviews the draft. The browser renders the film with Three.js and saves it as an HD video. Data lives in TigerData (PostgreSQL). Read `README.md` first, then `docs/ARCHITECTURE.md`. Model ids and overrides are in `.env.example` and [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+PolyChronicle is a Next.js 16 / React 19 app that turns a history question into a 20–60 s low-poly film. Gemini 3.8 Flash (`gemini-3.8-flash`) researches the event with Google Search, moderates it, plans the models, builds the geometry, writes the storyboard and reviews the draft. The browser renders the film with Three.js and saves it as an HD video. A film is budgeted to finish within two minutes. Data lives in TigerData (PostgreSQL). Read `README.md` first, then `docs/ARCHITECTURE.md`. Model ids and overrides are in `.env.example` and [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 
 ## Commands
 

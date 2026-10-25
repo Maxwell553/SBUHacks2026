@@ -4,7 +4,12 @@ import { buildEnvironment } from "../../lib/lowpoly/environment";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { SHOWCASE_SCRIPT } from "../../lib/content/showcase";
-import { normalizeVideoScript, validateVideoScript, geminiVideoScriptJsonSchema } from "../../lib/schema/video";
+import {
+  geminiVideoScriptJsonSchema,
+  normalizeVideoScript,
+  validateVideoScript,
+  withoutEmptyDioramas,
+} from "../../lib/schema/video";
 const path = process.argv[2];
 const original = path ? JSON.parse(fs.readFileSync(path, "utf8")) : SHOWCASE_SCRIPT;
 assert(validateVideoScript(original).success, "Existing films stay readable");
@@ -93,3 +98,24 @@ assert(!river.isWater(14, 0) && !river.isWater(-14, -60), "Banks are land");
 assert(Math.abs(river.heightAt(14, 0) - 1.6) < 0.05, "Quay sits at bank height");
 river.dispose();
 console.log("PASS settlement and waterfront fields normalise, and embanked channels shape the ground");
+
+const partialRaw = structuredClone(SHOWCASE_SCRIPT);
+const dropped = partialRaw.models[0].id;
+const last = partialRaw.scenes.length - 1;
+partialRaw.scenes[last].kind = "diorama";
+partialRaw.scenes[last].elements = [
+  { model: dropped, count: 1, formation: "single", position: "center", motion: "idle" },
+];
+const withHole = normalizeVideoScript(
+  { ...partialRaw, models: partialRaw.models.filter((model: { id: string }) => model.id !== dropped) },
+  { targetDuration: partialRaw.totalDuration, seed: partialRaw.seed },
+);
+assert.equal(withHole.scenes[last].elements.length, 0, "A missing model leaves that shot empty");
+const kept = withoutEmptyDioramas(withHole);
+assert.equal(kept.scenes.length, withHole.scenes.length - 1);
+assert.equal(kept.totalDuration, withHole.totalDuration);
+assert(kept.scenes.every((scene) => scene.kind === "map" || scene.elements.length > 0));
+assert.throws(() =>
+  withoutEmptyDioramas({ ...withHole, scenes: withHole.scenes.map((scene) => ({ ...scene, elements: [] })) }),
+);
+console.log("PASS a film keeps playing when one model never finishes");

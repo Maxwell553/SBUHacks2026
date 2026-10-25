@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { requireUser } from "@/lib/server/auth";
-import { buildModel, STEP_DEADLINE_MS } from "@/lib/server/gemini";
+import { stageAllowance } from "@/lib/server/film-budget";
+import { BUILD_CONCURRENCY, buildModel } from "@/lib/server/gemini";
 import { ApiError, body, failure, json, limit, sameOrigin } from "@/lib/server/http";
 import { MAX_PLANNED_MODELS } from "@/lib/server/model-planning";
 import { productionOf } from "@/lib/server/production";
@@ -23,13 +24,27 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     if (!parsed.success) throw new ApiError(400, "Choose which models to build.");
     const wanted = requests.filter((r) => parsed.data.models.includes(r.id));
     if (!wanted.length) throw new ApiError(400, "Those models are not part of this film.");
-    const deadline = Date.now() + STEP_DEADLINE_MS;
-    const results = await Promise.allSettled(
-      wanted.map((r) => buildModel(user.id, row.research ?? "", r, request.signal, deadline)),
-    );
+    const elapsed = Date.now() - new Date(row.created_at as string).getTime();
+    const deadline = Date.now() + stageAllowance("parallel", elapsed);
+    const results: PromiseSettledResult<Awaited<ReturnType<typeof buildModel>>>[] = [];
+    for (let i = 0; i < wanted.length; i += BUILD_CONCURRENCY) {
+      if (request.signal.aborted || Date.now() >= deadline) break;
+      const batch = await Promise.allSettled(
+        wanted
+          .slice(i, i + BUILD_CONCURRENCY)
+          .map((r) => buildModel(user.id, row.research ?? "", r, request.signal, deadline)),
+      );
+      for (const item of batch) {
+        if (item.status === "rejected") {
+          const reason = item.reason instanceof Error ? item.reason.message : "failed";
+          console.warn("Model build failed", reason.slice(0, 300));
+        }
+      }
+      results.push(...batch);
+    }
     return json({
-      built: wanted.filter((_, i) => results[i].status === "fulfilled").map((r) => r.id),
-      failed: wanted.filter((_, i) => results[i].status === "rejected").map((r) => r.id),
+      built: wanted.filter((_, i) => results[i]?.status === "fulfilled").map((r) => r.id),
+      failed: wanted.filter((_, i) => results[i]?.status !== "fulfilled").map((r) => r.id),
     });
   } catch (error) {
     return failure(error);

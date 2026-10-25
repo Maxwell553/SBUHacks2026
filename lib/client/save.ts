@@ -1,4 +1,5 @@
 "use client";
+import { stageAllowance } from "@/lib/server/film-budget";
 import type { Aspect } from "@/lib/schema/video";
 import type { ExportProgress } from "@/lib/render/export";
 
@@ -24,10 +25,14 @@ export async function saveRender(
 ): Promise<Video> {
   if (!video.script) throw new Error("This video has no scenes yet.");
   const aspect: Aspect = video.aspect === "portrait" ? "portrait" : "landscape";
+  const elapsed = Date.now() - new Date(video.createdAt).getTime();
+  // The clock bounds encoding only. The upload that follows is what puts the film in the library.
+  const encodeSignal = AbortSignal.timeout(Math.max(20_000, stageAllowance("encode", elapsed)));
+  const renderSignal = signal ? AbortSignal.any([signal, encodeSignal]) : encodeSignal;
   const { exportMovie } = await import("@/lib/render/movie");
   const result = await exportMovie(video.script, {
     aspect,
-    signal,
+    signal: renderSignal,
     onProgress: (d) => onProgress?.({ stage: "animating", fraction: d.fraction, detail: d }),
   });
   onProgress?.({ stage: "saving", fraction: 0 });

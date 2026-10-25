@@ -322,6 +322,127 @@ function primitiveGeometry(p: ModelPart): THREE.BufferGeometry | null {
   return flat;
 }
 
+/** Horizontal courses on a large stone mass, so a plain box reads as masonry. */
+function masonryCourses(part: ModelPart): THREE.BufferGeometry | null {
+  if (part.shape !== "box" || part.geometryRotation) return null;
+  const [sx, sy, sz] = part.size;
+  if (sy < 1.4 || Math.max(sx, sz) < 1.8) return null;
+  const positions: number[] = [];
+  const quad = (a: number[], b: number[], c: number[], d: number[]) => {
+    positions.push(...a, ...b, ...c, ...a, ...c, ...d);
+  };
+  const band = (origin: number[], u: number[], v: number[], nu: number, nv: number) => {
+    const rows = Math.max(2, Math.min(24, Math.round(nv / 0.7)));
+    for (let row = 1; row < rows; row++) {
+      const vv = (nv * row) / rows;
+      const p = (uu: number, y: number) => [
+        origin[0] + u[0] * uu + v[0] * y,
+        origin[1] + u[1] * uu + v[1] * y,
+        origin[2] + u[2] * uu + v[2] * y,
+      ];
+      quad(p(0, vv - 0.035), p(nu, vv - 0.035), p(nu, vv + 0.035), p(0, vv + 0.035));
+    }
+  };
+  const hx = sx / 2,
+    hy = sy / 2,
+    hz = sz / 2;
+  const out = 0.012;
+  if (sx >= 1.8) {
+    band([-hx, -hy, hz + out], [1, 0, 0], [0, 1, 0], sx, sy);
+    band([hx, -hy, -(hz + out)], [-1, 0, 0], [0, 1, 0], sx, sy);
+  }
+  if (sz >= 1.8) {
+    band([hx + out, -hy, -hz], [0, 0, 1], [0, 1, 0], sz, sy);
+    band([-(hx + out), -hy, hz], [0, 0, -1], [0, 1, 0], sz, sy);
+  }
+  if (positions.length < 9) return null;
+  const g = new THREE.BufferGeometry();
+  g.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+  const shift = new THREE.Vector3();
+  if (part.anchor === "bottom") shift.y = sy / 2;
+  else if (part.anchor === "top") shift.y = -sy / 2;
+  if (shift.lengthSq() > 0) g.translate(shift.x, shift.y, shift.z);
+  return g;
+}
+
+/** Dark window panes on a large wall, in the same centred space as a box primitive. */
+function facadeWindows(part: ModelPart): THREE.BufferGeometry | null {
+  if (part.shape !== "box" || part.geometryRotation) return null;
+  const [sx, sy, sz] = part.size;
+  // A storey is wide and about two metres tall. Roofs, beams and posts are not.
+  // Towers keep a tight grid instead of going blank above twelve metres.
+  if (sy < 1.8 || sy > 80 || Math.max(sx, sz) < 1.6) return null;
+  const positions: number[] = [];
+  const quad = (a: number[], b: number[], c: number[], d: number[]) => {
+    positions.push(...a, ...b, ...c, ...a, ...c, ...d);
+  };
+  const pane = (origin: number[], u: number[], v: number[], nu: number, nv: number) => {
+    const cols = Math.max(2, Math.min(14, Math.round(nu / 0.72)));
+    const rows = Math.max(2, Math.min(36, Math.round(nv / 0.86)));
+    const innerU = nu * 0.84;
+    const innerV = nv * 0.78;
+    const cw = innerU / cols;
+    const ch = innerV / rows;
+    const uStart = (nu - innerU) / 2;
+    const vStart = nv * 0.22;
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < cols; col++) {
+        const u0 = uStart + col * cw + cw * 0.16;
+        const v0 = vStart + row * ch + ch * 0.14;
+        const u1 = uStart + (col + 1) * cw - cw * 0.16;
+        const v1 = vStart + (row + 1) * ch - ch * 0.14;
+        if (u1 - u0 < 0.12 || v1 - v0 < 0.16) continue;
+        const p = (uu: number, vv: number) => [
+          origin[0] + u[0] * uu + v[0] * vv,
+          origin[1] + u[1] * uu + v[1] * vv,
+          origin[2] + u[2] * uu + v[2] * vv,
+        ];
+        quad(p(u0, v0), p(u1, v0), p(u1, v1), p(u0, v1));
+      }
+    }
+  };
+  const hx = sx / 2,
+    hy = sy / 2,
+    hz = sz / 2;
+  const lift = 0.018;
+  if (sx >= 1.6) {
+    pane([-hx, -hy, hz + lift], [1, 0, 0], [0, 1, 0], sx, sy);
+    pane([hx, -hy, -(hz + lift)], [-1, 0, 0], [0, 1, 0], sx, sy);
+  }
+  if (sz >= 1.6) {
+    pane([hx + lift, -hy, -hz], [0, 0, 1], [0, 1, 0], sz, sy);
+    pane([-(hx + lift), -hy, hz], [0, 0, -1], [0, 1, 0], sz, sy);
+  }
+  if (positions.length < 9) return null;
+  const g = new THREE.BufferGeometry();
+  g.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+  const shift = new THREE.Vector3();
+  switch (part.anchor) {
+    case "bottom":
+      shift.y = sy / 2;
+      break;
+    case "top":
+      shift.y = -sy / 2;
+      break;
+    case "front":
+      shift.x = -sx / 2;
+      break;
+    case "back":
+      shift.x = sx / 2;
+      break;
+    case "left":
+      shift.z = sz / 2;
+      break;
+    case "right":
+      shift.z = -sz / 2;
+      break;
+    default:
+      break;
+  }
+  g.translate(shift.x, shift.y, shift.z);
+  return g;
+}
+
 // ---------------------------------------------------------------- rig expansion
 interface Node {
   part: ModelPart;
@@ -342,6 +463,108 @@ function eulerMatrix(r?: [number, number, number]) {
   return new THREE.Matrix4().makeRotationFromEuler(
     new THREE.Euler((r?.[0] ?? 0) * DEG, (r?.[1] ?? 0) * DEG, (r?.[2] ?? 0) * DEG),
   );
+}
+
+const HELD_TOOL =
+  /staff|rope|jar|club|stick|pole|spear|sword|lever|whip|paddle|mallet|hammer|axe|rod|baton|cane|crook|flail|scythe/;
+const HELD_ARM = /arm|hand|shoulder|forearm|wrist/;
+
+/** An arm stuck near vertical reads as a broken person. Keep a reaching pose. */
+function easeLimbs(def: ModelDefinition, part: ModelPart): ModelPart {
+  if ((def.category !== "figure" && def.category !== "animal") || !part.rotation) return part;
+  if (!/arm|forearm|hand|shoulder/.test(part.id.toLowerCase())) return part;
+  const max = Math.max(...part.rotation.map((value) => Math.abs(value)));
+  if (max <= 38) return part;
+  const scale = 32 / max;
+  return { ...part, rotation: part.rotation.map((value) => value * scale) as [number, number, number] };
+}
+
+/**
+ * A wide swing on an arm or a tool reads as striking empty air. Keep the
+ * authored pose and leave only a small working rhythm.
+ */
+function calmHeldWork(def: ModelDefinition, part: ModelPart): ModelPart {
+  if ((def.category !== "figure" && def.category !== "animal") || !part.animation?.length) return part;
+  const id = part.id.toLowerCase();
+  const tool = HELD_TOOL.test(id);
+  const arm = HELD_ARM.test(id);
+  if (!tool && !arm) return part;
+  const cap = tool ? 6 : 10;
+  let changed = false;
+  const animation = part.animation.map((channel) => {
+    if (channel.property !== "rotation") return channel;
+    const amplitude = Math.max(-cap, Math.min(cap, channel.amplitude));
+    const frequency = Math.min(channel.frequency, 0.85);
+    if (amplitude === channel.amplitude && frequency === channel.frequency) return channel;
+    changed = true;
+    return { ...channel, amplitude, frequency };
+  });
+  return changed ? { ...part, animation } : part;
+}
+
+/**
+ * A generated person or vehicle often arrives without a cycle. Give unnamed
+ * limbs and wheels a walk or a roll when nothing above them is already
+ * animated, so a crowd is not a row of statues. Authored cycles are kept.
+ */
+function limbLife(def: ModelDefinition, part: ModelPart, byId: Map<string, ModelPart>): ModelPart {
+  if (part.animation?.length || part.shape === "group") return part;
+  const id = part.id.toLowerCase();
+  const limb = /leg|thigh|shin|arm|wing|flipper|foreleg|hindleg/;
+  let ancestor = part.parent ? byId.get(part.parent) : undefined;
+  while (ancestor) {
+    if (ancestor.animation?.some((channel) => channel.property === "rotation") || limb.test(ancestor.id.toLowerCase()))
+      return part;
+    ancestor = ancestor.parent ? byId.get(ancestor.parent) : undefined;
+  }
+  const living = def.category === "figure" || def.category === "animal";
+  if (living && limb.test(id)) {
+    const arm = /arm|wing|flipper/.test(id);
+    return {
+      ...part,
+      animationAnchor: part.animationAnchor ?? "top",
+      animation: [
+        {
+          property: "rotation",
+          axis: "z",
+          wave: "sine",
+          amplitude: arm ? 8 : 30,
+          frequency: arm ? 0.85 : 1.7,
+          phase: arm ? 180 : 0,
+          alternate: true,
+          when: "moving",
+        },
+        {
+          property: "rotation",
+          axis: "z",
+          wave: "sine",
+          amplitude: arm ? 4 : 16,
+          frequency: 0.85,
+          alternate: true,
+          when: "idle",
+        },
+      ],
+    };
+  }
+  if ((def.category === "vehicle" || def.category === "aircraft") && /wheel|propeller|rotor|blade/.test(id)) {
+    const air = /propeller|rotor|blade/.test(id);
+    const reverse = /right|_r$/.test(id);
+    return {
+      ...part,
+      animationAnchor: part.animationAnchor ?? "center",
+      animation: [
+        {
+          property: "rotation",
+          axis: air ? "x" : "z",
+          wave: "spin",
+          amplitude: (air ? 840 : 280) * (reverse ? -1 : 1),
+          frequency: 1,
+          when: air ? "always" : "moving",
+        },
+      ],
+    };
+  }
+  return part;
 }
 
 function expand(def: ModelDefinition): Node[] {
@@ -405,8 +628,10 @@ function expand(def: ModelDefinition): Node[] {
     pos.add(point).sub(contact);
   };
 
-  const visit = (part: ModelPart, parent: Node | null, mirrorMask: [boolean, boolean, boolean], depth: number) => {
+  const byId = new Map(def.parts.map((p) => [p.id, p]));
+  const visit = (raw: ModelPart, parent: Node | null, mirrorMask: [boolean, boolean, boolean], depth: number) => {
     if (depth > MODEL_LIMITS.maxDepth) return;
+    const part = limbLife(def, calmHeldWork(def, easeLimbs(def, raw)), byId);
     const mirrors: ([boolean, boolean, boolean] | null)[] = [null];
     if (part.mirror) {
       const m: [boolean, boolean, boolean] = [false, false, false];
@@ -431,6 +656,22 @@ function expand(def: ModelDefinition): Node[] {
           rot[0] += rs[0] * i;
           rot[1] += rs[1] * i;
           rot[2] += rs[2] * i;
+          // A repeated child that steps off its parent (a table leg past the top)
+          // is pulled back onto the parent's footprint. It may still hang below.
+          if (parent) {
+            const parentBox = boundsOf(parent.part);
+            const childBox = boundsOf(part);
+            const center = parentBox.getCenter(new THREE.Vector3());
+            const parentSize = parentBox.getSize(new THREE.Vector3());
+            const childSize = childBox.getSize(new THREE.Vector3());
+            const limitX = parentSize.x / 2 + childSize.x / 2;
+            const limitZ = parentSize.z / 2 + childSize.z / 2;
+            const limitUp = parentSize.y / 2 + childSize.y / 2;
+            const limitDown = parentSize.y / 2 + childSize.y;
+            pos.x = Math.min(center.x + limitX, Math.max(center.x - limitX, pos.x));
+            pos.z = Math.min(center.z + limitZ, Math.max(center.z - limitZ, pos.z));
+            pos.y = Math.min(center.y + limitUp, Math.max(center.y - limitDown, pos.y));
+          }
         } else if (rep?.mode === "radial") {
           const axis = rep.axis ?? "y";
           const a = ((rep.startAngle ?? 0) + (360 * i) / count) * DEG;
@@ -502,6 +743,8 @@ export function resolveAnimationPivot(part: ModelPart): [number, number, number]
 export interface CompiledTemplate {
   frames: FrameTemplate[];
   bounds: THREE.Box3;
+  /** Lowest foot, boot or wheel. Undefined when the model has none. */
+  plantY?: number;
   dispose(): void;
 }
 
@@ -509,6 +752,8 @@ export interface ModelBounds {
   radius: number;
   height: number;
   minY: number;
+  /** Where the model meets the ground: feet and wheels when those parts exist, otherwise minY. */
+  plantY: number;
   center: THREE.Vector3;
   /** Axis-aligned extent at rest (x = depth along the model's front, z = width). */
   size: THREE.Vector3;
@@ -522,10 +767,10 @@ export function framingBounds(bounds: ModelBounds, scale: number) {
   };
 }
 
-/** Align the lowest authored vertex to the floor, regardless of model origin. */
+/** Align the feet, wheels or lowest vertex to the floor, regardless of model origin. */
 export function groundPlacement(bounds: ModelBounds, scale: number) {
   const height = Math.max(0.1, bounds.size.y * scale);
-  return { height, lift: -bounds.minY * scale - Math.min(0.03, height * 0.012) };
+  return { height, lift: -bounds.plantY * scale - Math.min(0.03, height * 0.012) };
 }
 
 /** Usable floor rectangle inside a room shell, in model space (scaled). */
@@ -598,6 +843,217 @@ function ruinGeometry(g: THREE.BufferGeometry, rng: Rng) {
   g.computeBoundingBox();
 }
 
+interface SolidNode {
+  node: Node;
+  box: THREE.Box3;
+}
+
+/** How far a loose cluster may be and still be a missed joint rather than a separate object. */
+function anchorLimit(size: number) {
+  return Math.min(4, Math.max(0.75, size * 0.85));
+}
+
+function separation(a: THREE.Box3, b: THREE.Box3) {
+  const axis = (minA: number, maxA: number, minB: number, maxB: number) => {
+    if (minA > maxB) return maxB - minA;
+    if (minB > maxA) return minB - maxA;
+    return 0;
+  };
+  return new THREE.Vector3(
+    axis(a.min.x, a.max.x, b.min.x, b.max.x),
+    axis(a.min.y, a.max.y, b.min.y, b.max.y),
+    axis(a.min.z, a.max.z, b.min.z, b.max.z),
+  );
+}
+
+function boxGap(a: THREE.Box3, b: THREE.Box3) {
+  return Math.hypot(
+    Math.max(0, a.min.x - b.max.x, b.min.x - a.max.x),
+    Math.max(0, a.min.y - b.max.y, b.min.y - a.max.y),
+    Math.max(0, a.min.z - b.max.z, b.min.z - a.max.z),
+  );
+}
+
+/**
+ * Parent-space nudges that seat loose clusters on the body or the ground.
+ * A kite on a long line stays where it was authored; a lamp hovering over a
+ * table, or a roof that missed the walls, is pulled into contact.
+ */
+function anchorDeltas(nodes: Node[]): Map<Node, THREE.Vector3> {
+  const out = new Map<Node, THREE.Vector3>();
+  const world = new Map<Node, THREE.Matrix4>();
+  const solids: SolidNode[] = [];
+  for (const n of nodes) {
+    const w = n.parent ? world.get(n.parent)!.clone().multiply(n.local) : n.local.clone();
+    world.set(n, w);
+    if (n.part.shape === "group" || EFFECT_SHAPES.has(n.part.shape)) continue;
+    const g = primitiveGeometry(n.part);
+    if (!g) continue;
+    if (!g.boundingBox) g.computeBoundingBox();
+    if (!g.boundingBox) {
+      g.dispose();
+      continue;
+    }
+    solids.push({ node: n, box: g.boundingBox.clone().applyMatrix4(w) });
+    g.dispose();
+  }
+  if (solids.length < 2) return out;
+  const all = solids.reduce((u, s) => u.union(s.box), new THREE.Box3());
+  const extent = all.getSize(new THREE.Vector3());
+  const size = Math.max(extent.x, extent.y, extent.z);
+  const tol = Math.max(0.02, size * 0.015);
+  const limit = anchorLimit(size);
+  const ground = solids.length;
+  const root = Array.from({ length: solids.length + 1 }, (_, i) => i);
+  const find = (i: number): number => (root[i] === i ? i : (root[i] = find(root[i])));
+  const join = (a: number, b: number) => (root[find(a)] = find(b));
+  solids.forEach((a, i) => {
+    if (a.box.min.y <= all.min.y + tol) join(i, ground);
+    for (let j = i + 1; j < solids.length; j++) if (boxGap(a.box, solids[j].box) <= tol) join(i, j);
+  });
+  const volume = (b: THREE.Box3) => {
+    const s = b.getSize(new THREE.Vector3());
+    return Math.max(s.x * s.y * s.z, 1e-6);
+  };
+  const groups = new Map<number, number[]>();
+  solids.forEach((_, i) => groups.set(find(i), [...(groups.get(find(i)) ?? []), i]));
+  const weight = (list: number[]) => list.reduce((a, i) => a + volume(solids[i].box), 0);
+  const main = [...groups.entries()].sort(
+    (a, b) => Number(b[0] === find(ground)) - Number(a[0] === find(ground)) || weight(b[1]) - weight(a[1]),
+  )[0][1];
+  for (const list of groups.values()) {
+    if (list === main) continue;
+    const cluster = new THREE.Box3();
+    const members = new Set(list.map((i) => solids[i].node));
+    for (const i of list) cluster.union(solids[i].box);
+    const descendantOfCluster = (node: Node) => {
+      for (let parent = node.parent; parent; parent = parent.parent) if (members.has(parent)) return true;
+      return false;
+    };
+    const solidNodes = new Set(solids.map((s) => s.node));
+    const nearestChild = (node: Node) => {
+      let crossed = false;
+      for (let parent = node.parent; parent; parent = parent.parent) {
+        if (members.has(parent)) return !crossed;
+        if (solidNodes.has(parent)) crossed = true;
+      }
+      return false;
+    };
+    let best: THREE.Vector3 | null = null;
+    let bestGap = Infinity;
+    let childGap = Infinity;
+    let childSep: THREE.Vector3 | null = null;
+    const pairGap = (j: number) => {
+      let gap = Infinity;
+      let from = solids[list[0]].box;
+      for (const i of list) {
+        const g = boxGap(solids[i].box, solids[j].box);
+        if (g < gap) {
+          gap = g;
+          from = solids[i].box;
+        }
+      }
+      return { gap, from };
+    };
+    for (const j of main) {
+      const node = solids[j].node;
+      const { gap, from } = pairGap(j);
+      if (nearestChild(node) && gap > tol && gap < childGap) {
+        childGap = gap;
+        childSep = separation(from, solids[j].box);
+      }
+      if (descendantOfCluster(node) || gap >= bestGap) continue;
+      bestGap = gap;
+      best = separation(from, solids[j].box);
+    }
+    // A limb that misses its joint by a few centimetres is pulled onto the body.
+    // A posed offset of a third of a metre is left where it was authored.
+    const pullChild = childSep != null && childGap <= 0.22;
+    const share = weight(list) / solids.reduce((sum, s) => sum + volume(s.box), 0);
+    // The bulk of a model is not dragged toward a small grounded piece.
+    if (!pullChild && share > 0.4) continue;
+    if (pullChild) {
+      best = childSep!.multiplyScalar(-1);
+      bestGap = childGap;
+    }
+    if (!best || bestGap <= tol || (!pullChild && bestGap > limit)) continue;
+    const len = best.length();
+    if (len > 1e-8) best.multiplyScalar((len + Math.min(0.025, Math.max(tol, 0.01))) / len);
+    const recipients: Node[] = [];
+    if (pullChild) {
+      for (const j of main) {
+        const node = solids[j].node;
+        if (nearestChild(node)) {
+          const { gap } = pairGap(j);
+          if (gap > tol && gap <= 0.22) recipients.push(node);
+        }
+      }
+    } else {
+      const mainNodes = new Set(main.map((i) => solids[i].node));
+      for (const node of members) {
+        if (node.parent && members.has(node.parent)) continue;
+        // A child of the main body may sit a little off it on purpose (a rotated
+        // primitive, a posed limb). Only a clear miss, about a metre, is seated.
+        let linked = false;
+        for (let parent = node.parent; parent && !members.has(parent); parent = parent.parent) {
+          if (mainNodes.has(parent)) {
+            linked = true;
+            break;
+          }
+        }
+        if (linked && bestGap < 0.8) continue;
+        recipients.push(node);
+      }
+    }
+    for (const node of recipients) {
+      const parent = node.parent ? world.get(node.parent)! : new THREE.Matrix4();
+      const q = new THREE.Quaternion();
+      const p = new THREE.Vector3();
+      const s = new THREE.Vector3();
+      parent.decompose(p, q, s);
+      const dL = best.clone().applyQuaternion(q.invert());
+      dL.x /= s.x || 1;
+      dL.y /= s.y || 1;
+      dL.z /= s.z || 1;
+      out.set(node, dL);
+    }
+  }
+  return out;
+}
+
+/** Seats loose parts for rendering. Safe to run on every compile; a connected model is unchanged. */
+function anchorNodes(nodes: Node[]) {
+  for (const [node, delta] of anchorDeltas(nodes))
+    node.local.premultiply(new THREE.Matrix4().makeTranslation(delta.x, delta.y, delta.z));
+}
+
+/**
+ * Writes those same seats back into part positions when a part has a single
+ * unmirrored, unrepeated copy. Returns null when the model already holds
+ * together or the loose parts cannot be moved without disturbing a repeat.
+ */
+export function settleDetached(def: ModelDefinition): ModelDefinition | null {
+  const nodes = expand(def);
+  const deltas = anchorDeltas(nodes);
+  if (!deltas.size) return null;
+  const counts = new Map<string, number>();
+  for (const n of nodes) counts.set(n.part.id, (counts.get(n.part.id) ?? 0) + 1);
+  const next = structuredClone(def);
+  const byId = new Map(next.parts.map((p) => [p.id, p]));
+  let changed = false;
+  for (const [node, delta] of deltas) {
+    if ((counts.get(node.part.id) ?? 0) !== 1) continue;
+    if (node.part.mirror || node.part.repeat || node.part.attachTo) continue;
+    const part = byId.get(node.part.id);
+    if (!part) continue;
+    const pos = part.position ?? [0, 0, 0];
+    const clamp = (v: number) => Math.min(MODEL_LIMITS.maxOffset, Math.max(-MODEL_LIMITS.maxOffset, v));
+    part.position = [clamp(pos[0] + delta.x), clamp(pos[1] + delta.y), clamp(pos[2] + delta.z)];
+    changed = true;
+  }
+  return changed ? next : null;
+}
+
 function compileTemplate(
   def: ModelDefinition,
   tint: string | undefined,
@@ -606,6 +1062,7 @@ function compileTemplate(
   ruined = false,
 ): CompiledTemplate {
   const nodes = expand(def);
+  anchorNodes(nodes);
   const mats = new Map(def.materials.map((m) => [m.id, m]));
   const geoCache = new Map<string, THREE.BufferGeometry | null>();
   const rng: Rng = makeRng(variant * 7919 + def.id.length * 131 + 17);
@@ -617,6 +1074,11 @@ function compileTemplate(
   const pieces = new Map<string, THREE.BufferGeometry[]>();
   const bounds = new THREE.Box3();
   const worldRest = new Map<Node, THREE.Matrix4>();
+  let contactMin = Infinity;
+  const plantsOn =
+    def.category === "figure" || def.category === "animal" || def.category === "vehicle"
+      ? /foot|boot|wheel|hoof|sole|paw/
+      : null;
 
   const ownerFrame = (n: Node | null): number => {
     while (n) {
@@ -707,7 +1169,7 @@ function compileTemplate(
     }
     const count = g.getAttribute("position").count;
     const cols = new Float32Array(count * 3);
-    const jitter = finish === "emissive" || finish === "glass" ? 0 : 0.07;
+    const jitter = finish === "emissive" || finish === "glass" ? 0 : 0.02;
     for (let i = 0; i < count; i += 3) {
       const j = 1 + (rng() - 0.5) * jitter * 2;
       for (let k = 0; k < 3 && i + k < count; k++) {
@@ -721,11 +1183,51 @@ function compileTemplate(
     if (!pieces.has(pkey)) pieces.set(pkey, []);
     pieces.get(pkey)!.push(g);
 
+    if (!ruined && def.category === "building") {
+      const windows = facadeWindows(n.part);
+      if (windows) {
+        windows.applyMatrix4(rel);
+        const countW = windows.getAttribute("position").count;
+        const dark = new Float32Array(countW * 3);
+        windows.setAttribute("color", new THREE.BufferAttribute(dark, 3));
+        const lit = night ? new THREE.Color("#e7a15a") : new THREE.Color("#1c2836");
+        for (let i = 0; i < countW; i++) {
+          dark[i * 3] = lit.r;
+          dark[i * 3 + 1] = lit.g;
+          dark[i * 3 + 2] = lit.b;
+        }
+        const wkey = `${owner}|${night ? "emissive" : "matte"}`;
+        if (!pieces.has(wkey)) pieces.set(wkey, []);
+        pieces.get(wkey)!.push(windows);
+      }
+    }
+    if (!ruined && (def.category === "structure" || def.category === "prop")) {
+      const courses = masonryCourses(n.part);
+      if (courses) {
+        courses.applyMatrix4(rel);
+        const countC = courses.getAttribute("position").count;
+        const shade = new Float32Array(countC * 3);
+        const mortar = c.clone().multiplyScalar(0.62);
+        for (let i = 0; i < countC; i++) {
+          shade[i * 3] = mortar.r;
+          shade[i * 3 + 1] = mortar.g;
+          shade[i * 3 + 2] = mortar.b;
+        }
+        courses.setAttribute("color", new THREE.BufferAttribute(shade, 3));
+        const ckey = `${owner}|matte`;
+        if (!pieces.has(ckey)) pieces.set(ckey, []);
+        pieces.get(ckey)!.push(courses);
+      }
+    }
+
     if (!proto.boundingBox) proto.computeBoundingBox();
     if (ruined) {
       g.computeBoundingBox();
       bounds.union(g.boundingBox!);
-    } else bounds.union(_box.copy(proto.boundingBox!).applyMatrix4(world));
+    } else {
+      bounds.union(_box.copy(proto.boundingBox!).applyMatrix4(world));
+      if (plantsOn?.test(n.part.id)) contactMin = Math.min(contactMin, _box.min.y);
+    }
   }
 
   for (const [key, list] of pieces) {
@@ -743,9 +1245,11 @@ function compileTemplate(
   const scale = def.scale ?? 1;
   bounds.min.multiplyScalar(scale);
   bounds.max.multiplyScalar(scale);
+  const plantY = Number.isFinite(contactMin) ? contactMin * scale : undefined;
   return {
     frames,
     bounds,
+    ...(plantY != null ? { plantY } : {}),
     dispose() {
       frames.forEach((f) => f.meshes.forEach((m) => m.geometry.dispose()));
     },
@@ -928,7 +1432,15 @@ export class ModelLibrary {
       0.3,
       Math.hypot(Math.max(Math.abs(b.min.x), Math.abs(b.max.x)), Math.max(Math.abs(b.min.z), Math.abs(b.max.z))),
     );
-    return { radius, height: Math.max(0.2, b.max.y), minY: b.min.y, center, size: b.getSize(new THREE.Vector3()) };
+    const plantY = t.plantY != null && t.plantY < b.max.y * 0.65 ? t.plantY : b.min.y;
+    return {
+      radius,
+      height: Math.max(0.2, b.max.y),
+      minY: b.min.y,
+      plantY,
+      center,
+      size: b.getSize(new THREE.Vector3()),
+    };
   }
 
   /**
@@ -1010,6 +1522,7 @@ export class ModelLibrary {
    * Finds parts that float loose from the model: groups of solid parts that
    * touch neither the main body nor the ground at rest. Touching is measured
    * between the parts' actual bounding boxes, including repeats and mirrors.
+   * Rendering closes small gaps itself; this reports the model as authored.
    */
   structure(id: string): ModelStructure {
     const def = this.defs.get(id);

@@ -40,6 +40,15 @@ try {
   assert(first.length > 0 && first.every(Number.isFinite), "Ruin geometry must be finite and nonempty");
   assert.deepEqual(first, positions(second), "Saved and interactive renders must agree deterministically");
   assert.equal(structure.parts[0].position![1], 3, "The saved source model must remain unchanged");
+  const inst = intact.instance(structure.id)!;
+  let triangles = 0;
+  inst.object.traverse((o) => {
+    if (o instanceof THREE.Mesh) triangles += o.geometry.getAttribute("position").count / 3;
+  });
+  const box = new THREE.Box3().setFromObject(inst.object);
+  inst.dispose();
+  assert(triangles > 24, "A wall carries a window grid, not a blank face");
+  assert(Math.abs(box.max.y - 6.15) < 0.05, "Windows stay on the wall and do not raise the roof");
   console.log(
     "PASS structural aftermath, living-subject preservation, deterministic geometry and immutable source models",
   );

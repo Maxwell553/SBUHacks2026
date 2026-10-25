@@ -81,7 +81,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
             <h2 id="how-title" className="section-title">
               From a question to a short film
             </h2>
-            <p className="lead">It usually takes a few minutes. You can watch each step happen.</p>
+            <p className="lead">It takes about two minutes. You can watch each step happen.</p>
           </Reveal>
           <div className="steps">
             {[
@@ -257,7 +257,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
           </Reveal>
           <Reveal delay={0.1}>
             <p className="lead" style={{ margin: "0 auto" }}>
-              Create a free account and make your first video in a few minutes.
+              Create a free account and make your first video in about two minutes.
             </p>
           </Reveal>
           <Reveal delay={0.2}>

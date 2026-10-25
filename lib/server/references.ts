@@ -3,11 +3,14 @@ import path from "node:path";
 import type { Part } from "@google/genai";
 
 /**
- * Example films the creative model studies as the target. references/films/
- * holds whole short films (format, pacing, captions and look) for the
- * director; references/stills/ holds frames from them (the look alone) for the
- * planner and the geometry builders, which run many times per film.
+ * Example frames the planner, the builders and the director study for look.
+ * references/stills/ holds frames from the example films. Each request sends
+ * three of them — a street, a waterfront and a park — so the model sees the
+ * picture without spending the film budget on ten images. The films themselves
+ * stay in references/films/ as the source of those frames; they are not sent
+ * inline. What to take from the films is written in FILM_FORMAT.
  */
+const LOOK_STILLS = ["atmosphere-street-2s.jpg", "oxygen-waterfront-10s.jpg", "protons-park-4s.jpg"];
 const ROOT = path.join(process.cwd(), "references");
 export type ReferenceSet = "films" | "stills";
 const TYPES: Record<string, string> = {
@@ -28,7 +31,10 @@ export function referenceParts(set: ReferenceSet): Promise<Part[]> {
   if (!parts) {
     parts = (async () => {
       const dir = path.join(ROOT, set);
-      const files = (await readdir(dir).catch(() => [])).filter((f) => TYPES[path.extname(f).toLowerCase()]).sort();
+      const files = (await readdir(dir).catch(() => []))
+        .filter((f) => TYPES[path.extname(f).toLowerCase()])
+        .filter((f) => set !== "stills" || LOOK_STILLS.includes(f))
+        .sort();
       const out: Part[] = [];
       let used = 0;
       for (const file of files) {
@@ -44,7 +50,8 @@ export function referenceParts(set: ReferenceSet): Promise<Part[]> {
   return parts;
 }
 
-/** The request contents: the reference set, then the supplied data. */
-export async function withReferences(data: string, set: ReferenceSet = "stills") {
-  return [{ role: "user", parts: [...(await referenceParts(set)), { text: data }] }];
+/** The request contents: the reference set, then the supplied data. `frames` keeps the first frames only. */
+export async function withReferences(data: string, set: ReferenceSet = "stills", frames = Number.POSITIVE_INFINITY) {
+  const parts = await referenceParts(set);
+  return [{ role: "user", parts: [...parts.slice(0, frames), { text: data }] }];
 }

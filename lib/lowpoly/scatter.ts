@@ -51,7 +51,7 @@ const STONE = ["#8f8a80", "#7d786f", "#a29c90"];
 
 const BIOMES: Partial<Record<Setting, Biome>> = {
   plains: {
-    tufts: 2600,
+    tufts: 4200,
     tuftColors: GREEN,
     tuftStyle: "blades",
     rocks: 150,
@@ -63,7 +63,7 @@ const BIOMES: Partial<Record<Setting, Biome>> = {
     canopy: ["#4f8a3c", "#5f9a3e", "#6aa448"],
   },
   hills: {
-    tufts: 2300,
+    tufts: 3600,
     tuftColors: GREEN,
     tuftStyle: "blades",
     rocks: 220,
@@ -99,7 +99,7 @@ const BIOMES: Partial<Record<Setting, Biome>> = {
     canopy: ["#2f7a3a", "#40924a", "#2a6b35"],
   },
   river: {
-    tufts: 2400,
+    tufts: 3600,
     tuftColors: GREEN,
     tuftStyle: "blades",
     rocks: 180,
@@ -209,11 +209,11 @@ function tuftGeometry(style: Biome["tuftStyle"], rng: Rng) {
       });
     }
   } else {
-    const n = style === "dry" ? 4 : 5;
+    const n = style === "dry" ? 4 : 7;
     for (let i = 0; i < n; i++) {
       const a = (i / n) * Math.PI * 2 + rng();
-      const h = range(rng, 0.22, 0.42);
-      b.cone(0.035, h, 3, "#ffffff", {
+      const h = range(rng, style === "dry" ? 0.22 : 0.34, style === "dry" ? 0.42 : 0.68);
+      b.cone(0.028, h, 3, "#ffffff", {
         p: [Math.cos(a) * 0.05, h / 2, Math.sin(a) * 0.05],
         r: [Math.sin(a) * 0.35, 0, -Math.cos(a) * 0.35],
       });
@@ -349,14 +349,14 @@ export function buildScatter(spec: ScatterSpec): Scatter {
   const k = DENSITY[spec.settlement ?? "wild"];
   const built = spec.settlement === "town" || spec.settlement === "city";
   if (biome.tufts) {
-    const mat = swayMaterial(time, (biome.tuftStyle === "mound" ? 0 : 0.06) * windy);
+    const mat = swayMaterial(time, (biome.tuftStyle === "mound" ? 0 : 0.1) * windy);
     disposables.push(mat);
     place(
       tuftGeometry(biome.tuftStyle, rng),
       mat,
       Math.round(biome.tufts * k),
       0.8,
-      70,
+      42,
       0.3,
       0.7,
       1.5,

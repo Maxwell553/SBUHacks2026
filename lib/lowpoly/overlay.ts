@@ -337,14 +337,25 @@ export function drawOverlay(ctx: CanvasRenderingContext2D, st: OverlayState) {
   const capOut = 1 - clamp((local - (scene.duration - 0.35)) / 0.3, 0, 1);
   if (capIn > 0 && capOut > 0) {
     const maxW = W * (immersive ? 0.9 : portrait ? 0.9 : 0.68);
-    const size = u * (portrait ? 4.1 : 4.3);
-    ctx.font = `700 ${size}px ${FONT_TEXT}`;
-    const lines = wrap(ctx, scene.caption, maxW - u * 9);
-    const lineH = size * 1.32;
-    const boxH = lines.length * lineH + u * 9.5;
+    // Stay above the progress rail and inside the player's rounded frame.
+    const floorY = H - Math.max(36, u * 5.6);
+    let size = u * (portrait ? 3.6 : 4);
+    const measure = () => {
+      ctx.font = `700 ${size}px ${FONT_TEXT}`;
+      const wrapped = wrap(ctx, scene.caption, maxW - u * 9);
+      const lineH = size * 1.28;
+      const boxH = wrapped.length * lineH + u * 8.4;
+      return { wrapped, lineH, boxH };
+    };
+    let laid = measure();
+    while (floorY - laid.boxH < H * 0.36 && size > u * 2.4) {
+      size *= 0.9;
+      laid = measure();
+    }
+    const { wrapped: lines, lineH, boxH } = laid;
     const boxW = Math.min(maxW, Math.max(...lines.map((l) => ctx.measureText(l.join(" ")).width)) + u * 9);
     const bx = pad;
-    const by = H - pad - boxH - u * 2.6;
+    const by = floorY - boxH;
     const rise = (1 - easeOut(capIn)) * u * 2.5;
     ctx.globalAlpha = capOut * easeOut(capIn);
     if (!immersive) card(ctx, bx, by + rise, boxW, boxH, u * 2.6);

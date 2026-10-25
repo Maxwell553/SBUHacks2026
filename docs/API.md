@@ -71,14 +71,14 @@ The studio sends at most four build requests plus the storyboard request at once
 
 ## Review (while the film is made)
 
-`POST /api/videos/:id/review` runs one quality-review round on a video whose status is `ready`. The browser sends `{ round, sheet, issues }`, where `round` counts from 1 up to `REVIEW_ROUNDS`:
+`POST /api/videos/:id/review` runs one quality-review round on a video whose status is `ready`. The browser sends `{ round, issues, sheet? }`, where `round` counts from 1 up to `REVIEW_ROUNDS`:
 
-- `sheet` is a JPEG data URL of the draft contact sheet: two frames per shot, labelled with the shot index.
-- `issues` are the shot problems measured by `shotIssues()`.
+- `issues` are shot problems measured by `shotIssues()`. The studio sends an empty list.
+- `sheet`, when present, is a JPEG data URL of a draft contact sheet. The studio omits it.
 
 The body can be up to 6.5 MB.
 
-The server checks every model for loose parts, reviews the sheet with Gemini 4 Argon, applies shot fixes and model repairs, re-moderates, and saves. It responds `200 { video, review: { verdict: "pass" | "revise", summary, shotsChanged, modelsRepaired } }`, where `video.script` is the updated script. It returns **409** when the video isn't waiting to be rendered. A round finishes within 200 seconds: the reviewer call gets 80 seconds, and repairs stop in time to moderate and save. The studio runs one round per film (`REVIEW_ROUNDS`), and renders the film as it stands if a review fails.
+Without a sheet, the server seats loose parts onto their models and saves. With a sheet, it also asks the review model for shot fixes, capped at 18 seconds, and may repair a model that is still loose. It responds `200 { video, review: { verdict: "pass" | "revise", summary, shotsChanged, modelsRepaired } }`, where `video.script` is the updated script. It returns **409** when the video isn't waiting to be rendered. The studio runs one round per film (`REVIEW_ROUNDS`), and renders the film as it stands if a review fails.
 
 ## Media upload (browser renders)
 
@@ -88,7 +88,7 @@ Uploads use chunks of 1 MiB or less so each request stays under serverless body 
 2. `PUT /api/videos/:id/assets/:assetId/chunks/:index` with a raw `application/octet-stream` body → `200 { ok: true }`. Retrying a chunk is safe. Keep at most 2 in flight. The last chunk must be exactly the remaining bytes.
 3. `POST /api/videos/:id/assets/:assetId/complete` → `200 { mediaUrl, sha256 }`. The server checks every chunk and the file signature. A movie (MP4 or WebM, or a GIF from the legacy exporter) marks the video `rendered`; a JPEG sets `posterUrl`.
 
-Limits: 32 MiB per file, 96 MiB per account, and a global reservation that leaves headroom in the database. Unfinished uploads expire after 24 hours.
+Limits: 32 MiB per file, 256 MiB per account, and a global reservation that leaves headroom in the database. Unfinished uploads expire after 24 hours.
 
 ## Media download
 

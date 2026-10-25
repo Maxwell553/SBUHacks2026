@@ -75,9 +75,9 @@ export async function draftSheet(
 }
 
 /**
- * Reviews the film as it is being made: renders a draft, has the server
- * review it (shot fixes and model repairs), and repeats once if anything
- * changed. Review problems never stop the film; it renders as it stands.
+ * Seats loose parts on the server, then returns the film. The check is
+ * geometric, so it does not render a contact sheet or wait on a vision model.
+ * Review problems never stop the film; it renders as it stands.
  */
 export async function reviewRender(
   video: Video,
@@ -85,16 +85,12 @@ export async function reviewRender(
   signal?: AbortSignal,
 ): Promise<Video> {
   let current = video;
-  const aspect: Aspect = video.aspect === "portrait" ? "portrait" : "landscape";
   for (let round = 1; round <= REVIEW_ROUNDS; round++) {
     if (!current.script) break;
-    onProgress?.({ round, rounds: REVIEW_ROUNDS, stage: "rendering" });
-    let result, issues: ShotIssue[];
+    onProgress?.({ round, rounds: REVIEW_ROUNDS, stage: "reviewing" });
+    let result;
     try {
-      const draft = await draftSheet(current.script, aspect, signal);
-      issues = draft.issues;
-      onProgress?.({ round, rounds: REVIEW_ROUNDS, stage: "reviewing", issues: issues.length });
-      result = await videos.review(current.id, { round, sheet: draft.sheet, issues }, signal);
+      result = await videos.review(current.id, { round, issues: [] }, signal);
     } catch (error) {
       if ((error as Error).name === "AbortError") throw error;
       break;
@@ -105,7 +101,6 @@ export async function reviewRender(
       round,
       rounds: REVIEW_ROUNDS,
       stage: "done",
-      issues: issues.length,
       shotsChanged,
       modelsRepaired: modelsRepaired.length,
     });

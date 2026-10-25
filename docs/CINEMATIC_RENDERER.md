@@ -92,6 +92,7 @@ Inference is implemented in `lib/lowpoly/world.ts` and `lib/lowpoly/environment.
      - Exponential haze per weather.
 5. **Units.**
    - Units are placed as before, except that architecture formations are spaced by real footprint rather than diagonal radius.
+   - **People and the action.** A subject person or animal is stood just off the flank of a subject vehicle, aircraft, boat or prop, at that object's depth, so they are not left metres toward the camera (`lib/lowpoly/staging.ts`). Foreground witnesses are brought in and stepped off the centre line. Six or more subject people keep their formation. Background stays where it was put.
    - **Separation.** `layout.ts` pushes overlapping footprints apart, then checks each straight-line mover's swept path. A mover that would run into a standing unit or another mover shifts sideways into a clear lane, or stops short if no lane is free.
    - **Ground contact.** Units sit on the highest of five footprint samples so wide models do not sink into sloped terrain. The model's lowest point is dropped to the ground, with a small sink.
    - **Aircraft.**

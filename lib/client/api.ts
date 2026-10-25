@@ -117,7 +117,7 @@ export const videos = {
     api<{ ok: boolean }>(`/api/videos/${id}/direct`, { method: "POST", signal }),
   finish: (id: string, signal?: AbortSignal) =>
     api<{ video: Video }>(`/api/videos/${id}/finish`, { method: "POST", signal }),
-  review: (id: string, json: { round: number; sheet: string; issues: ShotIssue[] }, signal?: AbortSignal) =>
+  review: (id: string, json: { round: number; sheet?: string; issues: ShotIssue[] }, signal?: AbortSignal) =>
     api<{ video: Video; review: ReviewSummary }>(`/api/videos/${id}/review`, { method: "POST", json, signal }),
   discard: (id: string) =>
     api<{ ok: boolean }>(`/api/videos/${id}?incomplete=1`, { method: "DELETE", keepalive: true }),

@@ -631,7 +631,7 @@ export function Studio({ initialPrompt = "" }: { initialPrompt?: string }) {
                   <div className="notice info">
                     <strong>Stay in this tab.</strong> Your browser helps build, check and animate the video. Closing
                     it, reloading, or opening another page stops the film and it won’t be saved. This usually takes
-                    three to five minutes.
+                    about two minutes.
                   </div>
                 ) : null}
                 {saveFailed ? (

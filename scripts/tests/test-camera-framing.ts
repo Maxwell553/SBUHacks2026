@@ -150,3 +150,48 @@ broadCamera.updateMatrixWorld(true);
 const broadCenter = new THREE.Vector3(0, 9, 0).project(broadCamera);
 assert(Math.abs(broadCenter.y) < 0.05, "A wide shot aims at the whole subject, not its ground-level base");
 console.log("PASS broad architectural subjects retain centered wide-shot framing");
+
+const crowd = makeShot({
+  move: "push_in",
+  shotSize: "wide",
+  immersive: true,
+  portrait: false,
+  index: 1,
+  seed: 7,
+  focus: new THREE.Vector3(),
+  radius: 16,
+  height: 1.8,
+  aerial: false,
+  corridor: null,
+  obstacles: [],
+  heightAt: () => 0,
+});
+const crowdCamera = new THREE.PerspectiveCamera(crowd.fov, 16 / 9, crowd.near, 1000);
+crowd.place(crowdCamera, 1, 6);
+assert(
+  crowdCamera.position.y > 1.4 && crowdCamera.position.y < 3,
+  `A wide crowd is filmed near eye level, not from above (${crowdCamera.position.y.toFixed(2)})`,
+);
+console.log("PASS wide places stay near eye level");
+
+const person = makeShot({
+  move: "eye_level",
+  shotSize: "close",
+  immersive: true,
+  portrait: true,
+  index: 0,
+  seed: 3,
+  focus: new THREE.Vector3(),
+  radius: 0.4,
+  height: 1.7,
+  aerial: false,
+  corridor: null,
+  obstacles: [],
+  subjects: () => [{ x: 0, z: 0, r: 0.4, h: 1.7 }],
+  heightAt: () => 0,
+});
+const personCamera = new THREE.PerspectiveCamera(person.fov, 9 / 16, person.near, 200);
+person.place(personCamera, 1, 5);
+const personDistance = Math.hypot(personCamera.position.x, personCamera.position.z);
+assert(personDistance >= 1.7 * 2.1 - 0.05, `A person is shown whole (${personDistance.toFixed(2)} m)`);
+console.log("PASS a close shot keeps a whole person in frame");

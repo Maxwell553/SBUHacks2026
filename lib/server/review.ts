@@ -1,6 +1,6 @@
 import { ThinkingLevel } from "@google/genai";
 import { z } from "zod";
-import { ModelLibrary } from "@/lib/lowpoly/compiler";
+import { ModelLibrary, settleDetached } from "@/lib/lowpoly/compiler";
 import { REVIEW_ROUNDS, type ShotIssue } from "@/lib/lowpoly/shot-audit";
 import {
   geminiModelDefinitionJsonSchema,
@@ -31,9 +31,9 @@ import { builderModel, reviewModel, thinking } from "@/lib/server/models";
 import { referenceParts } from "@/lib/server/references";
 
 export const MAX_REVIEW_ROUNDS = REVIEW_ROUNDS;
-const MAX_REPAIRS = 3;
-const REPAIR_MS = 110_000;
-const REVIEWER_MS = 80_000;
+const MAX_REPAIRS = 2;
+const REPAIR_MS = 22_000;
+const REVIEWER_MS = 18_000;
 /** Kept free at the end of a round for normalizing, moderation and saving. */
 const FINISH_MS = 15_000;
 /** A repair the reviewer asks for only starts with at least this much of the round left. */
@@ -41,11 +41,15 @@ const LATE_REPAIR_FLOOR_MS = 60_000;
 
 export const reviewInputSchema = z.object({
   round: z.number().int().min(1).max(MAX_REVIEW_ROUNDS),
-  /** Contact sheet of the film as rendered in the browser. */
+  /**
+   * Contact sheet of the film as rendered in the browser. Omitted for the
+   * studio pass, which only seats loose parts and does not wait on a vision model.
+   */
   sheet: z
     .string()
     .max(6_000_000)
-    .regex(/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/),
+    .regex(/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/)
+    .optional(),
   issues: z
     .array(
       z.object({
@@ -82,8 +86,9 @@ subjects out of frame or tiny) and model parts measured as floating loose from t
 
 Judge what a viewer sees. Look for objects that intersect, overlap or float; models whose parts are scattered,
 detached or jammed into each other; frames that are cluttered, empty or confusing; subjects that are hidden, cut off or
-too small; and shots that fail to show what their caption describes. Measured problems are reliable evidence, but
-check them against the picture.
+too small; and shots that fail to show what their caption describes. A person acting on an object stands on the ground
+beside it, within a couple of metres — someone metres in front of the thing they are using is misplaced. Measured
+problems are reliable evidence, but check them against the picture.
 
 For each shot that needs it, return only the fields to change: a complete replacement elements list (separate things
 with offset in metres, reduce counts, adjust scale, set roles so the subject is clear), a different camera, shotSize or
@@ -217,18 +222,31 @@ export async function reviewFilm(
   audit: AuditContext,
   deadline: number,
 ): Promise<ReviewResult> {
-  const lib = new ModelLibrary(script.models);
-  const loose = new Map(script.models.map((m) => [m.id, looseParts(lib, m)]));
-  const ids = new Set(script.models.map((m) => m.id));
+  const models = script.models.map((model) => settleDetached(model) ?? model);
+  const seated = script.models.filter((model, index) => models[index] !== model).map((model) => model.id);
+  const current = seated.length ? { ...script, models } : script;
+  // The studio asks only for this seating. A contact sheet opts into the slower visual pass.
+  if (!input.sheet) {
+    return {
+      script: current,
+      verdict: seated.length ? "revise" : "pass",
+      summary: seated.length ? "Floating parts were pulled back onto their models." : "",
+      shotsChanged: 0,
+      modelsRepaired: seated,
+    };
+  }
+  const lib = new ModelLibrary(current.models);
+  const loose = new Map(current.models.map((m) => [m.id, looseParts(lib, m)]));
+  const ids = new Set(current.models.map((m) => m.id));
   const issues: ShotIssue[] = input.issues.filter(
-    (i) => i.scene < script.scenes.length && i.models.every((m) => ids.has(m)),
+    (i) => i.scene < current.scenes.length && i.models.every((m) => ids.has(m)),
   );
 
-  // Measured loose parts are repaired straight away, alongside the visual review.
+  // Anything still loose after seating can be repaired, alongside the visual review.
   const repairs = new Map<string, Promise<ModelDefinition | null>>();
   const repair = (id: string, problem: string) => {
     if (repairs.has(id) || repairs.size >= MAX_REPAIRS) return;
-    const model = script.models.find((m) => m.id === id);
+    const model = current.models.find((m) => m.id === id);
     if (!model) return;
     repairs.set(
       id,
@@ -244,7 +262,8 @@ export async function reviewFilm(
     .forEach(([id, l]) => repair(id, describeLoose(l)));
 
   const reviewer = reviewModel();
-  const data = input.sheet.slice(input.sheet.indexOf(",") + 1);
+  const sheet = input.sheet;
+  const data = sheet.slice(sheet.indexOf(",") + 1);
   const response = await generateContent({
     model: reviewer,
     contents: [
@@ -254,8 +273,8 @@ export async function reviewFilm(
           { inlineData: { mimeType: "image/jpeg", data } },
           {
             text: JSON.stringify({
-              storyboard: { ...script, models: undefined },
-              models: script.models.map((m) => {
+              storyboard: { ...current, models: undefined },
+              models: current.models.map((m) => {
                 const b = lib.bounds(m.id);
                 return {
                   id: m.id,
@@ -275,7 +294,7 @@ export async function reviewFilm(
     config: {
       systemInstruction: REVIEW_INSTRUCTIONS,
       responseMimeType: "application/json",
-      responseJsonSchema: providerSceneSchema(reviewSchema(script)),
+      responseJsonSchema: providerSceneSchema(reviewSchema(current)),
       safetySettings,
       maxOutputTokens: 16384,
       thinkingConfig: thinking(reviewer, ThinkingLevel.LOW),
@@ -296,7 +315,7 @@ export async function reviewFilm(
   if (deadline - Date.now() >= LATE_REPAIR_FLOOR_MS)
     for (const m of review.models) repair(m.id, `${m.problem} ${describeLoose(loose.get(m.id) ?? [])}`.trim());
 
-  const scenes = script.scenes.map((sc) => ({ ...sc }));
+  const scenes = current.scenes.map((sc) => ({ ...sc }));
   let shotsChanged = 0;
   for (const edit of review.scenes) {
     const target = scenes[edit.scene];
@@ -312,38 +331,48 @@ export async function reviewFilm(
   }
 
   // A repair is kept only when it is valid and holds together better than the original.
-  const models = [...script.models];
-  const modelsRepaired: string[] = [];
+  const edited = [...current.models];
+  const modelsRepaired = [...seated];
   for (const [id, pending] of repairs) {
     const fixed = await pending;
     if (!fixed) continue;
-    const index = models.findIndex((m) => m.id === id);
+    const index = edited.findIndex((m) => m.id === id);
     const before = loose.get(id) ?? [];
     const check = new ModelLibrary([fixed]);
     const after = looseParts(check, fixed);
     check.dispose();
     const share = (l: typeof before) => l.reduce((a, d) => a + d.share, 0);
     if (after.length > before.length || share(after) > share(before) + 1e-6) continue;
-    models[index] = fixed;
-    modelsRepaired.push(id);
+    edited[index] = fixed;
+    if (!modelsRepaired.includes(id)) modelsRepaired.push(id);
   }
 
-  if (!shotsChanged && !modelsRepaired.length)
-    return { script, verdict: review.verdict, summary: review.summary, shotsChanged: 0, modelsRepaired };
+  if (
+    !shotsChanged &&
+    modelsRepaired.length === seated.length &&
+    edited.every((model, i) => model === current.models[i])
+  )
+    return {
+      script: current,
+      verdict: review.verdict,
+      summary: review.summary || (seated.length ? "Floating parts were pulled back onto their models." : ""),
+      shotsChanged: 0,
+      modelsRepaired,
+    };
   let next: VideoScript;
   try {
     next = normalizeVideoScript(
-      { ...script, scenes, models },
-      { targetDuration: script.totalDuration, seed: script.seed },
+      { ...current, scenes, models: edited },
+      { targetDuration: current.totalDuration, seed: current.seed },
     );
   } catch {
-    return { script, verdict: "pass", summary: "", shotsChanged: 0, modelsRepaired: [] };
+    return { script: current, verdict: "pass", summary: "", shotsChanged: 0, modelsRepaired: seated };
   }
   try {
-    await moderate(scriptText(next), true, signal, audit);
+    if (scriptText(next) !== scriptText(current)) await moderate(scriptText(next), true, signal, audit);
   } catch (error) {
     if (error instanceof ModerationRejected)
-      return { script, verdict: "pass", summary: "", shotsChanged: 0, modelsRepaired: [] };
+      return { script: current, verdict: "pass", summary: "", shotsChanged: 0, modelsRepaired: seated };
     throw error;
   }
   return { script: next, verdict: review.verdict, summary: review.summary, shotsChanged, modelsRepaired };

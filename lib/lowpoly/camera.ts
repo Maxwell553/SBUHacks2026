@@ -104,8 +104,11 @@ export function makeShot(spec: ShotSpec): Shot {
   // aiming at half-height puts the lens beneath tables and mechanisms.
   const detail = spec.shotSize === "close" && h < 2;
   const overview = spec.shotSize === "wide" && r > h * 1.3;
+  // A wide place is filmed from near eye level, the way the reference films
+  // hold a street or a waterfront: the distance carries the width, not a
+  // raised diorama angle. Crane, flyover and top-down moves bring their own height.
   const eye = overview
-    ? clamp(h * 0.8 + r * 0.3, 1.65, 8)
+    ? clamp(1.55 + Math.min(r, 20) * 0.04, 1.55, 2.7)
     : detail
       ? h + 0.35
       : h < 1.2
@@ -163,13 +166,15 @@ export function makeShot(spec: ShotSpec): Shot {
         if (!hit) break;
         pos.lerp(tgt, 0.12);
       }
-      // Never inside or underneath an acting model: step back out radially.
+      // Never inside an acting model. A person needs enough distance that the
+      // frame holds the whole body, not a cropped pair of arms.
       for (const a of actors) {
         const dx = pos.x - a.x,
           dz = pos.z - a.z;
-        const d = Math.hypot(dx, dz),
-          min = a.r + 0.25;
-        if (d >= min || pos.y - ground() > a.h + 0.3) continue;
+        const d = Math.hypot(dx, dz);
+        const human = a.h > 0.8 && a.h < 2.6 && a.r < 1.1;
+        const min = human ? Math.max(a.r + 0.25, a.h * 2.1) : a.r + 0.25;
+        if (d >= min || (!human && pos.y - ground() > a.h + 0.3)) continue;
         if (d > 1e-4) {
           pos.x = a.x + (dx / d) * min;
           pos.z = a.z + (dz / d) * min;
@@ -258,14 +263,14 @@ export function makeShot(spec: ShotSpec): Shot {
           break;
         }
         case "push_in":
-          atEye(th0 + side * 0.06 * e, d0 * (1.25 - 0.35 * e), lerp(eye + d0 * 0.1, eye, e));
+          atEye(th0 + side * 0.06 * e, d0 * (1.25 - 0.35 * e), lerp(eye + Math.min(d0 * 0.1, 0.45), eye, e));
           break;
         case "pull_out":
           atEye(th0 * 0.5, d0 * (0.9 + 0.55 * e), lerp(eye, eye + d0 * 0.45, e * e));
           tgt.y = base + lerp(lookY, h * 0.35, e);
           break;
         case "orbit":
-          atEye(th0 + side * lerp(-0.55, 0.55, e), d0 * 1.02, eye * 1.1 + d0 * 0.1);
+          atEye(th0 + side * lerp(-0.22, 0.22, e), d0 * (1.04 - 0.06 * e), eye * 1.05 + d0 * 0.06);
           break;
         case "pan_left":
         case "pan_right": {

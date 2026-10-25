@@ -4,6 +4,7 @@ import { requireUser } from "@/lib/server/auth";
 import { query, transaction } from "@/lib/server/db";
 import { body, sameOrigin, json, failure, ApiError } from "@/lib/server/http";
 import { videoResponse } from "@/lib/server/videos";
+import { stageAllowance } from "@/lib/server/film-budget";
 import { moderate, planModels, researchEvent, STEP_DEADLINE_MS } from "@/lib/server/gemini";
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -55,17 +56,20 @@ export async function POST(request: Request) {
       return videoId;
     });
     const signal = AbortSignal.any([AbortSignal.timeout(STEP_DEADLINE_MS), request.signal]);
+    const started = Date.now();
     const audit = { userId: user.id, videoId: id };
-    await moderate(prompt, false, signal, audit);
+    await moderate(prompt, false, signal, audit, stageAllowance("moderate", 0));
     signal.throwIfAborted();
     await query("UPDATE ph_videos SET status='researching',updated_at=now() WHERE id=$1", [id]);
-    // Reuse only this user's recent sourced briefing for the exact same request.
+    // Reuse only this user's recent briefing for the exact same request.
     // Moderation still runs above; no other user's prompt/research is exposed.
     const { rows: priorResearch } = await query(
-      "SELECT research,sources FROM ph_videos WHERE user_id=$1 AND prompt=$2 AND duration=$3 AND id<>$4 AND research IS NOT NULL AND jsonb_array_length(sources)>0 AND created_at>now()-interval '1 day' ORDER BY created_at DESC LIMIT 1",
+      "SELECT research,sources FROM ph_videos WHERE user_id=$1 AND prompt=$2 AND duration=$3 AND id<>$4 AND research IS NOT NULL AND length(research)>0 AND created_at>now()-interval '1 day' ORDER BY created_at DESC LIMIT 1",
       [user.id, prompt, duration, id],
     );
-    const research = priorResearch[0] ?? (await researchEvent(prompt, duration, signal));
+    const research =
+      priorResearch[0] ??
+      (await researchEvent(prompt, duration, signal, stageAllowance("research", Date.now() - started)));
     await query("UPDATE ph_videos SET status='scripting',research=$2,sources=$3,updated_at=now() WHERE id=$1", [
       id,
       research.research,
@@ -73,7 +77,7 @@ export async function POST(request: Request) {
     ]);
     // Building, directing and assembling follow as separate requests (build, direct, finish)
     // so no single function runs long; this step ends with the model plan.
-    const plan = await planModels(prompt, research.research, signal);
+    const plan = await planModels(prompt, research.research, signal, stageAllowance("plan", Date.now() - started));
     const { rows } = await query("UPDATE ph_videos SET plan=$2,updated_at=now() WHERE id=$1 RETURNING *", [
       id,
       JSON.stringify({ production: { requests: plan.models } }),

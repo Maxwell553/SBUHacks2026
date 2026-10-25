@@ -93,11 +93,11 @@ const TOD: Record<TimeOfDay, Light> = {
     top: "#3f7fd6",
     horizon: "#d6eaff",
     sun: "#fff1da",
-    sunI: 3.1,
+    sunI: 3.55,
     elev: 38,
     hemiSky: "#d4e6ff",
-    hemiGround: "#6f6a52",
-    hemiI: 1.05,
+    hemiGround: "#6a6248",
+    hemiI: 0.78,
     water: "#2b8fb3",
   },
   dusk: {
@@ -473,7 +473,7 @@ export function buildEnvironment(spec: EnvSpec, seed: number, o: EnvOptions = {}
       if (hasWater && y < 0.6 && y > -0.4) c.copy(WW ? riverbank : beach);
       if (hasWater && y <= -0.4) c.copy(bed);
       // Large-scale value drift reads as worn, sun-bleached ground.
-      const j = 1 + (rng() - 0.5) * 0.07 + 0.06 * noise(cx * 0.02 + 7, cz * 0.02 + 5, 2);
+      const j = 1 + (rng() - 0.5) * 0.025 + 0.05 * noise(cx * 0.02 + 7, cz * 0.02 + 5, 2);
       [a, b, d].forEach((p, k) => {
         pos.set([p.x, p.y, p.z], t * 9 + k * 3);
         uv.set([p.x / GROUND_TILE_METRES, -p.z / GROUND_TILE_METRES], t * 6 + k * 2);
@@ -571,6 +571,33 @@ export function buildEnvironment(spec: EnvSpec, seed: number, o: EnvOptions = {}
         group.add(k);
       }
       disposables.push(kg, km);
+    }
+    if (setting === "city" && path.share >= 1) {
+      // A zebra crossing in front of the action, the way the reference streets are marked.
+      const bars = 5;
+      const length = Math.min(half * 1.85, 14);
+      const sg = new THREE.BoxGeometry(length, 0.02, 0.38);
+      const sm = new THREE.MeshStandardMaterial({ color: "#f4f1ea", roughness: 0.82, metalness: 0 });
+      for (let i = 0; i < bars; i++) {
+        const z = C.cz + 1.6 + i * 0.78;
+        const stripe = new THREE.Mesh(sg, sm);
+        stripe.position.set(C.cx, heightAt(C.cx, z) + 0.045, z);
+        stripe.receiveShadow = true;
+        group.add(stripe);
+      }
+      disposables.push(sg, sm);
+      // Dashes down the middle of the road, so traffic has a line to follow.
+      const dashLen = 1.5;
+      const dg = new THREE.BoxGeometry(0.14, 0.015, dashLen);
+      const dm = new THREE.MeshStandardMaterial({ color: "#efeae0", roughness: 0.85, metalness: 0 });
+      for (let i = 0; i < 16; i++) {
+        const z = C.cz + 8 - i * 2.8;
+        const dash = new THREE.Mesh(dg, dm);
+        dash.position.set(C.cx, heightAt(C.cx, z) + 0.04, z);
+        dash.receiveShadow = true;
+        group.add(dash);
+      }
+      disposables.push(dg, dm);
     }
   }
 
@@ -805,7 +832,7 @@ export function buildEnvironment(spec: EnvSpec, seed: number, o: EnvOptions = {}
   group.add(sun, sun.target);
   const hemi = new THREE.HemisphereLight(L.hemiSky, L.hemiGround, L.hemiI);
   group.add(hemi);
-  group.add(new THREE.AmbientLight("#ffffff", night ? 0.1 : 0.14));
+  group.add(new THREE.AmbientLight("#fff6ea", night ? 0.08 : 0.1));
 
   // Sun / moon disc and halo.
   const sunVisible = L.elev > 2 && spec.weather !== "storm" && spec.weather !== "fog";

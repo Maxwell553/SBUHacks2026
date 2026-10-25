@@ -15,6 +15,7 @@
 // builders side by side (two views each) for builder comparisons.
 // Results: window.__result (JSON) and window.__sheet (JPEG data URL of the sheet).
 import { PolyEngine } from "@/lib/lowpoly/engine";
+import { exportMovie } from "@/lib/render/movie";
 import { ModelLibrary } from "@/lib/lowpoly/compiler";
 import { shotIssues, type ShotSnapshot } from "@/lib/lowpoly/shot-audit";
 import { SHOWCASE_SCRIPT } from "@/lib/content/showcase";
@@ -183,6 +184,24 @@ async function compareModels() {
   renderer.dispose();
   composite(sheet, w, h, 4);
   return { mode: "models", rows };
+}
+
+/** Encodes the loaded film to an HD movie and reports size and time. The bytes stay in memory. */
+async function encodeFilm() {
+  const script = await loadScript();
+  const portrait = q.get("p") === "1";
+  await PolyEngine.loadFonts("/public/fonts");
+  const started = performance.now();
+  const { movie, mime, frames } = await exportMovie(script, { aspect: portrait ? "portrait" : "landscape" });
+  return {
+    mode: "encode",
+    encodeMs: Math.round(performance.now() - started),
+    bytes: movie.size,
+    mime,
+    frames,
+    scenes: script.scenes.length,
+    duration: script.totalDuration,
+  };
 }
 
 // ---------------------------------------------------------------- film mode
@@ -386,7 +405,7 @@ async function renderFilm() {
   return result;
 }
 
-(q.get("models") ? compareModels() : renderFilm())
+(q.get("encode") === "1" ? encodeFilm() : q.get("models") ? compareModels() : renderFilm())
   .then((result) => {
     window.__result = result;
     document.getElementById("stats")!.textContent = JSON.stringify(result);

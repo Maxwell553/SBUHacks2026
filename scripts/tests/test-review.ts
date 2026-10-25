@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
-import { ModelLibrary } from "../../lib/lowpoly/compiler";
+import * as THREE from "three";
+import { ModelLibrary, settleDetached } from "../../lib/lowpoly/compiler";
 import { shotIssues, type ShotSnapshot, type UnitSnapshot } from "../../lib/lowpoly/shot-audit";
 import { normalizeModelDefinition, type ModelDefinition } from "../../lib/schema/model";
 
@@ -34,7 +35,42 @@ const loose = lib.structure("floating").detached;
 assert.equal(loose.length, 1);
 assert.deepEqual(loose[0].parts, ["lamp"]);
 assert.ok(loose[0].gap > 0.5 && loose[0].gap < 0.8, `gap ${loose[0].gap}`);
+const rendered = new THREE.Box3().setFromObject(lib.instance("floating")!.object);
+assert.ok(rendered.max.y < 1.35, `rendered lamp still floats at ${rendered.max.y.toFixed(2)}`);
 lib.dispose();
+
+const seated = settleDetached(floating);
+assert.ok(seated, "the hovering lamp is seated on the table");
+const seatedLib = new ModelLibrary([seated]);
+assert.deepEqual(seatedLib.structure("floating").detached, []);
+seatedLib.dispose();
+assert.equal(settleDetached(table), null);
+assert.equal(settleDetached(stones), null);
+
+const facade = normalizeModelDefinition({
+  id: "facade",
+  name: "Facade",
+  category: "building",
+  placement: "ground",
+  materials: [{ id: "brick", color: "#8a7560", finish: "matte" }],
+  parts: [
+    { id: "wall", shape: "box", material: "brick", size: [8, 10, 0.4], position: [0, 0, 0], anchor: "bottom" },
+    {
+      id: "pane",
+      parent: "wall",
+      shape: "box",
+      material: "brick",
+      size: [0.6, 0.8, 0.1],
+      position: [0, 2, 0.25],
+      anchor: "center",
+      repeat: { mode: "linear", count: 8, step: [0, 3, 0] },
+    },
+  ],
+});
+const facadeLib = new ModelLibrary([facade]);
+const risen = facadeLib.structure("facade").detached.filter((part) => part.gap > 1);
+assert.deepEqual(risen, [], "a repeated window that steps past the roof stays on the wall");
+facadeLib.dispose();
 
 // Shot audit.
 const unit = (over: Partial<UnitSnapshot>): UnitSnapshot => ({

@@ -4,7 +4,7 @@ import { ApiError, body, failure, json, limit, sameOrigin } from "@/lib/server/h
 import { MAX_REVIEW_ROUNDS, reviewFilm, reviewInputSchema } from "@/lib/server/review";
 import { ownedVideo, videoResponse } from "@/lib/server/videos";
 import { normalizeVideoScript } from "@/lib/schema/video";
-import { STEP_DEADLINE_MS } from "@/lib/server/gemini";
+import { stageAllowance } from "@/lib/server/film-budget";
 export const runtime = "nodejs";
 export const maxDuration = 300;
 
@@ -20,8 +20,10 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     const parsed = reviewInputSchema.safeParse(await body(request, 6_500_000));
     if (!parsed.success) throw new ApiError(400, "The review needs a rendered contact sheet.");
     const script = normalizeVideoScript(row.plan, { targetDuration: row.plan.totalDuration, seed: row.plan.seed });
-    const deadline = Date.now() + STEP_DEADLINE_MS;
-    const signal = AbortSignal.any([AbortSignal.timeout(STEP_DEADLINE_MS), request.signal]);
+    const elapsed = Date.now() - new Date(row.created_at as string).getTime();
+    const reviewMs = Math.max(3_000, stageAllowance("review", elapsed));
+    const deadline = Date.now() + reviewMs;
+    const signal = AbortSignal.any([AbortSignal.timeout(reviewMs), request.signal]);
     const result = await reviewFilm(script, parsed.data, signal, { userId: user.id, videoId: row.id }, deadline);
     console.info("Film review", {
       round: parsed.data.round,

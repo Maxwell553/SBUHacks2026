@@ -1,6 +1,6 @@
 import type { VideoScript } from "@/lib/schema/video";
 import { resolveScore, type ScoreLayer, type Voice } from "@/lib/audio/score";
-import { addUnderscore } from "@/lib/audio/underscore";
+import { addUnderscore, scoreRoot } from "@/lib/audio/underscore";
 
 const RATE = 48000;
 
@@ -26,6 +26,8 @@ type Span = {
   fadeIn: boolean;
   fadeOut: boolean;
   style?: ScoreLayer["style"];
+  /** Underscore root, so place tones sit in the film's key. */
+  root: number;
 };
 
 function spanOf(
@@ -50,6 +52,7 @@ function spanOf(
     fadeIn,
     fadeOut,
     style: layer.style,
+    root: 220,
   };
 }
 
@@ -116,8 +119,33 @@ function knock(left: Float32Array, right: Float32Array, time: number, amp: numbe
   }
 }
 
-/** Wind, room tone and the city bed were a constant hiss. They stay in the score and stay silent. */
-function addWind(_span: Span, _gust: number) {}
+/** A narrow tone in the film's key. Not a noise bed. */
+function addTone(span: Span, freq: number, amp: number, partial: number) {
+  let fundamental = 0;
+  let fifth = 0;
+  const overtone = freq * 1.5;
+  for (let i = span.from; i < span.to; i++) {
+    fundamental += (2 * Math.PI * freq) / RATE;
+    fifth += (2 * Math.PI * overtone) / RATE;
+    const s = (Math.sin(fundamental) + partial * Math.sin(fifth)) * amp * edge(span, i);
+    span.left[i] += s * 0.86;
+    span.right[i] += s;
+  }
+}
+
+function placeFreq(root: number, ratio: number, floor: number) {
+  let freq = Math.max(20, root) * ratio;
+  while (freq < floor) freq *= 2;
+  return freq;
+}
+
+function addWind(span: Span) {
+  addTone(span, placeFreq(span.root, 0.5, 90), span.level * 0.2, 0.35);
+}
+
+function addRoom(span: Span) {
+  addTone(span, placeFreq(span.root, 0.25, 70), span.level * 0.14, 0.06);
+}
 
 function addRain(span: Span) {
   const rng = rngOf(span.seed);
@@ -164,8 +192,15 @@ function addThunder(span: Span) {
   }
 }
 
-/** Surf and river wash were a steady noise floor. The cue remains; the hiss does not play. */
-function addWash(_span: Span, _crash: boolean) {}
+/** Low water in the film's key. Surf sits lower than a river. */
+function addWash(span: Span, crash: boolean) {
+  addTone(
+    span,
+    placeFreq(span.root, crash ? 0.25 : 0.375, crash ? 52 : 80),
+    span.level * (crash ? 0.2 : 0.15),
+    crash ? 0.22 : 0.32,
+  );
+}
 
 function addBirds(span: Span) {
   const rng = rngOf(span.seed);
@@ -345,7 +380,9 @@ function addTrain(span: Span) {
   }
 }
 
-function addCity(_span: Span) {}
+function addCity(span: Span) {
+  addTone(span, placeFreq(span.root, 1, 170), span.level * 0.12, 0.5);
+}
 
 function addExplosion(span: Span) {
   const rng = rngOf(span.seed);
@@ -366,14 +403,14 @@ function addExplosion(span: Span) {
 }
 
 const RENDER: Record<Voice, (span: Span) => void> = {
-  wind: (span) => addWind(span, 0.32),
+  wind: addWind,
   rain: addRain,
   thunder: addThunder,
   surf: (span) => addWash(span, true),
   river: (span) => addWash(span, false),
   birds: addBirds,
   insects: addInsects,
-  room: (span) => addWind(span, 0.07),
+  room: addRoom,
   engine: addEngine,
   propeller: addPropeller,
   hooves: addHooves,
@@ -449,6 +486,7 @@ function continues(layers: ScoreLayer[], layer: ScoreLayer, at: "start" | "end")
  */
 export function renderSoundtrack(script: VideoScript): AudioBuffer {
   const layers = resolveScore(script);
+  const root = scoreRoot(script);
   const buffer = new AudioBuffer({
     length: Math.max(1, Math.ceil(script.totalDuration * RATE)),
     numberOfChannels: 2,
@@ -458,7 +496,10 @@ export function renderSoundtrack(script: VideoScript): AudioBuffer {
   const right = buffer.getChannelData(1);
   for (const layer of layers) {
     const span = spanOf(left, right, layer, !continues(layers, layer, "start"), !continues(layers, layer, "end"));
-    if (span) RENDER[layer.cue](span);
+    if (span) {
+      span.root = root;
+      RENDER[layer.cue](span);
+    }
   }
   // Effects sit under the score. They follow the shot and cannot cover it.
   const effectGain = 0.2;

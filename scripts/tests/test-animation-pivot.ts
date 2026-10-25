@@ -91,6 +91,24 @@ for (const origin of [-1.2, 0, 1.8]) {
 }
 console.log("PASS ground contact with negative, zero and positive model origins");
 
+const carrier = normalizeModelDefinition({
+  id: "carrier",
+  name: "Carrier",
+  category: "figure",
+  placement: "ground",
+  materials: [{ id: "surface", color: "#88aa99", finish: "matte" }],
+  parts: [
+    { id: "foot", shape: "box", material: "surface", size: [0.2, 0.1, 0.3], position: [0, 0.05, 0] },
+    { id: "bucket", shape: "box", material: "surface", size: [0.3, 0.4, 0.3], position: [0.5, -0.05, 0] },
+  ],
+});
+const carrierLib = new ModelLibrary([carrier]);
+const carrierBounds = carrierLib.bounds(carrier.id);
+assert(carrierBounds.minY < -0.2, "The bucket still hangs below the sole");
+assert(carrierBounds.plantY > -0.02 && carrierBounds.plantY < 0.02, "The figure is planted on its foot");
+carrierLib.dispose();
+console.log("PASS a carried prop does not lift the feet off the ground");
+
 // Moving a model's authored origin must not change its visual camera bounds.
 let baseline: { radius: number; worldCenter: THREE.Vector3 } | undefined;
 for (const shift of [-4, 0, 5]) {
@@ -350,3 +368,195 @@ for (const shape of ["sphere", "cone"] as const) {
   lib.dispose();
 }
 console.log("PASS offset attachments follow curved and tapered surfaces");
+
+const stiff = normalizeModelDefinition({
+  id: "stiff_walker",
+  name: "Stiff walker",
+  category: "figure",
+  placement: "ground",
+  materials: [{ id: "cloth", color: "#335577", finish: "cloth" }],
+  parts: [
+    { id: "torso", shape: "box", material: "cloth", size: [0.4, 0.7, 0.25], position: [0, 1.25, 0] },
+    {
+      id: "leg_l",
+      parent: "torso",
+      shape: "box",
+      material: "cloth",
+      size: [0.14, 0.8, 0.14],
+      position: [0, -0.75, 0.08],
+    },
+    {
+      id: "hip",
+      shape: "group",
+      size: [0, 0, 0],
+      position: [0, 0.9, 0],
+      animation: [
+        {
+          property: "rotation",
+          axis: "z",
+          wave: "sine",
+          amplitude: 24,
+          frequency: 1.6,
+          alternate: true,
+          when: "moving",
+        },
+      ],
+    },
+    {
+      id: "leg_r",
+      parent: "hip",
+      shape: "box",
+      material: "cloth",
+      size: [0.14, 0.8, 0.14],
+      position: [0, -0.4, -0.08],
+    },
+  ],
+});
+const stiffLib = new ModelLibrary([stiff]);
+const stiffBody = stiffLib.instance("stiff_walker")!;
+const pose = () => {
+  stiffBody.object.updateWorldMatrix(true, true);
+  const points: number[] = [];
+  stiffBody.object.traverse((obj) => {
+    if (obj instanceof THREE.Mesh)
+      points.push(+new THREE.Vector3().setFromMatrixPosition(obj.matrixWorld).y.toFixed(4));
+  });
+  return points.join(",");
+};
+const gait = { time: 0, progress: 0, moving: true, night: false, phase: 0 };
+stiffBody.update(gait);
+const standing = pose();
+stiffBody.update({ ...gait, time: 0.18 });
+const stepping = pose();
+assert.notEqual(standing, stepping, "A figure with no authored cycle still walks");
+assert.equal(
+  stiff.parts.find((p) => p.id === "leg_l")?.animation,
+  undefined,
+  "Life is applied at compile, not written back",
+);
+stiffBody.update({ ...gait, time: 0 });
+const rest = pose();
+stiffBody.update({ ...gait, time: 0.18, moving: false });
+const idle = pose();
+assert.notEqual(rest, idle, "A standing figure still shifts its weight");
+stiffBody.dispose();
+stiffLib.dispose();
+console.log("PASS unauthored limbs walk and idle without disturbing an existing cycle");
+
+const plane = normalizeModelDefinition({
+  id: "prop_plane",
+  name: "Prop plane",
+  category: "aircraft",
+  placement: "air",
+  materials: [{ id: "m", color: "#888888", finish: "matte" }],
+  parts: [
+    { id: "fuselage", shape: "box", material: "m", size: [2, 0.4, 0.4], position: [0, 1, 0] },
+    { id: "propeller", shape: "box", material: "m", size: [0.08, 1.2, 0.06], position: [1.1, 1, 0] },
+    { id: "propeller_right", shape: "box", material: "m", size: [0.08, 1.2, 0.06], position: [1.1, 1, 0.8] },
+  ],
+});
+const planeLib = new ModelLibrary([plane]);
+const planeBody = planeLib.instance("prop_plane")!;
+const bladeTop = () => {
+  planeBody.object.updateWorldMatrix(true, true);
+  let top = -Infinity;
+  const v = new THREE.Vector3();
+  planeBody.object.traverse((obj) => {
+    if (!(obj instanceof THREE.Mesh)) return;
+    const pos = obj.geometry.getAttribute("position");
+    for (let i = 0; i < pos.count; i += 4) {
+      v.fromBufferAttribute(pos, i).applyMatrix4(obj.matrixWorld);
+      if (v.y > top) top = v.y;
+    }
+  });
+  return top;
+};
+const parked = { time: 0, progress: 0, moving: false, night: false, phase: 0 };
+planeBody.update(parked);
+const still = bladeTop();
+planeBody.update({ ...parked, time: 0.08 });
+assert(Math.abs(bladeTop() - still) > 0.05, "Propellers turn while the aircraft is parked");
+assert.equal(plane.parts[1].animation, undefined, "Propeller spin is not written back into the model");
+planeBody.dispose();
+planeLib.dispose();
+console.log("PASS parked propellers keep turning");
+
+const striker = normalizeModelDefinition({
+  id: "striker",
+  name: "Striker",
+  category: "figure",
+  placement: "ground",
+  materials: [{ id: "m", color: "#888888", finish: "matte" }],
+  parts: [
+    { id: "torso", shape: "box", material: "m", size: [0.4, 0.6, 0.25], position: [0, 1, 0] },
+    {
+      id: "staff_shaft",
+      parent: "torso",
+      shape: "box",
+      material: "m",
+      size: [0.04, 1.4, 0.04],
+      position: [0.2, 1.6, 0],
+      animation: [{ property: "rotation", axis: "z", wave: "sine", amplitude: 80, frequency: 2, when: "always" }],
+    },
+  ],
+});
+const strikeLib = new ModelLibrary([striker]);
+const strikeBody = strikeLib.instance("striker")!;
+const staffTip = (time: number) => {
+  strikeBody.update({ time, progress: 0, moving: true, night: false, phase: 0 });
+  strikeBody.object.updateMatrixWorld(true);
+  let tip = new THREE.Vector3();
+  strikeBody.object.traverse((obj) => {
+    if (!(obj instanceof THREE.Mesh)) return;
+    const size = obj.geometry.boundingBox?.getSize(new THREE.Vector3());
+    if (!size || size.y < 1) return;
+    tip = obj.localToWorld(new THREE.Vector3(0, 0.7, 0));
+  });
+  return tip;
+};
+const held = staffTip(0).distanceTo(staffTip(0.125));
+assert(held < 0.35, `A held staff stays aimed at the work (${held.toFixed(2)} m)`);
+assert.equal(striker.parts[1].animation?.[0].amplitude, 80, "The stored model is not rewritten");
+strikeBody.dispose();
+strikeLib.dispose();
+console.log("PASS a held tool on any figure stays aimed instead of striking the air");
+
+const raised = normalizeModelDefinition({
+  id: "raised_arms",
+  name: "Raised arms",
+  category: "figure",
+  placement: "ground",
+  materials: [{ id: "m", color: "#c47a4a", finish: "matte" }],
+  parts: [
+    { id: "torso", shape: "box", material: "m", size: [0.4, 0.5, 0.28], position: [0, 1.1, 0] },
+    {
+      id: "arm",
+      parent: "torso",
+      shape: "box",
+      material: "m",
+      size: [0.12, 0.7, 0.12],
+      position: [0.28, 1.35, 0],
+      rotation: [0, 0, 80],
+    },
+  ],
+});
+const raisedLib = new ModelLibrary([raised]);
+const raisedBody = raisedLib.instance("raised_arms")!;
+raisedBody.object.updateMatrixWorld(true);
+let armSize = new THREE.Vector3();
+raisedBody.object.traverse((obj) => {
+  if (!(obj instanceof THREE.Mesh)) return;
+  obj.geometry.computeBoundingBox();
+  const size = obj.geometry.boundingBox!.getSize(new THREE.Vector3());
+  if (size.x > 0.2 || size.y < 0.6) return;
+  const world = obj.geometry.boundingBox!.clone().applyMatrix4(obj.matrixWorld);
+  armSize = world.getSize(new THREE.Vector3());
+});
+assert(
+  armSize.y > armSize.x,
+  `A raised arm is eased back toward the body (${armSize.x.toFixed(2)} x ${armSize.y.toFixed(2)})`,
+);
+assert.equal(raised.parts[1].rotation?.[2], 80, "The stored pose is not rewritten");
+raisedBody.dispose();
+raisedLib.dispose();
+console.log("PASS extreme arms are eased into a reachable pose");

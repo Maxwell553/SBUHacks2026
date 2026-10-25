@@ -1,3 +1,4 @@
+import { stageAllowance } from "@/lib/server/film-budget";
 import { requireUser } from "@/lib/server/auth";
 import { query } from "@/lib/server/db";
 import { assembleFilm, loadBuiltModel } from "@/lib/server/gemini";
@@ -15,19 +16,19 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     const row = await ownedVideo((await context.params).id, user.id);
     const { requests, story } = productionOf(row);
     if (!story) throw new ApiError(409, "The storyboard isn't written yet.");
-    const models = await Promise.all(requests.map((r) => loadBuiltModel(user.id, r)));
-    if (models.some((m) => !m)) throw new ApiError(409, "Some models aren't built yet.");
-    const signal = AbortSignal.any([AbortSignal.timeout(60_000), request.signal]);
-    const script = await assembleFilm(
-      story,
-      models.filter((m) => !!m),
-      row.duration,
-      signal,
-      {
-        userId: user.id,
-        videoId: row.id,
-      },
+    const models = (await Promise.all(requests.map((r) => loadBuiltModel(user.id, r)))).filter(
+      (model): model is NonNullable<typeof model> => !!model,
     );
+    if (!models.length) throw new ApiError(409, "Some models aren't built yet.");
+    const elapsed = Date.now() - new Date(row.created_at as string).getTime();
+    const signal = AbortSignal.any([
+      AbortSignal.timeout(Math.max(3_000, stageAllowance("finish", elapsed))),
+      request.signal,
+    ]);
+    const script = await assembleFilm(story, models, row.duration, signal, {
+      userId: user.id,
+      videoId: row.id,
+    });
     const { rows } = await query(
       "UPDATE ph_videos SET status='ready',title=$2,plan=$3,updated_at=now() WHERE id=$1 AND status='scripting' RETURNING *",
       [row.id, script.title, JSON.stringify(script)],

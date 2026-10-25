@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { makeRng } from "../../lib/lowpoly/core";
 import { penetration, positionAt, resolveLayout, sweptCircles, type Body } from "../../lib/lowpoly/layout";
+import { deckTop, stageBeside, stageCrew, type StageFigure, type StageProp } from "../../lib/lowpoly/staging";
 
 const MARGIN = 0.15;
 const box = (x: number, z: number, hx: number, hz = hx, heading = 0, extra: Partial<Body> = {}): Body => ({
@@ -265,4 +266,71 @@ for (let s = 0; s < 200; s++)
 console.log(
   `PASS 160 bodies / 20 movers: cold ${cold.toFixed(2)} ms, warm median ${median.toFixed(2)} ms, max ${runs.at(-1)!.toFixed(2)} ms` +
     ` (overlaps ${report.overlapsBefore} -> ${report.overlapsAfter}, shifted ${report.pathsShifted}, clipped ${report.pathsClipped})`,
+);
+
+const wing: StageProp = { x: 0, z: 0, hx: 6, hz: 1.2, heading: 0 };
+const stray: StageFigure = { x: 0, z: 8, radius: 0.4, role: "subject" };
+assert.equal(stageBeside([stray], wing), 1, "A person metres in front of the subject is moved");
+assert(Math.abs(stray.z) < 1.5, `They leave the lens (z ${stray.z.toFixed(2)})`);
+assert(Math.abs(stray.x) > wing.hx, "They stand off the subject's flank");
+const beside: StageFigure = { x: 6.8, z: 0, radius: 0.4, role: "subject" };
+const kept = { ...beside };
+assert.equal(stageBeside([beside], wing), 0, "Someone already at the wing is left there");
+assert.deepEqual(beside, kept);
+const witness: StageFigure = { x: 0, z: 14, radius: 0.4, role: "foreground" };
+stageBeside([witness], wing);
+assert(witness.z < 4 && witness.z > 1, `A witness comes closer without joining the crew (z ${witness.z.toFixed(2)})`);
+assert(Math.abs(witness.x) > 5, "A witness steps off the centre line");
+const pilot: StageFigure = { x: 4, z: 3, radius: 0.4, role: "subject", aboard: true };
+assert.equal(stageBeside([pilot], wing), 1, "A lying figure is moved onto the machine");
+assert(Math.hypot(pilot.x, pilot.z) < 0.01, `The lying figure is on the machine (${pilot.x}, ${pilot.z})`);
+const span: StageProp = { x: 0, z: 0, hx: 2, hz: 6, heading: 0 };
+const lying: StageFigure = { x: 1, z: 1, radius: 0.4, role: "subject", aboard: true };
+assert.equal(stageBeside([lying], span), 1, "A lying figure is moved onto a wide machine");
+assert(lying.z > 2 && lying.z < 6, `The lying figure rests on the near half (z ${lying.z.toFixed(2)})`);
+const runner: StageFigure = { x: 0, z: 0, radius: 0.4, role: "subject" };
+assert.equal(stageBeside([runner], span), 1, "A person under a wide footprint is moved");
+assert(runner.z > 6, `They stand off the span (z ${runner.z.toFixed(2)})`);
+assert(Math.abs(runner.x) <= 2, `They stay alongside the body (x ${runner.x.toFixed(2)})`);
+const company = Array.from({ length: 6 }, (_, i) => ({ x: i * 3, z: 12, radius: 0.4, role: "subject" as const }));
+const before = company.map((figure) => ({ ...figure }));
+assert.equal(stageBeside(company, wing), 0, "A crowd keeps its formation");
+assert.deepEqual(company, before);
+const load: StageProp = { x: 0, z: 0, hx: 3, hz: 1, heading: 0 };
+const haulers = Array.from({ length: 8 }, (_, i) => ({
+  x: -8,
+  z: i,
+  radius: 0.35,
+  role: "subject" as const,
+  crew: true,
+}));
+assert.equal(stageCrew(haulers, load), 8, "A crew is lined up on the load");
+for (const person of haulers) {
+  assert(person.x > load.hx, `The crew is ahead of the load (x ${person.x.toFixed(2)})`);
+  assert(Math.abs(person.z) < 1.2, `The crew stays with the load (z ${person.z.toFixed(2)})`);
+}
+const backer: StageFigure = { x: 0, z: 0, radius: 0.35, role: "subject", crew: true };
+assert.equal(stageCrew([backer], load, -1), 1);
+assert(backer.x < -load.hx, `Backing up puts the crew behind the load (x ${backer.x.toFixed(2)})`);
+const bystander: StageFigure = { x: 9, z: 9, radius: 0.35, role: "subject" };
+assert.equal(stageCrew([bystander], load), 0, "Someone who is not on the crew stays put");
+assert.equal(bystander.x, 9);
+const planted: StageFigure = { x: 8, z: 0, radius: 0.35, role: "subject", crew: true };
+assert.equal(stageBeside([planted], wing), 0, "A crew member is not pulled off the load");
+assert.equal(planted.x, 8);
+assert.equal(
+  deckTop([
+    { shape: "box", size: [4, 0.08, 0.1] as [number, number, number], position: [0, 0.2, 0] },
+    { shape: "box", size: [0.12, 1.2, 0.12] as [number, number, number], position: [0, 0, 0] },
+  ]),
+  null,
+  "A beam or a post is not a surface, even when it is named like one",
+);
+assert.equal(
+  deckTop([
+    { shape: "box", size: [1.6, 0.1, 0.9] as [number, number, number], position: [0, 0.8, 0], anchor: "bottom" },
+    { shape: "box", size: [2, 0.08, 1.2] as [number, number, number], position: [0, 0.4, 0], anchor: "center" },
+  ]),
+  0.44,
+  "A lying figure uses the lowest broad slab, whatever it is called",
 );

@@ -17,6 +17,7 @@ import { type Effect, makeExplosion, makeFire, makeSmoke } from "@/lib/lowpoly/e
 import { buildEnvironment, type Environment } from "@/lib/lowpoly/environment";
 import { buildGlobe, latLonToVec3 } from "@/lib/lowpoly/globe";
 import { resolveLayout, sweptCircles, type Body } from "@/lib/lowpoly/layout";
+import { deckTop, stageBeside, stageCrew, type StageFigure } from "@/lib/lowpoly/staging";
 import type { ShotSnapshot, UnitSnapshot } from "@/lib/lowpoly/shot-audit";
 import { drawOverlay, loadFonts, type OverlayLabel } from "@/lib/lowpoly/overlay";
 import { buildScatter } from "@/lib/lowpoly/scatter";
@@ -63,6 +64,7 @@ const SPEED: Partial<Record<SceneElement["motion"], number>> = {
   fly: 8,
 };
 const MOVING = new Set(["march", "charge", "retreat", "sail", "fly", "launch"]);
+const TRAVEL = new Set(["march", "charge", "retreat"]);
 
 function formationOffsets(f: Formation, n: number, sp: number, rng: Rng): [number, number][] {
   const out: [number, number][] = [];
@@ -175,6 +177,8 @@ interface Unit {
   centre: [number, number];
   /** Effect-only stand-in: invisible, takes no space. */
   ghost: boolean;
+  /** Figure and animal units get a gait so a still pose does not read as a statue. */
+  kind: string;
   extras: Effect[];
 }
 
@@ -253,7 +257,7 @@ export class PolyEngine {
     this.renderer.setSize(this.width, this.height, false);
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.NeutralToneMapping;
-    this.renderer.toneMappingExposure = 1.05;
+    this.renderer.toneMappingExposure = 1.14;
     this.renderer.shadowMap.enabled = opts.shadows !== false;
     this.renderer.shadowMap.type = THREE.PCFShadowMap;
     this.canvas = opts.canvas ?? document.createElement("canvas");
@@ -385,7 +389,12 @@ export class PolyEngine {
       const def = lib.definition(e.model);
       let k = 1;
       if (def?.category === "figure") {
-        const h = lib.bounds(e.model).height;
+        const b = lib.bounds(e.model);
+        // A person lying down is short because they are horizontal, not because
+        // they are a child. Measure along the body, then bring standing height
+        // into the human range.
+        const lying = b.height < 1 && Math.max(b.size.x, b.size.z) > b.height * 1.8;
+        const h = lying ? Math.max(b.size.x, b.size.z) : b.height;
         if (h < FIGURE_HEIGHT[0] || h > FIGURE_HEIGHT[1]) k = FIGURE_NORMAL / h;
       }
       return k * (e.scale ?? 1);
@@ -471,11 +480,20 @@ export class PolyEngine {
     const anchorOf = (e: SceneElement): [number, number] => {
       if (room && e === room.e) return [room.x, room.z];
       const [px, pz] = POS[e.position];
-      const radius = lib.has(e.model) ? lib.bounds(e.model).radius * scaleOf(e) : 0;
-      const layer = e.role === "background" ? 2.5 : 1;
+      const bounds = lib.has(e.model) ? lib.bounds(e.model) : null;
+      const radius = bounds ? bounds.radius * scaleOf(e) : 0;
+      const def = lib.definition(e.model);
+      // A low, long structure is the surface the action uses. Pushing it back
+      // by its length leaves that action sitting on empty ground.
+      const track =
+        def?.category === "structure" &&
+        !!bounds &&
+        bounds.height < 1.2 &&
+        Math.max(bounds.size.x, bounds.size.z) > Math.max(1, bounds.height * 4);
+      const layer = e.role === "background" && !track ? 2.5 : 1;
       const at: [number, number] = [
         e.offset?.x ?? px * region * layer,
-        e.offset?.z ?? (e.role === "background" ? -region * 2.2 - radius + pz * region : pz * region),
+        e.offset?.z ?? (e.role === "background" && !track ? -region * 2.2 - radius + pz * region : pz * region),
       ];
       return room ? insideRoom(at[0], at[1], radius) : at;
     };
@@ -683,7 +701,7 @@ export class PolyEngine {
         env.isWater(px - across[0] * k, pz - across[1] * k);
       for (const k of half > 2 ? [half, 2] : [2]) {
         if (afloat(x, z, k)) return [x, z];
-        for (let i = 1; i < 60; i++)
+        for (let i = 1; i < 18; i++)
           for (const d of [-i * 1.5, i * 1.5]) {
             const px = x + across[0] * d,
               pz = z + across[1] * d;
@@ -694,7 +712,7 @@ export class PolyEngine {
     };
     const findLand = (x: number, z: number, r = 0) => {
       if (!env.isWater(x, z)) return [x, z];
-      for (let k = 1; k < 60; k++)
+      for (let k = 1; k < 18; k++)
         for (const d of [k * 1.5, -k * 1.5]) {
           const px = x + across[0] * d,
             pz = z + across[1] * d;
@@ -733,7 +751,13 @@ export class PolyEngine {
       // Foreground dressing should frame the action, not cover it. Position
       // labels alone ignore a prop's real footprint (e.g. a long cart).
       // Explicit authored offsets and interior layouts remain authoritative.
-      if (immersive && !room && e.role === "foreground" && !e.offset) {
+      if (
+        immersive &&
+        !room &&
+        e.role === "foreground" &&
+        !e.offset &&
+        !(def.category === "structure" && height < 1.2)
+      ) {
         const side = Math.sign(cx - focus0.x) || Math.sign(px) || 1;
         cx = focus0.x + side * Math.max(Math.abs(cx - focus0.x), reach + radius + 0.6);
       }
@@ -769,7 +793,14 @@ export class PolyEngine {
       const variants = lib.variantCount(e.model);
       for (let i = 0; i < offs.length; i++) {
         const [f, l] = offs[i];
-        const jit = living ? spacing * 0.18 : def.category === "nature" ? spacing * 0.3 : 0;
+        const jit =
+          living && (e.formation === "line" || e.formation === "column" || e.formation === "single")
+            ? spacing * 0.01
+            : living
+              ? spacing * 0.05
+              : def.category === "nature"
+                ? spacing * 0.3
+                : 0;
         let x = cx + fwd.x * f + lat.x * l + range(rng, -jit, jit);
         let z = cz + fwd.z * f + lat.z * l + range(rng, -jit, jit);
         let unitHeading = heading;
@@ -782,6 +813,24 @@ export class PolyEngine {
           x = corridor.cx + side * (corridor.halfWidth + (corridor.quay ?? 0) + footprint / 2 + 0.3);
           z = cz - row * spacing;
           unitHeading = side < 0 ? 0 : Math.PI;
+        }
+        if (
+          immersive &&
+          corridor &&
+          corridor.paved !== false &&
+          (layout === "street" || sc.setting === "city") &&
+          def.category === "vehicle" &&
+          !room
+        ) {
+          const along = e.facing === "away" ? Math.PI / 2 : -Math.PI / 2;
+          if (!e.offset) {
+            const lane = i % 2 ? 1 : -1;
+            x = corridor.cx + lane * Math.min(Math.max(0.8, corridor.halfWidth * 0.35), 1.8);
+            z = cz - (i - (offs.length - 1) / 2) * Math.max(spacing, 5);
+            unitHeading = lane > 0 ? Math.PI / 2 : -Math.PI / 2;
+          } else if (!e.facing || e.facing === "camera" || e.facing === "away" || e.facing === "center") {
+            unitHeading = along;
+          }
         }
         if (room && !shell) [x, z] = insideRoom(x, z, radius);
         let y = 0;
@@ -816,18 +865,22 @@ export class PolyEngine {
           (living || def.category === "nature" ? range(rng, -0.12, 0.12) : 0) +
           (def.category === "nature" ? rng() * Math.PI * 2 : 0);
         scene.add(group);
+        const unitFwd = new THREE.Vector3(Math.cos(unitHeading), 0, -Math.sin(unitHeading));
         const unit: Unit = {
           group,
           inst,
           element: ei,
           base: new THREE.Vector3(x, y, z),
-          fwd,
+          fwd: unitFwd,
           speed:
             Math.sign(SPEED[e.motion] ?? 0) *
             Math.min(
-              Math.abs(SPEED[e.motion] ?? 0),
-              (airMover ? Math.max(layoutRadius * 4, 8) : Math.max(0.05, layoutRadius * 1.5)) /
-                Math.max(1, sc.duration),
+              Math.abs(SPEED[e.motion] ?? 0) * (def.category === "vehicle" ? 3 : 1),
+              (airMover
+                ? Math.max(layoutRadius * 4, 8)
+                : def.category === "vehicle"
+                  ? Math.max(layoutRadius * 1.5, 16)
+                  : Math.max(0.05, layoutRadius * 1.5)) / Math.max(1, sc.duration),
             ),
           motion: e.motion,
           placement,
@@ -840,8 +893,8 @@ export class PolyEngine {
             ? { travel: Math.max(layoutRadius * 4, 10), climb: Math.max(height * 2, radius * 0.8, 3) }
             : null,
           span: {
-            x: Math.abs(Math.cos(heading)) * b.size.x * s + Math.abs(Math.sin(heading)) * b.size.z * s,
-            z: Math.abs(Math.sin(heading)) * b.size.x * s + Math.abs(Math.cos(heading)) * b.size.z * s,
+            x: Math.abs(Math.cos(unitHeading)) * b.size.x * s + Math.abs(Math.sin(unitHeading)) * b.size.z * s,
+            z: Math.abs(Math.sin(unitHeading)) * b.size.x * s + Math.abs(Math.cos(unitHeading)) * b.size.z * s,
           },
           shell,
           fixed: spans,
@@ -851,6 +904,7 @@ export class PolyEngine {
             (-b.center.x * Math.sin(group.rotation.y) + b.center.z * Math.cos(group.rotation.y)) * s,
           ],
           ghost: effectOnly,
+          kind: def.category,
           extras: [],
         };
         if (e.motion === "burn" && fires < 10) {
@@ -893,13 +947,99 @@ export class PolyEngine {
       }
     });
 
+    // People who share a load's travel stand at its nose and move with it.
+    // Anyone else authored metres from the machine stands beside it. Witnesses
+    // stay a little closer to the lens. A crowd that is not working the load
+    // keeps the formation it was given.
+    const companion = new Set(["vehicle", "aircraft", "watercraft", "spacecraft", "prop"]);
+    const subjectProp = units.reduce<Unit | null>((best, u) => {
+      const element = sc.elements[u.element];
+      const def = lib.definition(element.model);
+      if (!def || u.shell || u.ghost || (element.role && element.role !== "subject") || !companion.has(def.category))
+        return best;
+      return !best || u.radius > best.radius ? u : best;
+    }, null);
+    if (subjectProp) {
+      const element = sc.elements[subjectProp.element];
+      const bounds = lib.bounds(element.model);
+      const scale = subjectProp.group.scale.x;
+      const cast: (StageFigure & { unit: Unit })[] = [];
+      for (const u of units) {
+        const placed = sc.elements[u.element];
+        const def = lib.definition(placed.model);
+        if (!def || u.shell || (def.category !== "figure" && def.category !== "animal")) continue;
+        const body = lib.bounds(placed.model);
+        const aboard = body.height < 0.95 && Math.max(body.size.x, body.size.z) > body.height * 1.6;
+        const crew =
+          subjectProp.placement === "ground" &&
+          TRAVEL.has(element.motion) &&
+          TRAVEL.has(placed.motion) &&
+          !aboard &&
+          placed.role !== "background";
+        cast.push({
+          unit: u,
+          x: u.base.x + u.centre[0],
+          z: u.base.z + u.centre[1],
+          radius: Math.min(0.45, Math.max(0.2, u.radius)),
+          ...(placed.role ? { role: placed.role } : {}),
+          ...(aboard ? { aboard: true } : {}),
+          ...(crew ? { crew: true } : {}),
+        });
+      }
+      if (!cast.some((figure) => !figure.role || figure.role === "subject") && cast.length > 0 && cast.length <= 3) {
+        const propX = subjectProp.base.x + subjectProp.centre[0];
+        const propZ = subjectProp.base.z + subjectProp.centre[1];
+        const nearest = [...cast].sort(
+          (a, b) => Math.hypot(a.x - propX, a.z - propZ) - Math.hypot(b.x - propX, b.z - propZ),
+        )[0];
+        nearest.role = "subject";
+      }
+      const work = {
+        x: subjectProp.base.x + subjectProp.centre[0],
+        z: subjectProp.base.z + subjectProp.centre[1],
+        hx: (bounds.size.x * scale) / 2,
+        hz: (bounds.size.z * scale) / 2,
+        heading: subjectProp.group.rotation.y,
+      };
+      const lead = subjectProp.speed < 0 ? -1 : 1;
+      const crewed = cast.length ? stageCrew(cast, work, lead) : 0;
+      const beside = cast.length ? stageBeside(cast, work) : 0;
+      if (crewed || beside) {
+        for (const figure of cast) {
+          figure.unit.base.x = figure.x - figure.unit.centre[0];
+          figure.unit.base.z = figure.z - figure.unit.centre[1];
+          if (!figure.crew) continue;
+          figure.unit.speed = subjectProp.speed;
+          figure.unit.fwd.copy(subjectProp.fwd);
+          figure.unit.group.rotation.y = subjectProp.group.rotation.y;
+        }
+      }
+      const deck = deckTop(lib.definition(element.model)?.parts ?? []);
+      if (deck != null) {
+        for (const figure of cast) {
+          if (!figure.aboard) continue;
+          const person = lib.bounds(sc.elements[figure.unit.element].model);
+          const personScale = figure.unit.group.scale.x;
+          figure.unit.lift = subjectProp.lift + deck * scale + Math.max(0, -person.plantY) * personScale;
+        }
+      }
+    }
+
     // Footprints never overlap at rest, and nothing travels through anything
     // else: movers shift lane or stop short. Room shells (actors stand inside
     // them), spans (boats pass beneath, people cross), aircraft and ground
     // cover low enough to stand on (rails, rugs, platforms) are exempt.
-    const solid = units.filter(
-      (u) => !u.shell && !u.fixed && !u.ghost && !u.takeoff && u.placement !== "air" && u.height > LOW_COVER,
-    );
+    // A prone or seated person is short, but they are not a rail to stand on.
+    const stands = (u: Unit) => {
+      const category = lib.definition(sc.elements[u.element].model)?.category;
+      return category === "figure" || category === "animal" || u.height > LOW_COVER;
+    };
+    const solid = units.filter((u) => {
+      if (u.shell || u.fixed || u.ghost || u.takeoff || u.placement === "air" || !stands(u)) return false;
+      const body = lib.bounds(sc.elements[u.element].model);
+      const lying = body.height < 0.95 && Math.max(body.size.x, body.size.z) > body.height * 1.6;
+      return !lying;
+    });
     const bodies: Body[] = solid.map((u) => {
       const e = sc.elements[u.element];
       const b = lib.bounds(e.model);
@@ -934,6 +1074,40 @@ export class PolyEngine {
       if (body.motion)
         u.travel = [Math.min(body.motion.dStart, body.motion.dEnd), Math.max(body.motion.dStart, body.motion.dEnd)];
     });
+    if (subjectProp) {
+      const px = subjectProp.base.x + subjectProp.centre[0];
+      const pz = subjectProp.base.z + subjectProp.centre[1];
+      const hands = units.filter((u) => {
+        const category = lib.definition(sc.elements[u.element].model)?.category;
+        if (category !== "figure" && category !== "animal") return false;
+        return Math.hypot(u.base.x + u.centre[0] - px, u.base.z + u.centre[1] - pz) < 6;
+      });
+      if (hands.length > 0 && hands.length <= 3) {
+        for (const u of hands) {
+          const dx = px - (u.base.x + u.centre[0]);
+          const dz = pz - (u.base.z + u.centre[1]);
+          if (dx * dx + dz * dz < 0.05) continue;
+          u.group.rotation.y = Math.atan2(-dz, dx);
+        }
+      }
+    }
+    // A machine resting on a rail or platform sits on that deck, not in it.
+    for (const u of units) {
+      const category = lib.definition(sc.elements[u.element].model)?.category;
+      if (u.placement !== "ground" || u.takeoff || (category !== "aircraft" && category !== "vehicle")) continue;
+      if (u.motion === "fly" || u.motion === "launch") continue;
+      let deck = 0;
+      for (const other of units) {
+        if (other === u || other.placement !== "ground" || other.height > 1.4 || other.height < 0.04) continue;
+        const otherCategory = lib.definition(sc.elements[other.element].model)?.category;
+        if (otherCategory !== "structure" && otherCategory !== "prop") continue;
+        const dx = Math.abs(u.base.x + u.centre[0] - (other.base.x + other.centre[0]));
+        const dz = Math.abs(u.base.z + u.centre[1] - (other.base.z + other.centre[1]));
+        if (dx > (u.span.x + other.span.x) * 0.45 || dz > (u.span.z + other.span.z) * 0.45) continue;
+        deck = Math.max(deck, other.height);
+      }
+      if (deck > 0.03) u.lift += deck;
+    }
 
     // Subject framing (rest positions at mid-scene).
     const subjects = units.filter(
@@ -941,7 +1115,28 @@ export class PolyEngine {
     );
     let framed = subjects.length ? subjects : units.filter((u) => !u.shell);
     // A rail, platform or rug under the subject is ground, not what the shot is of.
-    if (framed.some((u) => u.height > LOW_COVER)) framed = framed.filter((u) => u.height > LOW_COVER);
+    if (framed.some((u) => stands(u))) framed = framed.filter((u) => stands(u));
+    // A person using a tool is part of the picture, even when the storyboard
+    // filed them as background. The references always show the hands with the work.
+    const livingUnit = (u: Unit) => {
+      const category = lib.definition(sc.elements[u.element].model)?.category;
+      return category === "figure" || category === "animal";
+    };
+    if (
+      immersive &&
+      framed.length > 0 &&
+      framed.length <= 2 &&
+      framed.every((u) => !livingUnit(u) && !architectural(sc.elements[u.element]))
+    ) {
+      const cx = framed.reduce((sum, u) => sum + u.base.x, 0) / framed.length;
+      const cz = framed.reduce((sum, u) => sum + u.base.z, 0) / framed.length;
+      const reach = Math.max(3.2, ...framed.map((u) => u.radius + u.height * 0.15)) + 1.8;
+      const hands = units
+        .filter((u) => livingUnit(u) && !u.shell && Math.hypot(u.base.x - cx, u.base.z - cz) < reach)
+        .sort((a, b) => Math.hypot(a.base.x - cx, a.base.z - cz) - Math.hypot(b.base.x - cx, b.base.z - cz))
+        .slice(0, 2);
+      if (hands.length) framed = [...framed, ...hands];
+    }
     // A street of subject buildings is framed on its camera-nearest row and
     // allowed to recede, instead of being shrunk to fit the whole formation.
     if (immersive && framed.length >= 3 && framed.every((u) => architectural(sc.elements[u.element]))) {
@@ -1008,8 +1203,8 @@ export class PolyEngine {
       );
       maxH = Math.max(0.1, extent.y);
     }
-    // A subject much deeper along the view axis than it is wide (a side-on
-    // wingspan, a boat seen bow-first) is shot from a three-quarter angle.
+    // A subject much deeper along the view axis than it is wide is shot from
+    // a three-quarter angle, so a long side is not seen end-on.
     const main = framed.reduce<Unit | null>((m, u) => (!m || u.radius > m.radius ? u : m), null);
     const facadeView =
       immersive &&
@@ -1023,7 +1218,16 @@ export class PolyEngine {
           ? Math.PI / 2
           : 0)
       : undefined;
-    const viewYaw = !facadeView && immersive && main && main.span.z > main.span.x * 1.4 ? 0.85 : 0;
+    const withPeople = framed.some((u) => {
+      const category = lib.definition(sc.elements[u.element].model)?.category;
+      return category === "figure" || category === "animal";
+    });
+    // A strong three-quarter angle shows a long side, but it also puts the
+    // person at the near end in the lens and shrinks the person at the far end.
+    // With people in the shot, stay closer to side-on so both stay readable.
+    const viewYaw =
+      !facadeView && immersive && main && main.span.z > main.span.x * 1.4 ? (withPeople ? 0.32 : 0.85) : 0;
+    if (withPeople && radius > 3) radius *= 1.12;
     // Aim at the actual facade; camera collision keeps the lens in the street.
     const groundAt = new THREE.Vector3(center.x, ground0, center.z);
 
@@ -1261,7 +1465,8 @@ export class PolyEngine {
     // Key (sun) shadows fitted to what the shot can see; a cool or warm rim
     // from behind separates subjects from the set.
     const ext = clamp(Math.max(radius * 1.8, shot.distance * 1.6, corridor ? 26 : 9, roomSpan * 1.6), 5, 70);
-    const shadowRes = ext > 40 ? 4096 : 2048;
+    // Wide shots used to ask for a 4096 map, which dominated encode time.
+    const shadowRes = ext > 36 ? 1024 : 2048;
     env.sun.shadow.mapSize.set(shadowRes, shadowRes);
     const shadowCam = env.sun.shadow.camera as THREE.OrthographicCamera;
     shadowCam.left = -ext;
@@ -1398,7 +1603,7 @@ export class PolyEngine {
         shading.level.value = groundAt.y;
         shading.floor.value = immersive ? 0.6 : 0.74;
         shading.range.value = shadingRange;
-        shading.noise.value = immersive ? 0.12 : 0.06;
+        shading.noise.value = immersive ? 0.04 : 0.03;
         const fxState = { time: local, progress: p, moving: false, night, phase: 0 };
         for (const fx of sceneryFx) fx.update(fxState);
         let blob = 0;
@@ -1446,6 +1651,18 @@ export class PolyEngine {
             y = ground + u.base.y + Math.sin(local * 0.9 + u.phase) * 0.35;
           }
           if (u.motion === "launch" && !u.takeoff) y += Math.pow(Math.max(0, local - 0.6), 2) * 1.8;
+          if ((u.kind === "figure" || u.kind === "animal") && u.placement === "ground" && u.motion !== "collapse") {
+            const moving = Math.abs(d) > 0.04 || (MOVING.has(u.motion) && Math.abs(u.speed) > 0.02);
+            const step = Math.sin(local * (moving ? 8.2 : 1.7) + u.phase);
+            y += Math.abs(step) * (moving ? 0.045 : 0.028);
+            // Tilting the whole body swings a staff, rope, or jar through the air.
+            const greeting = u.motion === "wave" || u.motion === "sway";
+            u.group.rotation.z = greeting ? Math.sin(local * 1.1 + u.phase) * (u.motion === "wave" ? 0.035 : 0.02) : 0;
+          }
+          if ((u.motion === "sway" || u.motion === "wave") && u.kind !== "figure" && u.kind !== "animal") {
+            const wave = u.motion === "wave";
+            u.group.rotation.z += Math.sin(local * (wave ? 2.4 : 1.3) + u.phase) * (wave ? 0.16 : 0.1);
+          }
           if (u.motion === "collapse") {
             const k = Math.pow(clamp((p - 0.3) / 0.7, 0, 1), 2);
             u.group.rotation.z = k * 0.9 * (u.phase > 3 ? 1 : -1);
@@ -1542,7 +1759,7 @@ export class PolyEngine {
               element: u.element,
               model: e.model,
               role: e.role ?? "subject",
-              solid: !u.shell && u.height > LOW_COVER,
+              solid: !u.shell && stands(u),
               placement: u.placement,
               span: u.fixed,
               x,
