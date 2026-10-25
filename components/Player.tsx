@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import type { Aspect, VideoScript } from "@/lib/schema/video";
-import { Ambience, primeAmbience } from "@/lib/audio/ambience";
+import { Ambience, primeAmbience, type Voice } from "@/lib/audio/ambience";
+import { loadNarration } from "@/lib/audio/narration";
 import type { PolyEngine } from "@/lib/lowpoly/engine";
 
 const fmt = (t: number) => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, "0")}`;
@@ -14,6 +15,7 @@ export function Player({
   maxPixelRatio = 1.5,
   showControls = true,
   className,
+  narrationUrl,
 }: {
   script: VideoScript;
   aspect?: Aspect;
@@ -22,6 +24,8 @@ export function Player({
   maxPixelRatio?: number;
   showControls?: boolean;
   className?: string;
+  /** The film's recorded narration, mixed into its soundtrack. */
+  narrationUrl?: string | null;
 }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -30,6 +34,7 @@ export function Player({
   const playingRef = useRef(autoPlay);
   const visibleRef = useRef(true);
   const ambienceRef = useRef<Ambience | null>(null);
+  const voiceRef = useRef<Voice>(narrationUrl ? "loading" : undefined);
   const ambientEnabled = useRef(true);
   const [ambient, setAmbient] = useState(true);
   const [audioError, setAudioError] = useState<string | null>(null);
@@ -47,6 +52,21 @@ export function Player({
     setTime(0);
     setAmbient(true);
   }
+
+  useEffect(() => {
+    if (!narrationUrl) {
+      voiceRef.current = undefined;
+      return;
+    }
+    let current = true;
+    voiceRef.current = "loading";
+    void loadNarration(narrationUrl).then((voice) => {
+      if (current) voiceRef.current = voice ?? undefined;
+    });
+    return () => {
+      current = false;
+    };
+  }, [narrationUrl]);
 
   useEffect(() => {
     ambientEnabled.current = true;
@@ -72,10 +92,11 @@ export function Player({
             script,
             timeRef.current,
             playingRef.current && visibleRef.current && !document.hidden,
+            voiceRef.current,
           );
         });
       } catch {
-        setAudioError("Ambient audio is unavailable in this browser.");
+        setAudioError("Sound is unavailable in this browser.");
       }
     };
 
@@ -116,7 +137,7 @@ export function Player({
           const dt = Math.min(0.1, (now - last) / 1000);
           last = now;
           const active = playingRef.current && visibleRef.current && !document.hidden;
-          ambienceRef.current?.sync(script, timeRef.current, active && ambientEnabled.current);
+          ambienceRef.current?.sync(script, timeRef.current, active && ambientEnabled.current, voiceRef.current);
           if (!active) return;
           let t = timeRef.current + dt;
           if (t >= engine.duration) {
@@ -142,7 +163,7 @@ export function Player({
     document.addEventListener("pointerdown", startAmbience, true);
     document.addEventListener("keydown", startAmbience, true);
     const visibility = () => {
-      if (document.hidden) ambienceRef.current?.sync(script, timeRef.current, false);
+      if (document.hidden) ambienceRef.current?.sync(script, timeRef.current, false, voiceRef.current);
     };
     document.addEventListener("visibilitychange", visibility);
     return () => {
@@ -185,12 +206,12 @@ export function Player({
       // should start it, not flip the preference off.
       if (ambientEnabled.current && !wasRunning) {
         if (!running) {
-          setAudioError("Tap Ambience to enable sound.");
+          setAudioError("Tap Sound to turn it on.");
           return;
         }
         playingRef.current = true;
         setPlaying(true);
-        ambienceRef.current.sync(script, timeRef.current, audible);
+        ambienceRef.current.sync(script, timeRef.current, audible, voiceRef.current);
         return;
       }
       ambientEnabled.current = !ambientEnabled.current;
@@ -199,9 +220,9 @@ export function Player({
         playingRef.current = true;
         setPlaying(true);
       }
-      ambienceRef.current.sync(script, timeRef.current, ambientEnabled.current && audible);
+      ambienceRef.current.sync(script, timeRef.current, ambientEnabled.current && audible, voiceRef.current);
     } catch {
-      setAudioError("Ambient audio is unavailable in this browser.");
+      setAudioError("Sound is unavailable in this browser.");
     }
   };
 
@@ -251,12 +272,12 @@ export function Player({
           <button
             className={`chip ${ambient ? "teal" : ""}`}
             role="switch"
-            aria-label="Ambience"
+            aria-label="Sound"
             aria-checked={ambient}
             onClick={toggleAmbience}
-            title="A score under the sounds of the shot. Saved films include the same track"
+            title="Narration, music and the sounds of the shot. Saved films include the same track"
           >
-            {ambient ? "Ambience on" : "Ambience off"}
+            {ambient ? "Sound on" : "Sound off"}
           </button>
         </div>
       ) : null}

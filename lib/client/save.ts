@@ -21,6 +21,7 @@ export async function saveRender(
   video: Video,
   onProgress?: (p: SaveProgress) => void,
   signal?: AbortSignal,
+  voice?: Float32Array,
 ): Promise<Video> {
   if (!video.script) throw new Error("This video has no scenes yet.");
   const aspect: Aspect = video.aspect === "portrait" ? "portrait" : "landscape";
@@ -28,6 +29,7 @@ export async function saveRender(
   const result = await exportMovie(video.script, {
     aspect,
     signal,
+    voice,
     onProgress: (d) => onProgress?.({ stage: "animating", fraction: d.fraction, detail: d }),
   });
   onProgress?.({ stage: "saving", fraction: 0 });
