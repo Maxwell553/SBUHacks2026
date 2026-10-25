@@ -5,6 +5,7 @@ import { SHOWCASE_SCRIPT } from "@/lib/content/showcase";
 import { EXAMPLE_BIPLANE, EXAMPLE_COG_SHIP, EXAMPLE_FOOT_SOLDIER } from "@/lib/content/model-examples";
 import { getViewer } from "@/lib/server/viewer";
 import { TOPIC_IDEAS } from "@/lib/content/topics";
+import { SITE } from "@/lib/content/site";
 export default async function Home({ searchParams }: { searchParams: Promise<{ deleted?: string }> }) {
   const [user, { deleted }] = await Promise.all([getViewer(), searchParams]);
   const start = user ? "/studio" : "/signup";
@@ -257,7 +258,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
           </Reveal>
           <Reveal delay={0.1}>
             <p className="lead" style={{ margin: "0 auto" }}>
-              Create a free account and make your first video in a few minutes.
+              Create a free account and make your first video in a few minutes. Each account can make {SITE.dailyVideos}{" "}
+              videos per day.
             </p>
           </Reveal>
           <Reveal delay={0.2}>

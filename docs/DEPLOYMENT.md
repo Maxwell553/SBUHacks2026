@@ -52,7 +52,7 @@ Production runs as separate short requests (plan, build, direct, finish, review)
 
 | Item                                           | Limit or retention                          |
 | ---------------------------------------------- | ------------------------------------------- |
-| New videos                                     | No daily cap; one in progress per account   |
+| New videos                                     | 10 per day; one in progress per account     |
 | Rendered file                                  | 32 MiB each                                 |
 | Media per account                              | 96 MiB                                      |
 | Global media reservation                       | 700 MiB (headroom within a 1 GiB database)  |
@@ -66,7 +66,6 @@ Storing media chunks in PostgreSQL fits the current single-database deployment. 
 
 - [ ] Set `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_CONTACT_EMAIL` and `NEXT_PUBLIC_LEGAL_ENTITY` to verified values. The defaults are placeholders.
 - [ ] Review `/terms`, `/privacy` and `/content-policy` with whoever operates the service.
-- [ ] Add a daily cap on new videos per account again (removed for private testing). Each film makes a dozen or more paid Gemini calls, plus a review round.
 - [ ] Email verification and password reset are **not implemented**. Add an email provider and a recovery flow before promising account recovery.
 - [ ] Run `npm run check`, `npm run secrets:check`, and `npm run test:backend -- --live` against a localhost server connected to an isolated staging database. The automated suite refuses remote hosts; perform the deployed smoke test manually.
 - [ ] Confirm the database CA expiry date and set up alerting on `/api/health`.

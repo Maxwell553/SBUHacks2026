@@ -11,6 +11,7 @@ import { produceFilm, type ProduceProgress } from "@/lib/client/produce";
 import { loadNarration } from "@/lib/audio/narration";
 import type { Aspect } from "@/lib/schema/video";
 import { TOPIC_IDEAS } from "@/lib/content/topics";
+import { SITE } from "@/lib/content/site";
 import dynamic from "next/dynamic";
 import { StudioPreview } from "@/components/StudioPreview";
 const Player = dynamic(() => import("@/components/Player").then((m) => m.Player));
@@ -551,8 +552,8 @@ export function Studio({ initialPrompt = "" }: { initialPrompt?: string }) {
             </button>
             <p className="hint">
               Keep this tab open the whole time. Leaving this page, including the PolyChronicle name at the top, stops
-              the video. Requests are checked to keep things respectful and historical. See our{" "}
-              <Link href="/content-policy">content policy</Link>.
+              the video. Each account can make {SITE.dailyVideos} videos per day. Requests are checked to keep things
+              respectful and historical. See our <Link href="/content-policy">content policy</Link>.
             </p>
           </form>
 

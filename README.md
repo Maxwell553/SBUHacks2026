@@ -106,7 +106,7 @@ A film usually takes three to five minutes from question to library. The full li
 
 ### Usage limits
 
-There is no daily cap on new videos. Each account makes one video at a time, and a library holds up to 100 videos. Storage budgets are listed in the [deployment guide](docs/DEPLOYMENT.md#storage-and-retention). Add a daily cap back before opening the site to the public: every film makes a dozen or more paid Gemini calls.
+Each account can make **10 videos per day**, one at a time, and a library holds up to 100 videos. The daily number lives in one place, `SITE.dailyVideos` in [`lib/content/site.ts`](lib/content/site.ts), and the site shows it in the studio, in the message people see when they reach it, and in the Terms. Storage budgets are listed in the [deployment guide](docs/DEPLOYMENT.md#storage-and-retention).
 
 ## Tech stack
 

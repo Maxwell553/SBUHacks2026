@@ -7,7 +7,7 @@ Every endpoint lives under `/api`, returns JSON (except media), and is served by
 - **Auth.** An httpOnly `polychronicle_session` cookie (SameSite=Lax, Secure in production, 30 days). Send requests with `credentials: "same-origin"`.
 - **Origin check.** Every mutating request (`POST`, `PUT`, `DELETE`) must send an `Origin` header matching the site (or `APP_URL`). Otherwise the server returns 403.
 - **Errors.** `{ "error": "<user-safe message>" }` with status 400, 401, 403, 404, 409, 413, 422, 429, 502 or 503. Safety rejections are **422** with a deliberately generic message.
-- **Rate limits** (fixed windows): sign-up 10/hour per IP, sign-in 30 per 15 min per IP and 15 per 15 min per email, review rounds 4/hour per video, upload starts 40/hour per account. There is no daily cap on generation; an account can have one video in progress at a time.
+- **Rate limits** (fixed windows): sign-up 10/hour per IP, sign-in 30 per 15 min per IP and 15 per 15 min per email, generation 10 per account per rolling 24 hours (`SITE.dailyVideos`; the 429 message says roughly when the next one is available), review rounds 4/hour per video, narration 3/hour per video, upload starts 40/hour per account. An account can have one video in progress at a time.
 
 ## Auth
 
